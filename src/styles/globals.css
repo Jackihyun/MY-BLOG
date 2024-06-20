@@ -3,12 +3,21 @@
 @tailwind utilities;
 
 html {
-  @apply bg-white text-black;
+  @apply bg-[#e8e8e8] text-black;
 }
 
 html.dark {
-  @apply bg-gray-900 text-white;
+  @apply bg-[#212121] text-white;
 }
+
+.ellipsis {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  -webkit-line-clamp: 3; /* 보여줄 줄 수를 설정합니다. */
+}
+
 
 /* :root {
   --foreground-rgb: 0, 0, 0;

@@ -19,9 +19,9 @@ const DarkModeToggle: React.FC = () => {
   return (
     <button
       onClick={toggleDarkMode}
-      className="p-2 rounded bg-gray-200 dark:bg-gray-900 text-black dark:text-white fixed top-12 right-5"
+      className="w-8 h-8 rounded-full bg-[#212121] dark:bg-[#e8e8e8] text-white dark:text-black fixed top-12 right-5"
     >
-      {darkMode ? "Light Mode" : "Dark Mode"}
+      {darkMode ? "L" : "D"}
     </button>
   );
 };

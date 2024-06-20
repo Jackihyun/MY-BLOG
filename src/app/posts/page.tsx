@@ -1,11 +1,14 @@
-import React from "react";
+import { getSortedPostsData, PostData } from "@/lib/posts";
+import PostsList from "@/components/posts/PostList";
 
-const Posts: React.FC = () => {
+export const revalidate = 10; // ISR (Incremental Static Regeneration) 옵션
+
+export default async function PostsPage() {
+  const allPostsData: PostData[] = await getSortedPostsData();
+
   return (
-    <div>
-      <p>This is the post page.</p>
+    <div className="p-4">
+      <PostsList allPostsData={allPostsData} />
     </div>
   );
-};
-
-export default Posts;
+}
