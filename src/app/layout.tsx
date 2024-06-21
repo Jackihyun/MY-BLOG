@@ -1,9 +1,14 @@
 import type { Metadata } from "next";
+import { ReactNode } from "react";
+import RecoilProvider from "./recoil-provider";
 import "@/styles/globals.css";
 import { Inter } from "next/font/google";
 import Header from "@/components/Header/Header";
 import Footer from "@/components/Footer/Footer";
-import DarkModeToggle from "@/components/DarkModeToogle";
+
+interface RootLayoutProps {
+  children: ReactNode;
+}
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -19,16 +24,22 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={`${inter.className} flex flex-col min-h-screen`}>
-        <Header />
-        {/* <button className="fixed top-12 right-5">
+      <body
+        className={`${inter.className} place-items-center flex flex-col min-h-screen`}
+      >
+        <RecoilProvider>
+          <Header />
+          {/* <button className="fixed top-12 right-5">
           <p className="w-7 h-7 flex justify-center items-center border border-black rounded-3xl">
             D
           </p>
         </button> */}
-        <DarkModeToggle />
-        <main className="flex-grow px-4 md:px-10 pt-[60px]">{children}</main>
-        <Footer />
+
+          <main className="flex-grow w-full pt-[60px] py-[100px] px-4 max-w-[720px]">
+            {children}
+          </main>
+          <Footer />
+        </RecoilProvider>
       </body>
     </html>
   );

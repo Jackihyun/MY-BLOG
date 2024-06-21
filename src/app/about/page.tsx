@@ -1,11 +1,10 @@
 import React from "react";
+import MyIntro from "@/containers/main/MyIntro";
 
-const About: React.FC = () => {
+export default function AboutPage() {
   return (
     <div>
-      <p>This is the about page.</p>
+      <MyIntro />
     </div>
   );
-};
-
-export default About;
+}

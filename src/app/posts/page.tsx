@@ -7,7 +7,7 @@ export default async function PostsPage() {
   const allPostsData: PostData[] = await getSortedPostsData();
 
   return (
-    <div className="p-4">
+    <div className="py-4">
       <PostsList allPostsData={allPostsData} />
     </div>
   );

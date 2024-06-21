@@ -28,10 +28,10 @@ export default function PostsList({
 
   return (
     <>
-      <p className="py-7 font-bold text-[20px] text-center">
+      <p className="pt-3 pb-7 font-bold text-[20px] text-center">
         {selectedCategory === "All" ? "All" : selectedCategory}
       </p>
-      <div className="flex text-[17px] px-2 font-bold mb-6 space-x-6 overflow-x-scroll scrollbar-hide md:justify-center">
+      <div className="flex text-[17px] px-2 font-bold mb-6 space-x-6 overflow-x-scroll scrollbar-hide place-content-between justify-between md:justify-center md:place-content-center">
         <button
           className={`text-nowrap ${
             selectedCategory === "All"
@@ -60,7 +60,7 @@ export default function PostsList({
         {filteredPosts.map(({ id, date, title, contentHtml, category }) => (
           <li
             key={id}
-            className="w-full mb-[15px] p-4 border rounded shadow-md"
+            className="w-full mb-[15px] p-4 border rounded-2xl shadow-sm"
           >
             <Link href={`/posts/${id}`}>
               <div>
