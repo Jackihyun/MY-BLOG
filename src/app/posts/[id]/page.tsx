@@ -1,4 +1,5 @@
 import { getPostData, getAllPostIds } from "@/lib/posts";
+import Link from "next/link";
 
 interface PostProps {
   params: {
@@ -11,7 +12,7 @@ export default async function PostPage({ params }: PostProps) {
 
   return (
     <div>
-      <div className="border-b border-gray-400 my-[40px] pb-[40px]">
+      <div className="border-b border-gray-400 my-[40px]">
         <p className="text-sm mb-[5px] text-[#989ba0] dark:text-[#8e8f97]">
           {postData.category}
         </p>
@@ -26,6 +27,15 @@ export default async function PostPage({ params }: PostProps) {
         className="text-[#of1010] dark:text-[#e6e6e6]"
         dangerouslySetInnerHTML={{ __html: postData.contentHtml }}
       />
+      <div className="flex flex-col pt-[80px] text-[14px] md:text-[17px] text-center pb-[20px] gap-2">
+        <p>재미있게 보셨다면! 방명록에 글을 남겨주세요!</p>
+        <Link
+          href="/guest"
+          className="text-blue-500 dark:text-red-400 inline-block underline hover:scale-95"
+        >
+          <p>방명록 바로가기 -&gt;</p>
+        </Link>
+      </div>
     </div>
   );
 }
