@@ -1,6 +1,8 @@
 import React from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useRecoilState } from "recoil";
+import { sidebarState } from "@/store/sidebarState";
 
 const SidebarMenu = ({
   isOpen,
@@ -10,6 +12,12 @@ const SidebarMenu = ({
   onClose: () => void;
 }) => {
   const pathname = usePathname();
+  const [, setSidebarOpen] = useRecoilState(sidebarState);
+
+  const closeSidebar = () => {
+    setSidebarOpen(false);
+    onClose();
+  };
 
   const linkClasses = (path: string) => {
     const baseClasses = "text-black/70 dark:text-white/70";
@@ -19,31 +27,50 @@ const SidebarMenu = ({
   };
 
   return (
-    <div
-      className={`fixed top-0 right-0 h-full w-72 shadow-md rounded-md bg-white dark:bg-black/70 z-40 transform ${
-        isOpen ? "translate-x-0" : "translate-x-full"
-      } transition-transform duration-300 ease-in-out`}
-    >
-      <nav className="flex flex-col font-semibold items-end pr-14 mt-20 space-y-10">
-        <Link href="/posts" className={linkClasses("/posts")} onClick={onClose}>
-          posts
-        </Link>
-        <Link href="/about" className={linkClasses("/about")} onClick={onClose}>
-          about
-        </Link>
-        <Link href="/guest" className={linkClasses("/guest")} onClick={onClose}>
-          guest
-        </Link>
-        <Link
-          href="/portfolio"
-          className={linkClasses("/portfolio")}
-          onClick={onClose}
-        >
-          portfolio
-        </Link>
-        {/* 다크 모드 버튼을 여기에 추가할 수 있습니다. */}
-      </nav>
-    </div>
+    <>
+      {isOpen && (
+        <div
+          className="fixed inset-0 bg-black/50 z-30"
+          onClick={closeSidebar}
+        ></div>
+      )}
+      <div
+        className={`fixed top-0 right-0 h-full w-72 shadow-md rounded-md bg-white dark:bg-black/70 z-40 transform ${
+          isOpen ? "translate-x-0" : "translate-x-full"
+        } transition-transform duration-300 ease-in-out`}
+      >
+        <nav className="flex flex-col font-semibold items-end pr-14 mt-20 space-y-10">
+          <Link
+            href="/posts"
+            className={linkClasses("/posts")}
+            onClick={closeSidebar}
+          >
+            posts
+          </Link>
+          <Link
+            href="/about"
+            className={linkClasses("/about")}
+            onClick={closeSidebar}
+          >
+            about
+          </Link>
+          <Link
+            href="/guest"
+            className={linkClasses("/guest")}
+            onClick={closeSidebar}
+          >
+            guest
+          </Link>
+          <Link
+            href="/portfolio"
+            className={linkClasses("/portfolio")}
+            onClick={closeSidebar}
+          >
+            portfolio
+          </Link>
+        </nav>
+      </div>
+    </>
   );
 };
 

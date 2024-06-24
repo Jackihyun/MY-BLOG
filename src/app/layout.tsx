@@ -29,11 +29,6 @@ export default function RootLayout({
       >
         <RecoilProvider>
           <Header />
-          {/* <button className="fixed top-12 right-5">
-          <p className="w-7 h-7 flex justify-center items-center border border-black rounded-3xl">
-            D
-          </p>
-        </button> */}
 
           <main className="flex-grow w-full pt-[60px] py-[100px] px-4 max-w-[720px]">
             {children}

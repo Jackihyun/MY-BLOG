@@ -1,9 +1,10 @@
 "use client"; // 클라이언트 구성 요소로 선언합니다.
 
 import React, { useEffect } from "react";
-import { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useRecoilState } from "recoil";
+import { sidebarState } from "@/store/sidebarState";
 import DarkModeToggle from "@/components/DarkModeToogle";
 import HamburgerMenu from "@/components/button/HamburgerMenu";
 import SidebarMenu from "@/components/menu/SidebarMenu";
@@ -12,20 +13,16 @@ import { useRouteChange } from "@/utils/hooks/useRouteChange";
 
 export default function Header() {
   const pathname = usePathname();
-  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [isSidebarOpen, setIsSidebarOpen] = useRecoilState(sidebarState);
   const isLoading = useRouteChange();
 
   const toggleSidebar = () => {
     setIsSidebarOpen(!isSidebarOpen);
   };
 
-  const closeSidebar = () => {
-    setIsSidebarOpen(false);
-  };
-
   useEffect(() => {
     setIsSidebarOpen(false);
-  }, [pathname]);
+  }, [pathname, setIsSidebarOpen]);
 
   const linkClasses = (path: string) => {
     return pathname === path
@@ -75,11 +72,11 @@ export default function Header() {
         <HamburgerMenu isChecked={isSidebarOpen} onToggle={toggleSidebar} />
         <DarkModeToggle />
       </div>
-      <SidebarMenu isOpen={isSidebarOpen} onClose={closeSidebar} />
+      <SidebarMenu isOpen={isSidebarOpen} onClose={toggleSidebar} />
       {isSidebarOpen && (
         <div
           className="fixed inset-0 backdrop-blur-sm z-30"
-          onClick={closeSidebar}
+          onClick={toggleSidebar}
         ></div>
       )}
     </header>
