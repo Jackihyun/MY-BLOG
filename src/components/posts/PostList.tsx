@@ -64,14 +64,16 @@ export default function PostsList({
           >
             <Link href={`/posts/${id}`}>
               <div>
-                <p className="text-xl mb-[10px] font-bold">{title}</p>
+                <p className="text-xl font-pretendard-semibold mb-[10px] font-bold">
+                  {title}
+                </p>
                 <div
-                  className="text-gray-700 dark:text-white mb-[10px] ellipsis"
+                  className="text-gray-700 font-pretendard-regular dark:text-white mb-[10px] ellipsis"
                   dangerouslySetInnerHTML={{ __html: contentHtml }}
                 />
               </div>
             </Link>
-            <div className="flex justify-between">
+            <div className="flex justify-between font-pretendard-regular">
               <small className="text-gray-400">{date}</small>
               <small className="text-gray-400">{category}</small>
             </div>

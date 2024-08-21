@@ -39,14 +39,14 @@ export default function Header() {
   return (
     <header className="flex justify-between bg-[#e8e8e8] dark:bg-[#212121] z-100 h-[55px] fixed w-full top-0 items-center px-4 max-w-[720px] place-items-center font-bold">
       {isLoading && <LoadingIndicator />}
-      <div className="grid grid-cols-2">
+      <div className="grid grid-cols-2 font-pretendard-bold">
         <Link href="/" className="relative group w-fit">
-          <span className="text-[16px] md:text-[18px] inline-block">
+          <span className="text-[16px] md:text-[18px] inline-block ">
             Jack&#39;s Blog
-            <span className="absolute left-0 bottom-0 w-0 h-[2px] bg-black dark:bg-white transition-all duration-300 group-hover:w-full"></span>
+            <span className="absolute left-0 bottom-0 w-0 h-[2px] bg-black dark:bg-white md:transition-all md:duration-300 md:group-hover:w-full"></span>
           </span>
         </Link>
-        <nav className="sm:grid sm:grid-cols-4 text-[16px] md:text-[18px] hidden">
+        <nav className="sm:grid sm:grid-cols-4 text-[16px] md:text-[18px] hidden font-pretendard-regualr">
           <Link href="/posts" className={`w-fit ${linkClasses("/posts")}`}>
             posts
             <span className={spanClasses("/posts")}></span>

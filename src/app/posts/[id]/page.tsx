@@ -13,21 +13,21 @@ export default async function PostPage({ params }: PostProps) {
   return (
     <div>
       <div className="border-b border-gray-400 my-[40px]">
-        <p className="text-sm mb-[5px] text-[#989ba0] dark:text-[#8e8f97]">
+        <p className="text-sm mb-[5px] text-[#989ba0] font-pretendard-regular dark:text-[#8e8f97]">
           {postData.category}
         </p>
-        <p className="text-2xl mb-[6px] text-[#of1010] dark:text-[#e6e6e6]">
+        <p className="text-2xl mb-[6px] font-pretendard-semibold text-[#of1010] dark:text-[#e6e6e6]">
           {postData.title}
         </p>
-        <p className="text-sm text-[#989ba0] dark:text-[#8e8f97]">
+        <p className="text-sm text-[#989ba0] font-pretendard-regular dark:text-[#8e8f97]">
           {postData.date}
         </p>
       </div>
       <div
-        className="text-[#of1010] dark:text-[#e6e6e6]"
+        className="text-[#of1010] font-pretendard-regular dark:text-[#e6e6e6]"
         dangerouslySetInnerHTML={{ __html: postData.contentHtml }}
       />
-      <div className="flex flex-col pt-[80px] text-[14px] md:text-[17px] text-center pb-[20px] gap-2">
+      <div className="flex flex-col pt-[80px] text-[14px] md:text-[17px] text-center pb-[20px] gap-2 font-pretendard-semibold">
         <p>재미있게 보셨다면! 방명록에 글을 남겨주세요!</p>
         <Link
           href="/guest"

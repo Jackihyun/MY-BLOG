@@ -10,7 +10,16 @@ module.exports = {
     "./src/**/*.{js,ts,jsx,tsx,mdx}",
   ],
   theme: {
-    extend: {},
+    extend: {
+      fontFamily: {
+        "pretendard-regular": ["Pretendard-Regular", "sans-serif"],
+        "pretendard-semibold": ["Pretendard-Semibold", "sans-serif"],
+        "pretendard-bold": ["Pretendard-Bold", "sans-serif"],
+        "roboto-regular": ["Roboto-Regular", "sans-serif"],
+        "roboto-medium": ["Roboto-Medium", "sans-serif"],
+        "roboto-bold": ["Roboto-Bold", "sans-serif"],
+      },
+    },
   },
   plugins: [require("tailwind-scrollbar-hide")],
 };
