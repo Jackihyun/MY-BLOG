@@ -8,8 +8,9 @@ import * as THREE from "three";
 export default function Avatar() {
   const avatarRef = useRef<THREE.Group>(null);
   const pivotRef = useRef<THREE.Group>(null);
-  const faceModelUrl = `${window.location.origin}/models/face.glb`;
-  const { scene } = useGLTF(faceModelUrl);
+
+  const { scene } = useGLTF("/models/face.glb");
+
   useEffect(() => {
     if (scene) {
       const boundingBox = new THREE.Box3().setFromObject(scene);
@@ -18,19 +19,9 @@ export default function Avatar() {
       scene.scale.set(4, 4, 4);
 
       if (pivotRef.current) {
+        // null 체크 추가
         pivotRef.current.add(scene);
       }
-    }
-  }, [scene]);
-
-  useEffect(() => {
-    if (scene) {
-      scene.traverse((object: any) => {
-        if (object.isMesh) {
-          object.material.color.convertSRGBToLinear();
-          object.material.needsUpdate = true;
-        }
-      });
     }
   }, [scene]);
 
@@ -42,7 +33,7 @@ export default function Avatar() {
         display: "flex",
         justifyContent: "center",
         alignItems: "center",
-        backgroundColor: "#f0f0f0", // 배경색은 간단한 밝은 회색으로 설정
+        backgroundColor: "#f0f0f0",
       }}
     >
       <Canvas
@@ -58,15 +49,15 @@ export default function Avatar() {
           minHeight: "200px",
           maxHeight: "300px",
           aspectRatio: "1/1",
-          borderRadius: "20px", // 테두리를 더 둥글게
-          boxShadow: "0 10px 20px rgba(0, 0, 0, 0.3)", // 부드러운 그림자
-          backgroundColor: "gray-100", // 캔버스 내부는 하얀색으로 설정
+          borderRadius: "20px",
+          boxShadow: "0 10px 20px rgba(0, 0, 0, 0.3)",
+          backgroundColor: "#fff",
         }}
       >
         <ambientLight intensity={1.0} />
         <directionalLight position={[5, 5, 5]} intensity={0.8} />
         <group ref={pivotRef}>
-          <primitive object={scene} ref={avatarRef} />
+          <primitive object={avatarRef.current} />
         </group>
         <OrbitControls
           enablePan={false}
