@@ -8,7 +8,8 @@ import * as THREE from "three";
 export default function Avatar() {
   const avatarRef = useRef<THREE.Group>(null);
   const pivotRef = useRef<THREE.Group>(null);
-  const { scene } = useGLTF("/models/face.glb", true);
+  const faceModelUrl = `${window.location.origin}/models/face.glb`;
+  const { scene } = useGLTF(faceModelUrl);
   useEffect(() => {
     if (scene) {
       const boundingBox = new THREE.Box3().setFromObject(scene);
