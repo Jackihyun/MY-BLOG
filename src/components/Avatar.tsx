@@ -8,8 +8,7 @@ import * as THREE from "three";
 export default function Avatar() {
   const avatarRef = useRef<THREE.Group>(null);
   const pivotRef = useRef<THREE.Group>(null);
-  const { scene } = useGLTF("/models/face.glb"); // public/models/face.glb 경로에서 얼굴 아바타 파일 로드
-
+  const { scene } = useGLTF("/models/face.glb", true);
   useEffect(() => {
     if (scene) {
       const boundingBox = new THREE.Box3().setFromObject(scene);
@@ -42,7 +41,7 @@ export default function Avatar() {
         display: "flex",
         justifyContent: "center",
         alignItems: "center",
-        backgroundColor: "", // 배경색은 간단한 밝은 회색으로 설정
+        backgroundColor: "#f0f0f0", // 배경색은 간단한 밝은 회색으로 설정
       }}
     >
       <Canvas
