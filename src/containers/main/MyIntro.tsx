@@ -1,6 +1,6 @@
 import React from "react";
 import Image from "next/image";
-import Avatar from "@/components/Avatar";
+// import Avatar from "@/components/Avatar";
 
 export default function MyIntro() {
   return (
@@ -10,10 +10,7 @@ export default function MyIntro() {
         <p>Frontend를 좋아하는</p>
         <p>개발자 Jack입니다.</p>
       </div>
-      <div className="grid gird-rows-2 md:grid-cols-2 items-center">
-        <div className="flex justify-center items-center">
-          <Avatar />
-        </div>
+      <div className="">
         <div className="flex flex-col p-2 md:ml-3">
           <p className="font-bold text-[14px] md:text-[18px] mt-2 md:mt-4">
             새로운 경험을 좋아하고 프론트엔드 개발자를
