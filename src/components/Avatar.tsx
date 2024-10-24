@@ -19,7 +19,6 @@ export default function Avatar() {
       scene.scale.set(4, 4, 4);
 
       if (pivotRef.current) {
-        // null 체크 추가
         pivotRef.current.add(scene);
       }
     }
@@ -57,7 +56,8 @@ export default function Avatar() {
         <ambientLight intensity={1.0} />
         <directionalLight position={[5, 5, 5]} intensity={0.8} />
         <group ref={pivotRef}>
-          <primitive object={avatarRef.current} />
+          {/* avatarRef.current가 null이 아닐 때만 primitive를 렌더링 */}
+          {avatarRef.current && <primitive object={avatarRef.current} />}
         </group>
         <OrbitControls
           enablePan={false}
