@@ -47,7 +47,7 @@ export default function Avatar() {
     >
       <Canvas
         onCreated={(state) => {
-          state.gl.outputEncoding = THREE.sRGBEncoding;
+          state.gl.outputColorSpace = "srgb-linear";
         }}
         camera={{ position: [0, 0, 3], fov: 45 }}
         style={{
