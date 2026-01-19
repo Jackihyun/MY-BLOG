@@ -1,0 +1,13 @@
+.gradle
+build
+*.db
+*.sqlite
+*.sqlite3
+.idea
+*.iml
+*.ipr
+*.iws
+.env
+.env.*
+local.env
+local.env.*

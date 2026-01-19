@@ -1,0 +1,21 @@
+version: '3.8'
+
+services:
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    ports:
+      - "8080:8080"
+    volumes:
+      - backend-data:/app/data
+    environment:
+      - SPRING_PROFILES_ACTIVE=prod
+      - JWT_SECRET=your-super-secret-jwt-key-minimum-32-characters-long
+      - ADMIN_PASSWORD=admin123
+      - FRONTEND_URL=http://localhost:3000
+    restart: unless-stopped
+
+volumes:
+  backend-data:
+    driver: local
