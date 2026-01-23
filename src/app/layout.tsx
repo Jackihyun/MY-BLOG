@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { ReactNode } from "react";
-import RecoilProvider from "./recoil-provider";
+import Providers from "./providers";
 import "@/styles/globals.css";
 import { Inter } from "next/font/google";
 import Header from "@/components/Header/Header";
@@ -87,14 +87,14 @@ export default function RootLayout({
       <body
         className={`${inter.className} place-items-center flex flex-col min-h-screen`}
       >
-        <RecoilProvider>
+        <Providers>
           <Header />
 
           <main className="flex-grow w-full pt-[60px] py-[100px] px-4 max-w-[720px]">
             {children}
           </main>
           <Footer />
-        </RecoilProvider>
+        </Providers>
       </body>
     </html>
   );

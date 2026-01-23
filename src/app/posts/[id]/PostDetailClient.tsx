@@ -1,12 +1,46 @@
 "use client";
 
+import dynamic from "next/dynamic";
 import { PostData } from "@/types";
 import AdminButtons from "@/components/admin/AdminButtons";
 import ReadingProgress from "@/components/post/ReadingProgress";
 import ReadingTime from "@/components/post/ReadingTime";
-import TableOfContents from "@/components/post/TableOfContents";
-import ReactionBar from "@/components/reactions/ReactionBar";
-import CommentList from "@/components/comments/CommentList";
+import { CommentSkeletonList } from "@/components/skeletons/CommentSkeleton";
+import { Skeleton } from "@/components/ui/Skeleton";
+
+const TableOfContents = dynamic(
+  () => import("@/components/post/TableOfContents"),
+  { ssr: false }
+);
+
+const ReactionBar = dynamic(
+  () => import("@/components/reactions/ReactionBar"),
+  {
+    loading: () => (
+      <div className="py-4 border-t border-b border-gray-200 dark:border-gray-700">
+        <div className="flex gap-2">
+          {Array.from({ length: 6 }).map((_, i) => (
+            <Skeleton key={i} className="w-16 h-8 rounded-full" />
+          ))}
+        </div>
+      </div>
+    ),
+  }
+);
+
+const CommentList = dynamic(
+  () => import("@/components/comments/CommentList"),
+  {
+    loading: () => (
+      <div className="mt-8 pt-8 border-t border-gray-200 dark:border-gray-700">
+        <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-gray-100">
+          댓글
+        </h2>
+        <CommentSkeletonList count={3} />
+      </div>
+    ),
+  }
+);
 
 interface PostDetailClientProps {
   postData: PostData;

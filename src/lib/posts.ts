@@ -5,6 +5,8 @@ import { remark } from "remark";
 import html from "remark-html";
 import { PostData } from "@/types";
 
+export type { PostData };
+
 const postsDirectory = path.join(process.cwd(), "src/posts");
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080/api";
 const USE_API = process.env.NEXT_PUBLIC_USE_API === "true";
@@ -176,7 +178,7 @@ export async function getCategories(): Promise<string[]> {
   }
 
   const allPosts = await getSortedPostsDataFromFile();
-  const categories = [...new Set(allPosts.map((post) => post.category))];
+  const categories = Array.from(new Set(allPosts.map((post) => post.category)));
   return categories.sort();
 }
 

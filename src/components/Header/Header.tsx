@@ -1,6 +1,6 @@
-"use client"; // 클라이언트 구성 요소로 선언합니다.
+"use client";
 
-import React, { useEffect } from "react";
+import React, { useEffect, useCallback } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useRecoilState } from "recoil";
@@ -16,25 +16,31 @@ export default function Header() {
   const [isSidebarOpen, setIsSidebarOpen] = useRecoilState(sidebarState);
   const isLoading = useRouteChange();
 
-  const toggleSidebar = () => {
-    setIsSidebarOpen(!isSidebarOpen);
-  };
+  const toggleSidebar = useCallback(() => {
+    setIsSidebarOpen((prev) => !prev);
+  }, [setIsSidebarOpen]);
 
   useEffect(() => {
     setIsSidebarOpen(false);
   }, [pathname, setIsSidebarOpen]);
 
-  const linkClasses = (path: string) => {
-    return pathname === path
-      ? "relative group inline-block text-black dark:text-white border-b-0 border-black dark:border-white"
-      : "relative group inline-block text-black dark:text-white";
-  };
+  const linkClasses = useCallback(
+    (path: string) => {
+      return pathname === path
+        ? "relative group inline-block text-black dark:text-white border-b-0 border-black dark:border-white"
+        : "relative group inline-block text-black dark:text-white";
+    },
+    [pathname]
+  );
 
-  const spanClasses = (path: string) => {
-    return pathname === path
-      ? "absolute left-0 bottom-0 w-full h-[2px] bg-black dark:bg-white transition-all duration-300"
-      : "absolute left-0 bottom-0 w-0 h-[2px] bg-black dark:bg-white transition-all duration-300 group-hover:w-full";
-  };
+  const spanClasses = useCallback(
+    (path: string) => {
+      return pathname === path
+        ? "absolute left-0 bottom-0 w-full h-[2px] bg-black dark:bg-white transition-all duration-300"
+        : "absolute left-0 bottom-0 w-0 h-[2px] bg-black dark:bg-white transition-all duration-300 group-hover:w-full";
+    },
+    [pathname]
+  );
 
   return (
     <header className="flex justify-between bg-[#e8e8e8] dark:bg-[#212121] z-100 h-[55px] fixed w-full top-0 items-center px-4 max-w-[720px] place-items-center font-bold">

@@ -2,14 +2,28 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import dynamic from "next/dynamic";
+import { toast } from "sonner";
 import { useAuth } from "@/hooks/useAuth";
 import { createPost, updatePost, fetchPostAdmin } from "@/lib/api";
-import { remark } from "remark";
-import html from "remark-html";
+
+const TiptapEditor = dynamic(
+  () => import("@/components/editor/TiptapEditor"),
+  { ssr: false, loading: () => <EditorSkeleton /> }
+);
 
 interface PostEditorProps {
   slug?: string;
   mode: "create" | "edit";
+}
+
+function EditorSkeleton() {
+  return (
+    <div className="border border-gray-300 dark:border-gray-600 rounded-xl overflow-hidden animate-pulse">
+      <div className="h-12 bg-gray-100 dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700" />
+      <div className="h-[400px] bg-gray-50 dark:bg-gray-900" />
+    </div>
+  );
 }
 
 export default function PostEditor({ slug, mode }: PostEditorProps) {
@@ -24,8 +38,7 @@ export default function PostEditor({ slug, mode }: PostEditorProps) {
   const [publish, setPublish] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
-  const [preview, setPreview] = useState("");
-  const [showPreview, setShowPreview] = useState(false);
+  const [editorMode, setEditorMode] = useState<"wysiwyg" | "markdown">("wysiwyg");
 
   useEffect(() => {
     if (!isAuthenticated) {
@@ -45,35 +58,23 @@ export default function PostEditor({ slug, mode }: PostEditorProps) {
         })
         .catch((error) => {
           console.error("Failed to load post:", error);
-          alert("글을 불러오는데 실패했습니다.");
+          toast.error("글을 불러오는데 실패했습니다.");
           router.push("/posts");
         })
         .finally(() => setIsLoading(false));
     }
   }, [isAuthenticated, mode, slug, token, router]);
 
-  useEffect(() => {
-    const updatePreview = async () => {
-      if (content) {
-        const result = await remark().use(html).process(content);
-        setPreview(result.toString());
-      } else {
-        setPreview("");
-      }
-    };
-    updatePreview();
-  }, [content]);
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     if (!title.trim() || !content.trim() || !category.trim()) {
-      alert("제목, 내용, 카테고리는 필수입니다.");
+      toast.error("제목, 내용, 카테고리는 필수입니다.");
       return;
     }
 
     if (!token) {
-      alert("로그인이 필요합니다.");
+      toast.error("로그인이 필요합니다.");
       return;
     }
 
@@ -92,7 +93,7 @@ export default function PostEditor({ slug, mode }: PostEditorProps) {
           },
           token
         );
-        alert("글이 작성되었습니다.");
+        toast.success("글이 작성되었습니다.");
         router.push(`/posts/${newPost.slug}`);
       } else if (slug) {
         await updatePost(
@@ -106,12 +107,12 @@ export default function PostEditor({ slug, mode }: PostEditorProps) {
           },
           token
         );
-        alert("글이 수정되었습니다.");
+        toast.success("글이 수정되었습니다.");
         router.push(`/posts/${slug}`);
       }
     } catch (error) {
       console.error("Failed to save post:", error);
-      alert("저장에 실패했습니다.");
+      toast.error("저장에 실패했습니다.");
     } finally {
       setIsSaving(false);
     }
@@ -123,145 +124,203 @@ export default function PostEditor({ slug, mode }: PostEditorProps) {
 
   if (isLoading) {
     return (
-      <div className="flex justify-center items-center min-h-[400px]">
-        <p className="text-gray-500">로딩 중...</p>
+      <div className="flex flex-col items-center justify-center min-h-[400px] gap-4">
+        <div className="w-8 h-8 border-4 border-blue-500 border-t-transparent rounded-full animate-spin" />
+        <p className="text-gray-500 dark:text-gray-400">글을 불러오는 중...</p>
       </div>
     );
   }
 
   return (
-    <div className="max-w-4xl mx-auto">
-      <h1 className="text-2xl font-bold mb-6 text-gray-900 dark:text-gray-100">
-        {mode === "create" ? "새 글 작성" : "글 수정"}
-      </h1>
+    <div className="max-w-4xl mx-auto pb-20">
+      {/* 헤더 */}
+      <div className="flex items-center justify-between mb-8">
+        <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">
+          {mode === "create" ? "새 글 작성" : "글 수정"}
+        </h1>
+        <div className="flex items-center gap-2">
+          <span className="text-sm text-gray-500">에디터:</span>
+          <div className="flex rounded-lg bg-gray-100 dark:bg-gray-800 p-1">
+            <button
+              type="button"
+              onClick={() => setEditorMode("wysiwyg")}
+              className={`px-3 py-1.5 text-sm font-medium rounded-md transition-all ${
+                editorMode === "wysiwyg"
+                  ? "bg-white dark:bg-gray-700 text-gray-900 dark:text-white shadow-sm"
+                  : "text-gray-500 dark:text-gray-400"
+              }`}
+            >
+              리치 텍스트
+            </button>
+            <button
+              type="button"
+              onClick={() => setEditorMode("markdown")}
+              className={`px-3 py-1.5 text-sm font-medium rounded-md transition-all ${
+                editorMode === "markdown"
+                  ? "bg-white dark:bg-gray-700 text-gray-900 dark:text-white shadow-sm"
+                  : "text-gray-500 dark:text-gray-400"
+              }`}
+            >
+              Markdown
+            </button>
+          </div>
+        </div>
+      </div>
 
-      <form onSubmit={handleSubmit} className="space-y-4">
+      <form onSubmit={handleSubmit} className="space-y-6">
+        {/* 제목 */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-            제목 *
-          </label>
           <input
             type="text"
             value={title}
             onChange={(e) => setTitle(e.target.value)}
-            className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md
-                       bg-white dark:bg-[#2d2d2d] text-gray-900 dark:text-gray-100
-                       focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full px-0 py-3 text-3xl font-bold border-0 border-b-2 border-transparent
+                       bg-transparent text-gray-900 dark:text-gray-100
+                       placeholder-gray-300 dark:placeholder-gray-600
+                       focus:outline-none focus:border-blue-500
+                       transition-colors"
             placeholder="제목을 입력하세요"
           />
         </div>
 
-        {mode === "create" && (
+        {/* 메타 정보 */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          {mode === "create" && (
+            <div>
+              <label className="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1.5 uppercase tracking-wider">
+                Slug (URL)
+              </label>
+              <input
+                type="text"
+                value={customSlug}
+                onChange={(e) => setCustomSlug(e.target.value)}
+                className="w-full px-3 py-2.5 text-sm border border-gray-200 dark:border-gray-700 rounded-xl
+                           bg-white dark:bg-[#1e1e1e] text-gray-900 dark:text-gray-100
+                           focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent
+                           transition-all"
+                placeholder="자동 생성"
+              />
+            </div>
+          )}
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-              Slug (URL, 비워두면 자동 생성)
+            <label className="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1.5 uppercase tracking-wider">
+              카테고리 *
             </label>
             <input
               type="text"
-              value={customSlug}
-              onChange={(e) => setCustomSlug(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md
-                         bg-white dark:bg-[#2d2d2d] text-gray-900 dark:text-gray-100
-                         focus:outline-none focus:ring-2 focus:ring-blue-500"
-              placeholder="my-awesome-post"
+              value={category}
+              onChange={(e) => setCategory(e.target.value)}
+              className="w-full px-3 py-2.5 text-sm border border-gray-200 dark:border-gray-700 rounded-xl
+                         bg-white dark:bg-[#1e1e1e] text-gray-900 dark:text-gray-100
+                         focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent
+                         transition-all"
+              placeholder="TIL, 개발, 회고 등"
             />
           </div>
-        )}
-
-        <div>
-          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-            카테고리 *
-          </label>
-          <input
-            type="text"
-            value={category}
-            onChange={(e) => setCategory(e.target.value)}
-            className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md
-                       bg-white dark:bg-[#2d2d2d] text-gray-900 dark:text-gray-100
-                       focus:outline-none focus:ring-2 focus:ring-blue-500"
-            placeholder="TIL, 개발, 회고 등"
-          />
-        </div>
-
-        <div>
-          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-            요약 (선택)
-          </label>
-          <input
-            type="text"
-            value={excerpt}
-            onChange={(e) => setExcerpt(e.target.value)}
-            className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md
-                       bg-white dark:bg-[#2d2d2d] text-gray-900 dark:text-gray-100
-                       focus:outline-none focus:ring-2 focus:ring-blue-500"
-            placeholder="글 요약 (목록에 표시됨)"
-          />
-        </div>
-
-        <div>
-          <div className="flex justify-between items-center mb-1">
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-              내용 (Markdown) *
+          <div className={mode === "create" ? "" : "md:col-span-2"}>
+            <label className="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1.5 uppercase tracking-wider">
+              요약 (선택)
             </label>
-            <button
-              type="button"
-              onClick={() => setShowPreview(!showPreview)}
-              className="text-sm text-blue-500 hover:text-blue-600"
-            >
-              {showPreview ? "편집" : "미리보기"}
-            </button>
+            <input
+              type="text"
+              value={excerpt}
+              onChange={(e) => setExcerpt(e.target.value)}
+              className="w-full px-3 py-2.5 text-sm border border-gray-200 dark:border-gray-700 rounded-xl
+                         bg-white dark:bg-[#1e1e1e] text-gray-900 dark:text-gray-100
+                         focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent
+                         transition-all"
+              placeholder="글 요약 (목록에 표시됨)"
+            />
           </div>
+        </div>
 
-          {showPreview ? (
-            <div
-              className="w-full min-h-[400px] p-4 border border-gray-300 dark:border-gray-600 rounded-md
-                         bg-white dark:bg-[#2d2d2d] text-gray-900 dark:text-gray-100
-                         prose dark:prose-invert max-w-none overflow-auto"
-              dangerouslySetInnerHTML={{ __html: preview }}
+        {/* 에디터 */}
+        <div>
+          <label className="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-2 uppercase tracking-wider">
+            내용 *
+          </label>
+          {editorMode === "wysiwyg" ? (
+            <TiptapEditor
+              content={content}
+              onChange={setContent}
+              placeholder="이야기를 시작해보세요..."
             />
           ) : (
             <textarea
               value={content}
               onChange={(e) => setContent(e.target.value)}
               rows={20}
-              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md
-                         bg-white dark:bg-[#2d2d2d] text-gray-900 dark:text-gray-100
-                         focus:outline-none focus:ring-2 focus:ring-blue-500 font-mono text-sm"
+              className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-xl
+                         bg-white dark:bg-[#1e1e1e] text-gray-900 dark:text-gray-100
+                         focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent
+                         font-mono text-sm leading-relaxed resize-none
+                         transition-all"
               placeholder="마크다운으로 내용을 작성하세요..."
             />
           )}
         </div>
 
-        <div className="flex items-center gap-2">
-          <input
-            type="checkbox"
-            id="publish"
-            checked={publish}
-            onChange={(e) => setPublish(e.target.checked)}
-            className="w-4 h-4 text-blue-500 rounded focus:ring-blue-500"
-          />
-          <label htmlFor="publish" className="text-sm text-gray-700 dark:text-gray-300">
-            바로 발행하기
-          </label>
-        </div>
+        {/* 하단 액션 바 */}
+        <div className="fixed bottom-0 left-0 right-0 bg-white/80 dark:bg-[#1a1a1a]/80 backdrop-blur-lg border-t border-gray-200 dark:border-gray-800">
+          <div className="max-w-4xl mx-auto px-4 py-4 flex items-center justify-between">
+            <label className="flex items-center gap-3 cursor-pointer group">
+              <div className="relative">
+                <input
+                  type="checkbox"
+                  checked={publish}
+                  onChange={(e) => setPublish(e.target.checked)}
+                  className="sr-only peer"
+                />
+                <div className="w-11 h-6 bg-gray-200 dark:bg-gray-700 rounded-full
+                                peer-checked:bg-green-500
+                                transition-colors" />
+                <div className="absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow-sm
+                                peer-checked:translate-x-5
+                                transition-transform" />
+              </div>
+              <span className="text-sm text-gray-600 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-gray-200 transition-colors">
+                {publish ? "발행됨" : "발행하기"}
+              </span>
+            </label>
 
-        <div className="flex gap-2 pt-4">
-          <button
-            type="button"
-            onClick={() => router.back()}
-            className="px-4 py-2 text-gray-600 dark:text-gray-400 border border-gray-300 dark:border-gray-600
-                       rounded-md hover:bg-gray-100 dark:hover:bg-gray-700"
-          >
-            취소
-          </button>
-          <button
-            type="submit"
-            disabled={isSaving}
-            className="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600
-                       disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            {isSaving ? "저장 중..." : mode === "create" ? "작성하기" : "수정하기"}
-          </button>
+            <div className="flex gap-3">
+              <button
+                type="button"
+                onClick={() => router.back()}
+                className="px-5 py-2.5 text-sm font-medium text-gray-600 dark:text-gray-400
+                           border border-gray-300 dark:border-gray-600 rounded-xl
+                           hover:bg-gray-100 dark:hover:bg-gray-800
+                           transition-all"
+              >
+                취소
+              </button>
+              <button
+                type="submit"
+                disabled={isSaving}
+                className="px-6 py-2.5 text-sm font-medium text-white rounded-xl
+                           bg-gradient-to-r from-blue-500 to-blue-600
+                           hover:from-blue-600 hover:to-blue-700
+                           disabled:from-gray-400 disabled:to-gray-500
+                           disabled:cursor-not-allowed
+                           shadow-lg shadow-blue-500/25 hover:shadow-blue-500/40
+                           transition-all duration-200"
+              >
+                {isSaving ? (
+                  <span className="flex items-center gap-2">
+                    <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                    </svg>
+                    저장 중...
+                  </span>
+                ) : mode === "create" ? (
+                  "작성하기"
+                ) : (
+                  "수정하기"
+                )}
+              </button>
+            </div>
+          </div>
         </div>
       </form>
     </div>

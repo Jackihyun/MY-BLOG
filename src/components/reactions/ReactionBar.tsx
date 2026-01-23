@@ -51,6 +51,7 @@ export default function ReactionBar({ slug }: ReactionBarProps) {
               onClick={() => handleReaction(emoji)}
               title={label}
               className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm transition-all
+                active:scale-95
                 ${
                   isActive
                     ? "bg-blue-100 dark:bg-blue-900/30 border-2 border-blue-500"
@@ -78,6 +79,7 @@ export default function ReactionBar({ slug }: ReactionBarProps) {
         <button
           onClick={handleLike}
           className={`flex items-center gap-1.5 px-4 py-1.5 rounded-full text-sm transition-all
+            active:scale-95
             ${
               liked
                 ? "bg-red-100 dark:bg-red-900/30 border-2 border-red-500 text-red-600 dark:text-red-400"

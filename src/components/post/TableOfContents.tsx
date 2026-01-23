@@ -70,11 +70,13 @@ export default function TableOfContents({ contentHtml }: TableOfContentsProps) {
   if (items.length === 0) return null;
 
   return (
-    <nav className="hidden xl:block fixed right-[calc(50%-500px)] top-[120px] w-[200px] max-h-[calc(100vh-200px)] overflow-y-auto">
-      <h3 className="text-sm font-semibold text-gray-900 dark:text-gray-100 mb-3">
+    <nav className="hidden xl:block fixed left-[calc(50%+380px)] top-[120px] w-[220px] max-h-[calc(100vh-200px)] overflow-y-auto
+                    p-4 rounded-lg bg-gray-50/80 dark:bg-[#1a1a1a]/80 backdrop-blur-sm
+                    border border-gray-200 dark:border-gray-800 shadow-sm">
+      <h3 className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-3">
         목차
       </h3>
-      <ul className="space-y-2 text-sm">
+      <ul className="space-y-1.5 text-sm">
         {items.map((item) => (
           <li
             key={item.id}
@@ -82,10 +84,10 @@ export default function TableOfContents({ contentHtml }: TableOfContentsProps) {
           >
             <button
               onClick={() => handleClick(item.id)}
-              className={`text-left w-full truncate transition-colors ${
+              className={`text-left w-full truncate transition-all duration-200 py-1 px-2 rounded-md ${
                 activeId === item.id
-                  ? "text-blue-500 font-medium"
-                  : "text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200"
+                  ? "text-blue-600 dark:text-blue-400 font-medium bg-blue-50 dark:bg-blue-900/30"
+                  : "text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800"
               }`}
             >
               {item.text}

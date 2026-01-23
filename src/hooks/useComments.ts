@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useCallback } from "react";
+import { toast } from "sonner";
 import {
   fetchComments,
   createComment,
@@ -33,9 +34,11 @@ export function useComments(slug: string) {
       try {
         await createComment(slug, data);
         await loadComments();
+        toast.success("댓글이 작성되었습니다.");
         return true;
       } catch (err) {
         setError("댓글 작성에 실패했습니다.");
+        toast.error("댓글 작성에 실패했습니다.");
         console.error(err);
         return false;
       }
@@ -48,9 +51,11 @@ export function useComments(slug: string) {
       try {
         await createReply(parentId, data);
         await loadComments();
+        toast.success("답글이 작성되었습니다.");
         return true;
       } catch (err) {
         setError("답글 작성에 실패했습니다.");
+        toast.error("답글 작성에 실패했습니다.");
         console.error(err);
         return false;
       }
@@ -63,9 +68,11 @@ export function useComments(slug: string) {
       try {
         await deleteComment(commentId, password);
         await loadComments();
+        toast.success("댓글이 삭제되었습니다.");
         return true;
       } catch (err) {
         setError("댓글 삭제에 실패했습니다. 비밀번호를 확인해주세요.");
+        toast.error("댓글 삭제에 실패했습니다. 비밀번호를 확인해주세요.");
         console.error(err);
         return false;
       }
