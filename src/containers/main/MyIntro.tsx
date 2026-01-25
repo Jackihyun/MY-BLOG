@@ -54,7 +54,7 @@ export default function MyIntro() {
         transition={{ duration: 0.5, delay: 0.2 }}
         className="space-y-6"
       >
-        <h2 className="text-xl font-bold text-zinc-900 dark:text-zinc-50 uppercase tracking-widest text-sm">
+        <h2 className=" font-bold text-zinc-900 dark:text-zinc-50 uppercase tracking-widest text-sm">
           Skills
         </h2>
         <div className="flex flex-wrap gap-2">

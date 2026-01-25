@@ -67,6 +67,11 @@ export const metadata: Metadata = {
   verification: {
     // google: "your-google-verification-code",
   },
+  icons: {
+    icon: "/favicon.svg",
+    shortcut: "/favicon.svg",
+    apple: "/favicon.svg",
+  },
 };
 
 export default function RootLayout({
@@ -90,7 +95,7 @@ export default function RootLayout({
                 <Providers>
                   <Header />
 
-                  <main className="flex-grow w-full pt-32 pb-20 px-4 max-w-6xl">
+                  <main className="flex-grow w-full pt-32 pb-20 px-4 max-w-5xl">
                     {children}
                   </main>
                   <Footer />

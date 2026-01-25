@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import dynamic from "next/dynamic";
 import { toast } from "sonner";
 import { useAuth } from "@/hooks/useAuth";
-import { createPost, updatePost, fetchPostAdmin } from "@/lib/api";
+import { createPost, updatePost, fetchPostAdmin, fetchCategories } from "@/lib/api";
 
 const TiptapEditor = dynamic(
   () => import("@/components/editor/TiptapEditor"),
@@ -39,12 +39,18 @@ export default function PostEditor({ slug, mode }: PostEditorProps) {
   const [isLoading, setIsLoading] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [editorMode, setEditorMode] = useState<"wysiwyg" | "markdown">("wysiwyg");
+  const [existingCategories, setExistingCategories] = useState<string[]>([]);
 
   useEffect(() => {
     if (!isAuthenticated) {
       router.push("/");
       return;
     }
+
+    // 기존 카테고리 목록 가져오기
+    fetchCategories()
+      .then(setExistingCategories)
+      .catch(console.error);
 
     if (mode === "edit" && slug && token) {
       setIsLoading(true);
@@ -206,16 +212,37 @@ export default function PostEditor({ slug, mode }: PostEditorProps) {
             <label className="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1.5 uppercase tracking-wider">
               카테고리 *
             </label>
-            <input
-              type="text"
-              value={category}
-              onChange={(e) => setCategory(e.target.value)}
-              className="w-full px-3 py-2.5 text-sm border border-gray-200 dark:border-gray-700 rounded-xl
-                         bg-white dark:bg-[#1e1e1e] text-gray-900 dark:text-gray-100
-                         focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent
-                         transition-all"
-              placeholder="TIL, 개발, 회고 등"
-            />
+            <div className="flex gap-2">
+              <input
+                type="text"
+                value={category}
+                onChange={(e) => setCategory(e.target.value)}
+                className="flex-grow px-3 py-2.5 text-sm border border-gray-200 dark:border-gray-700 rounded-xl
+                           bg-white dark:bg-[#1e1e1e] text-gray-900 dark:text-gray-100
+                           focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent
+                           transition-all"
+                placeholder="TIL, 개발, 회고 등"
+              />
+              {existingCategories.length > 0 && (
+                <select
+                  value={existingCategories.includes(category) ? category : ""}
+                  onChange={(e) => {
+                    if (e.target.value) setCategory(e.target.value);
+                  }}
+                  className="w-32 px-2 py-2.5 text-sm border border-gray-200 dark:border-gray-700 rounded-xl
+                             bg-white dark:bg-[#1e1e1e] text-gray-900 dark:text-gray-100
+                             focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent
+                             transition-all cursor-pointer"
+                >
+                  <option value="">선택 안함</option>
+                  {existingCategories.map((cat) => (
+                    <option key={cat} value={cat}>
+                      {cat}
+                    </option>
+                  ))}
+                </select>
+              )}
+            </div>
           </div>
           <div className={mode === "create" ? "" : "md:col-span-2"}>
             <label className="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1.5 uppercase tracking-wider">

@@ -89,7 +89,7 @@ export default function HeroSection() {
             transition={{ delay: 0.4 }}
             className="text-lg md:text-xl text-zinc-600 dark:text-zinc-400 max-w-2xl mx-auto leading-relaxed"
           >
-            새로운 기술을 배우고 공유하는 것을 좋아하는 개발자입니다.
+            프론트엔드를 좋아하며 백엔드도 공부하며 AI 활용에 관심이 많은 개발자입니다.
             <br className="hidden md:block" />
             새로운 기술을 배우고 공유하는 것을 좋아합니다.
           </motion.p>

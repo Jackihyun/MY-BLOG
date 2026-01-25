@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { toast } from "sonner";
 import { useSession } from "next-auth/react";
+import Image from "next/image";
 import { CommentCreateRequest } from "@/types";
 import AuthModal from "@/components/modal/AuthModal";
 
@@ -106,11 +107,14 @@ export default function CommentForm({
         <div className="flex justify-between items-center px-4 py-3 bg-zinc-50 dark:bg-zinc-900/50 rounded-b-xl border-t border-zinc-100 dark:border-zinc-800">
           <div className="flex items-center gap-2">
             {session?.user?.image && (
-              <img 
-                src={session.user.image} 
-                alt={session.user.name || ""} 
-                className="w-5 h-5 rounded-full"
-              />
+              <div className="relative w-5 h-5 flex-shrink-0">
+                <Image 
+                  src={session.user.image} 
+                  alt={session.user.name || ""} 
+                  fill
+                  className="rounded-full object-cover"
+                />
+              </div>
             )}
             <span className="text-xs text-zinc-400">
               {session ? `${session.user?.name}님으로 작성 중` : "로그인이 필요합니다"}

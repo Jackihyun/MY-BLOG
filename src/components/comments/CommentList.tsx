@@ -67,24 +67,10 @@ export default function CommentList({ slug }: CommentListProps) {
         </div>
       )}
 
-      {/* 댓글 작성 폼 - 일반 댓글일 때만 위에 표시 */}
-      {!isGuestbook && (
-        <div className="mb-12 bg-zinc-50/50 dark:bg-zinc-900/30 p-6 rounded-3xl border border-zinc-100 dark:border-zinc-800">
-          <h3 className="text-sm font-black text-zinc-900 dark:text-zinc-50 mb-4 uppercase tracking-wider">
-            Leave a comment
-          </h3>
-          <CommentForm
-            onSubmit={addComment}
-            placeholder="이 글에 대한 생각을 공유해주세요..."
-            buttonText="댓글 작성"
-          />
-        </div>
-      )}
-
       {/* 댓글/방명록 목록 */}
-      <div className={isGuestbook ? "mb-8" : "mb-12"}>
+      <div className={isGuestbook ? "mb-12" : "mb-12"}>
         {comments.length === 0 ? (
-          <div className="py-12 px-6 text-center border-2 border-dashed border-zinc-100 dark:border-zinc-800 rounded-3xl">
+          <div className="py-16 px-6 text-center border-2 border-dashed border-zinc-100 dark:border-zinc-800 rounded-3xl mb-8">
             <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-zinc-50 dark:bg-zinc-900 mb-4">
               <svg className="w-6 h-6 text-zinc-300 dark:text-zinc-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
@@ -95,7 +81,7 @@ export default function CommentList({ slug }: CommentListProps) {
             </p>
           </div>
         ) : (
-          <div className={isGuestbook ? "grid gap-4 sm:grid-cols-2" : "space-y-4"}>
+          <div className={isGuestbook ? "grid gap-4 sm:grid-cols-2 mb-12" : "space-y-4 mb-12"}>
             {comments.map((comment) => (
               <CommentItem
                 key={comment.id}
@@ -109,19 +95,17 @@ export default function CommentList({ slug }: CommentListProps) {
         )}
       </div>
 
-      {/* 방명록 작성 폼 - 방명록일 때만 아래에 표시 */}
-      {isGuestbook && (
-        <div className="bg-zinc-50/50 dark:bg-zinc-900/30 p-6 rounded-3xl border border-zinc-100 dark:border-zinc-800">
-          <h3 className="text-sm font-black text-zinc-900 dark:text-zinc-50 mb-4 uppercase tracking-wider">
-            Leave a message
-          </h3>
-          <CommentForm
-            onSubmit={addComment}
-            placeholder="따뜻한 한마디를 남겨주세요..."
-            buttonText="방명록 남기기"
-          />
-        </div>
-      )}
+      {/* 댓글/방명록 작성 폼 (항상 아래에 위치) */}
+      <div className="bg-zinc-50/50 dark:bg-zinc-900/30 p-6 md:p-8 rounded-3xl border border-zinc-100 dark:border-zinc-800">
+        <h3 className="text-sm font-black text-zinc-900 dark:text-zinc-50 mb-4 uppercase tracking-wider">
+          {isGuestbook ? "Leave a message" : "Leave a comment"}
+        </h3>
+        <CommentForm
+          onSubmit={addComment}
+          placeholder={isGuestbook ? "따뜻한 한마디를 남겨주세요..." : "이 글에 대한 생각을 공유해주세요..."}
+          buttonText={isGuestbook ? "방명록 남기기" : "댓글 작성"}
+        />
+      </div>
     </section>
   );
 }

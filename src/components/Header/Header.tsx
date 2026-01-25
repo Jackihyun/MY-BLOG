@@ -26,7 +26,7 @@ export default function Header() {
 
   return (
     <header className="fixed top-0 left-0 right-0 z-50 flex justify-center pt-4">
-      <div className="w-full max-w-6xl h-[56px] px-6 flex items-center justify-between bg-white/70 dark:bg-black/70 backdrop-blur-xl border border-zinc-200/50 dark:border-zinc-800/50 rounded-2xl shadow-sm mx-4">
+      <div className="w-full max-w-5xl h-[56px] px-6 flex items-center justify-between bg-white/70 dark:bg-black/70 backdrop-blur-xl border border-zinc-200/50 dark:border-zinc-800/50 rounded-2xl shadow-sm mx-4">
         {isLoading && <LoadingIndicator />}
         {/* Logo */}
         <Link href="/" className="group flex items-center gap-2">
