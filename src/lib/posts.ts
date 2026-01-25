@@ -122,21 +122,34 @@ interface ApiPostResponse {
 }
 
 export async function getSortedPostsData(): Promise<PostData[]> {
+  let allPosts: PostData[] = [];
+
+  // 1. API에서 게시글 가져오기
   if (USE_API) {
     const apiData = await fetchFromApi<ApiPageResponse<ApiPostResponse>>(
       "/posts?size=100"
     );
-    if (apiData && apiData.content) {
-      return apiData.content.map(apiPostToPostData);
+    if (apiData && apiData.content && apiData.content.length > 0) {
+      allPosts = [...apiData.content.map(apiPostToPostData)];
     }
   }
 
+  // 2. 파일 시스템에서 게시글 가져오기 (API 데이터가 없거나 보조용)
   try {
-    return await getSortedPostsDataFromFile();
+    const filePosts = await getSortedPostsDataFromFile();
+    // 중복 제거 (slug 기준)
+    const existingSlugs = new Set(allPosts.map((p) => p.slug));
+    for (const post of filePosts) {
+      if (!existingSlugs.has(post.slug)) {
+        allPosts.push(post);
+      }
+    }
   } catch (error) {
     console.error("Failed to read posts from file system:", error);
-    return [];
   }
+
+  // 3. 날짜 기준 정렬
+  return allPosts.sort((a, b) => (a.date < b.date ? 1 : -1));
 }
 
 export function getAllPostIds(): { id: string }[] {
@@ -148,6 +161,7 @@ interface ApiPostDetailResponse extends ApiPostResponse {
 }
 
 export async function getPostData(id: string): Promise<PostData> {
+  // 1. API에서 먼저 시도
   if (USE_API) {
     const apiPost = await fetchFromApi<ApiPostDetailResponse>(`/posts/${id}`);
     if (apiPost) {
@@ -155,11 +169,11 @@ export async function getPostData(id: string): Promise<PostData> {
     }
   }
 
-  // Fallback to dummy data to avoid crash if file is missing
+  // 2. 파일 시스템에서 시도
   try {
     return await getPostDataFromFile(id);
   } catch (error) {
-    console.warn(`Post ${id} not found in file system, returning dummy data`);
+    console.warn(`Post ${id} not found in API or file system, returning dummy data`);
     return {
       id,
       slug: id,
@@ -197,30 +211,51 @@ export async function searchPosts(query: string): Promise<PostData[]> {
 // ============ Categories function ============
 
 export async function getCategories(): Promise<string[]> {
+  const categories = new Set<string>();
+
   if (USE_API) {
-    const categories = await fetchFromApi<string[]>("/posts/categories");
-    if (categories) {
-      return categories;
+    const apiCategories = await fetchFromApi<string[]>("/posts/categories");
+    if (apiCategories) {
+      apiCategories.forEach((c) => categories.add(c));
     }
   }
 
-  const allPosts = await getSortedPostsDataFromFile();
-  const categories = Array.from(new Set(allPosts.map((post) => post.category)));
-  return categories.sort();
+  try {
+    const allFilePosts = await getSortedPostsDataFromFile();
+    allFilePosts.forEach((post) => categories.add(post.category));
+  } catch (error) {
+    console.error("Failed to read categories from file system:", error);
+  }
+
+  return Array.from(categories).sort();
 }
 
 // ============ Filtered posts function ============
 
 export async function getPostsByCategory(category: string): Promise<PostData[]> {
+  let posts: PostData[] = [];
+
   if (USE_API) {
     const apiData = await fetchFromApi<ApiPageResponse<ApiPostResponse>>(
       `/posts?category=${encodeURIComponent(category)}&size=100`
     );
     if (apiData && apiData.content) {
-      return apiData.content.map(apiPostToPostData);
+      posts = apiData.content.map(apiPostToPostData);
     }
   }
 
-  const allPosts = await getSortedPostsDataFromFile();
-  return allPosts.filter((post) => post.category === category);
+  try {
+    const filePosts = await getSortedPostsDataFromFile();
+    const existingSlugs = new Set(posts.map((p) => p.slug));
+    const filteredFilePosts = filePosts.filter(
+      (post) => post.category === category && !existingSlugs.has(post.slug)
+    );
+    posts = [...posts, ...filteredFilePosts];
+  } catch (error) {
+    console.error("Failed to read posts by category from file system:", error);
+  }
+
+  return posts.sort((a, b) => (a.date < b.date ? 1 : -1));
+}
+
 }
