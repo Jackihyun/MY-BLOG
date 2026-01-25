@@ -258,4 +258,3 @@ export async function getPostsByCategory(category: string): Promise<PostData[]> 
   return posts.sort((a, b) => (a.date < b.date ? 1 : -1));
 }
 
-}
