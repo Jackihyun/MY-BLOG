@@ -8,13 +8,10 @@ import { sidebarState } from "@/store/sidebarState";
 import DarkModeToggle from "@/components/DarkModeToogle";
 import HamburgerMenu from "@/components/button/HamburgerMenu";
 import SidebarMenu from "@/components/menu/SidebarMenu";
-import LoadingIndicator from "@/components/modal/LoadingIndicator";
-import { useRouteChange } from "@/utils/hooks/useRouteChange";
 
 export default function Header() {
   const pathname = usePathname();
   const [isSidebarOpen, setIsSidebarOpen] = useRecoilState(sidebarState);
-  const isLoading = useRouteChange();
 
   const toggleSidebar = useCallback(() => {
     setIsSidebarOpen((prev) => !prev);
@@ -27,7 +24,6 @@ export default function Header() {
   return (
     <header className="fixed top-0 left-0 right-0 z-50 flex justify-center pt-4">
       <div className="w-full max-w-5xl h-[56px] px-6 flex items-center justify-between bg-white/70 dark:bg-black/70 backdrop-blur-xl border border-zinc-200/50 dark:border-zinc-800/50 rounded-2xl shadow-sm mx-4">
-        {isLoading && <LoadingIndicator />}
         {/* Logo */}
         <Link href="/" className="group flex items-center gap-2">
           <span className="text-lg md:text-xl font-black tracking-tighter text-zinc-900 dark:text-zinc-50 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">

@@ -5,6 +5,7 @@ import { RecoilRoot } from "recoil";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { SessionProvider } from "next-auth/react";
 import { Toaster } from "sonner";
+import { motion, AnimatePresence } from "framer-motion";
 import { queryClient } from "@/lib/queryClient";
 import LoadingIndicator from "@/components/modal/LoadingIndicator";
 import { useRouteChange } from "@/utils/hooks/useRouteChange";
@@ -17,8 +18,12 @@ function LoadingWrapper({ children }: { children: ReactNode }) {
   const isLoading = useRouteChange();
   return (
     <>
-      {isLoading && <LoadingIndicator />}
-      {children}
+      <AnimatePresence mode="wait">
+        {isLoading && <LoadingIndicator key="loading" />}
+      </AnimatePresence>
+      <div className={isLoading ? "hidden" : "block"}>
+        {children}
+      </div>
     </>
   );
 }

@@ -148,8 +148,10 @@ export async function getSortedPostsData(): Promise<PostData[]> {
     console.error("Failed to read posts from file system:", error);
   }
 
-  // 3. 날짜 기준 정렬
-  return allPosts.sort((a, b) => (a.date < b.date ? 1 : -1));
+  // 3. 날짜 기준 정렬 및 특수 페이지(방명록 등) 제외
+  return allPosts
+    .filter((post) => post.slug !== "guestbook")
+    .sort((a, b) => (a.date < b.date ? 1 : -1));
 }
 
 export function getAllPostIds(): { id: string }[] {
@@ -257,4 +259,5 @@ export async function getPostsByCategory(category: string): Promise<PostData[]> 
 
   return posts.sort((a, b) => (a.date < b.date ? 1 : -1));
 }
+
 
