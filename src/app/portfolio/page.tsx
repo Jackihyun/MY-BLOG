@@ -1,11 +1,5 @@
-import React from "react";
+import { redirect } from "next/navigation";
 
-const Portfolio: React.FC = () => {
-  return (
-    <div>
-      <p>This is the portfolio page.</p>
-    </div>
-  );
-};
-
-export default Portfolio;
+export default function Portfolio() {
+  redirect("https://jackihyun.me/");
+}

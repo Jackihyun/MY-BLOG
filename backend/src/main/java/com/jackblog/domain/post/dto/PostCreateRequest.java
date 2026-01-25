@@ -21,6 +21,7 @@ public class PostCreateRequest {
     private String title;
 
     @NotBlank(message = "Content is required")
+    @Size(max = 100000, message = "Content must be less than 100000 characters")
     private String content;
 
     @Size(max = 500, message = "Excerpt must be less than 500 characters")

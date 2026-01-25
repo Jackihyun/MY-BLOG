@@ -9,7 +9,7 @@ export type { PostData };
 
 const postsDirectory = path.join(process.cwd(), "src/posts");
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080/api";
-const USE_API = process.env.NEXT_PUBLIC_USE_API === "true";
+const USE_API = true;
 
 // ============ API-based functions ============
 
@@ -55,6 +55,9 @@ function apiPostToPostData(apiPost: {
 
 async function getPostDataFromFile(id: string): Promise<PostData> {
   const fullPath = path.join(postsDirectory, `${id}.md`);
+  if (!fs.existsSync(fullPath)) {
+    throw new Error(`File not found: ${fullPath}`);
+  }
   const fileContents = fs.readFileSync(fullPath, "utf8");
 
   const matterResult = matter(fileContents);
@@ -73,6 +76,9 @@ async function getPostDataFromFile(id: string): Promise<PostData> {
 }
 
 async function getSortedPostsDataFromFile(): Promise<PostData[]> {
+  if (!fs.existsSync(postsDirectory)) {
+    return [];
+  }
   const fileNames = fs.readdirSync(postsDirectory);
   const allPostsData = await Promise.all(
     fileNames.map(async (fileName) => {
@@ -87,6 +93,9 @@ async function getSortedPostsDataFromFile(): Promise<PostData[]> {
 }
 
 function getAllPostIdsFromFile() {
+  if (!fs.existsSync(postsDirectory)) {
+    return [];
+  }
   const fileNames = fs.readdirSync(postsDirectory);
   return fileNames.map((fileName) => ({
     id: fileName.replace(/\.md$/, ""),
@@ -122,7 +131,12 @@ export async function getSortedPostsData(): Promise<PostData[]> {
     }
   }
 
-  return getSortedPostsDataFromFile();
+  try {
+    return await getSortedPostsDataFromFile();
+  } catch (error) {
+    console.error("Failed to read posts from file system:", error);
+    return [];
+  }
 }
 
 export function getAllPostIds(): { id: string }[] {
@@ -141,7 +155,20 @@ export async function getPostData(id: string): Promise<PostData> {
     }
   }
 
-  return getPostDataFromFile(id);
+  // Fallback to dummy data to avoid crash if file is missing
+  try {
+    return await getPostDataFromFile(id);
+  } catch (error) {
+    console.warn(`Post ${id} not found in file system, returning dummy data`);
+    return {
+      id,
+      slug: id,
+      title: "글을 찾을 수 없습니다",
+      date: new Date().toISOString().split("T")[0],
+      category: "None",
+      contentHtml: "<p>요청하신 글이 존재하지 않거나 불러오는데 실패했습니다.</p>",
+    };
+  }
 }
 
 // ============ Search function ============

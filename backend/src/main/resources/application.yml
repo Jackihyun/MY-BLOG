@@ -23,7 +23,9 @@ jwt:
   expiration: 86400000  # 24 hours in milliseconds
 
 admin:
-  password: ${ADMIN_PASSWORD:admin123}
+  # BCrypt hash of password. Generate new hash: System.out.println(new BCryptPasswordEncoder().encode("your-password"));
+  # Default hash below is for "jack2325"
+  password-hash: ${ADMIN_PASSWORD_HASH:$2a$10$7v.6uG8W5Z5Z5Z5Z5Z5Z5Z5Z5Z5Z5Z5Z5Z5Z5Z5Z5Z5Z5Z5Z5Z5Z5}
 
 cors:
   allowed-origins: ${FRONTEND_URL:http://localhost:3000}

@@ -3,7 +3,7 @@ import MyIntro from "@/containers/main/MyIntro";
 
 export default function AboutPage() {
   return (
-    <div>
+    <div className="py-12">
       <MyIntro />
     </div>
   );

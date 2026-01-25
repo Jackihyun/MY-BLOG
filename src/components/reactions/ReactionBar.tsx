@@ -35,9 +35,9 @@ export default function ReactionBar({ slug }: ReactionBarProps) {
   }
 
   return (
-    <div className="py-4 border-t border-b border-gray-200 dark:border-gray-700">
-      <p className="text-sm text-gray-500 dark:text-gray-400 mb-3">
-        이 글이 도움이 되셨나요?
+    <div className="py-6 border-t border-b border-zinc-100 dark:border-zinc-800/50">
+      <p className="text-xs font-bold text-zinc-400 dark:text-zinc-500 mb-4 uppercase tracking-widest">
+        Enjoyed this post?
       </p>
 
       <div className="flex flex-wrap gap-2">
@@ -50,21 +50,21 @@ export default function ReactionBar({ slug }: ReactionBarProps) {
               key={emoji}
               onClick={() => handleReaction(emoji)}
               title={label}
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm transition-all
+              className={`flex items-center gap-1.5 px-4 py-2 rounded-xl text-sm transition-all
                 active:scale-95
                 ${
                   isActive
-                    ? "bg-blue-100 dark:bg-blue-900/30 border-2 border-blue-500"
-                    : "bg-gray-100 dark:bg-gray-800 border-2 border-transparent hover:border-gray-300 dark:hover:border-gray-600"
+                    ? "bg-indigo-50 dark:bg-indigo-900/30 border border-indigo-200 dark:border-indigo-800/50"
+                    : "bg-zinc-50 dark:bg-zinc-800 border border-transparent hover:border-zinc-200 dark:hover:border-zinc-700"
                 }`}
             >
               <span>{emoji}</span>
               {count > 0 && (
                 <span
-                  className={`text-xs ${
+                  className={`text-xs font-bold ${
                     isActive
-                      ? "text-blue-600 dark:text-blue-400"
-                      : "text-gray-600 dark:text-gray-400"
+                      ? "text-indigo-600 dark:text-indigo-400"
+                      : "text-zinc-500 dark:text-zinc-400"
                   }`}
                 >
                   {count}
@@ -74,22 +74,22 @@ export default function ReactionBar({ slug }: ReactionBarProps) {
           );
         })}
 
-        <div className="w-px bg-gray-300 dark:bg-gray-600 mx-2" />
+        <div className="w-px bg-zinc-200 dark:bg-zinc-800 mx-2" />
 
         <button
           onClick={handleLike}
-          className={`flex items-center gap-1.5 px-4 py-1.5 rounded-full text-sm transition-all
+          className={`flex items-center gap-1.5 px-5 py-2 rounded-xl text-sm font-bold transition-all
             active:scale-95
             ${
               liked
-                ? "bg-red-100 dark:bg-red-900/30 border-2 border-red-500 text-red-600 dark:text-red-400"
-                : "bg-gray-100 dark:bg-gray-800 border-2 border-transparent hover:border-gray-300 dark:hover:border-gray-600"
+                ? "bg-rose-50 dark:bg-rose-900/30 border border-rose-200 dark:border-rose-800/50 text-rose-600 dark:text-rose-400"
+                : "bg-zinc-50 dark:bg-zinc-800 border border-transparent hover:border-zinc-200 dark:hover:border-zinc-700"
             }`}
         >
           <span>{liked ? "❤️" : "🤍"}</span>
-          <span>좋아요</span>
+          <span>Like</span>
           {likeCount > 0 && (
-            <span className="text-xs ml-1">({likeCount})</span>
+            <span className="text-xs ml-1 opacity-60">{likeCount}</span>
           )}
         </button>
       </div>

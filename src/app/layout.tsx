@@ -87,14 +87,14 @@ export default function RootLayout({
       <body
         className={`${inter.className} place-items-center flex flex-col min-h-screen`}
       >
-        <Providers>
-          <Header />
+                <Providers>
+                  <Header />
 
-          <main className="flex-grow w-full pt-[60px] py-[100px] px-4 max-w-[720px]">
-            {children}
-          </main>
-          <Footer />
-        </Providers>
+                  <main className="flex-grow w-full pt-32 pb-20 px-4 max-w-6xl">
+                    {children}
+                  </main>
+                  <Footer />
+                </Providers>
       </body>
     </html>
   );

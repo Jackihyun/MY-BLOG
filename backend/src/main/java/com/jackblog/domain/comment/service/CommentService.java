@@ -27,7 +27,20 @@ public class CommentService {
 
     public List<CommentResponse> getComments(String slug) {
         Post post = postRepository.findBySlug(slug)
-            .orElseThrow(() -> ResourceNotFoundException.post(slug));
+            .orElseGet(() -> {
+                if ("guestbook".equals(slug)) {
+                    Post guestbook = Post.builder()
+                        .slug("guestbook")
+                        .title("Guest Book")
+                        .content("Guest Book Content")
+                        .contentHtml("<p>Guest Book Content</p>")
+                        .category("System")
+                        .isPublished(true)
+                        .build();
+                    return postRepository.save(guestbook);
+                }
+                throw ResourceNotFoundException.post(slug);
+            });
 
         List<Comment> rootComments = commentRepository.findRootCommentsByPostId(post.getId());
         return CommentResponse.fromList(rootComments);
@@ -35,8 +48,21 @@ public class CommentService {
 
     @Transactional
     public CommentResponse createComment(String slug, CommentCreateRequest request) {
-        Post post = postRepository.findBySlugAndIsPublishedTrue(slug)
-            .orElseThrow(() -> ResourceNotFoundException.post(slug));
+        Post post = postRepository.findBySlug(slug)
+            .orElseGet(() -> {
+                if ("guestbook".equals(slug)) {
+                    Post guestbook = Post.builder()
+                        .slug("guestbook")
+                        .title("Guest Book")
+                        .content("Guest Book Content")
+                        .contentHtml("<p>Guest Book Content</p>")
+                        .category("System")
+                        .isPublished(true)
+                        .build();
+                    return postRepository.save(guestbook);
+                }
+                throw ResourceNotFoundException.post(slug);
+            });
 
         Comment comment = Comment.builder()
             .post(post)

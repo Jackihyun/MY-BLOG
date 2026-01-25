@@ -15,6 +15,7 @@ public class PostUpdateRequest {
     @Size(max = 500, message = "Title must be less than 500 characters")
     private String title;
 
+    @Size(max = 100000, message = "Content must be less than 100000 characters")
     private String content;
 
     @Size(max = 500, message = "Excerpt must be less than 500 characters")

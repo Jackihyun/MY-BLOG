@@ -24,12 +24,12 @@ export default function Footer() {
 
   return (
     <>
-      <footer className="flex justify-center items-center w-full h-[40px] md:h-[60px] text-[13px] md:text-[16px] bg-[#f7f8fa] dark:bg-[#2c2d2e] font-roboto-regular">
+      <footer className="flex justify-center items-center w-full py-6 text-sm text-gray-500 dark:text-gray-400 border-t border-gray-200 dark:border-gray-800 bg-white/50 dark:bg-gray-900/50">
         <p>
-          &copy; Developed by{" "}
+          &copy; {new Date().getFullYear()} Developed by{" "}
           <span
             onClick={handleNameClick}
-            className={`cursor-pointer select-none ${
+            className={`cursor-pointer select-none hover:text-gray-900 dark:hover:text-white transition-colors ${
               clickCount > 0 ? "text-blue-500" : ""
             }`}
           >

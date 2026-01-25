@@ -14,6 +14,8 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
+import static org.springframework.security.config.Customizer.withDefaults;
+
 @Configuration
 @EnableWebSecurity
 @RequiredArgsConstructor
@@ -24,6 +26,7 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
+            .cors(withDefaults())
             .csrf(AbstractHttpConfigurer::disable)
             .sessionManagement(session -> session
                 .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
@@ -37,7 +40,7 @@ public class SecurityConfig {
                 .requestMatchers("/api/comments/*/reply").permitAll()
                 .requestMatchers(HttpMethod.DELETE, "/api/comments/*").permitAll()
                 .requestMatchers("/api/admin/login").permitAll()
-                .requestMatchers("/api/admin/verify").permitAll()
+                .requestMatchers("/api/admin/verify").authenticated()
                 // Admin endpoints require authentication
                 .requestMatchers(HttpMethod.POST, "/api/posts").authenticated()
                 .requestMatchers(HttpMethod.PUT, "/api/posts/**").authenticated()

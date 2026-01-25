@@ -27,15 +27,16 @@ export default function CommentList({ slug }: CommentListProps) {
   }, [loadComments]);
 
   const totalCount = getTotalCount();
+  const isGuestbook = slug === "guestbook";
 
   if (isLoading) {
     return (
-      <section className="mt-12 pt-8 border-t border-gray-200 dark:border-gray-800">
-        <div className="flex items-center gap-3 mb-6">
-          <h2 className="text-xl font-bold text-gray-900 dark:text-gray-100">
-            댓글
+      <section className="mt-12 pt-12 border-t border-zinc-100 dark:border-zinc-800/50">
+        <div className="flex items-center gap-3 mb-8">
+          <h2 className="text-xl font-black text-zinc-900 dark:text-zinc-50 tracking-tight uppercase">
+            {isGuestbook ? "Guestbook" : "Comments"}
           </h2>
-          <div className="w-8 h-6 rounded-full bg-gray-200 dark:bg-gray-700 animate-pulse" />
+          <div className="w-8 h-6 rounded-full bg-zinc-100 dark:bg-zinc-800 animate-pulse" />
         </div>
         <CommentSkeletonList count={3} />
       </section>
@@ -43,14 +44,14 @@ export default function CommentList({ slug }: CommentListProps) {
   }
 
   return (
-    <section className="mt-12 pt-8 border-t border-gray-200 dark:border-gray-800">
+    <section className="mt-12 pt-12 border-t border-zinc-100 dark:border-zinc-800/50">
       {/* 헤더 */}
-      <div className="flex items-center gap-3 mb-6">
-        <h2 className="text-xl font-bold text-gray-900 dark:text-gray-100">
-          댓글
+      <div className="flex items-center gap-3 mb-8">
+        <h2 className="text-xl font-black text-zinc-900 dark:text-zinc-50 tracking-tight uppercase">
+          {isGuestbook ? "Guestbook" : "Comments"}
         </h2>
         {totalCount > 0 && (
-          <span className="px-2.5 py-1 text-sm font-medium rounded-full bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400">
+          <span className="px-3 py-1 text-xs font-bold rounded-full bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400">
             {totalCount}
           </span>
         )}
@@ -58,48 +59,67 @@ export default function CommentList({ slug }: CommentListProps) {
 
       {/* 에러 메시지 */}
       {error && (
-        <div className="flex items-center gap-2 p-4 mb-4 rounded-xl bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400">
+        <div className="flex items-center gap-2 p-4 mb-6 rounded-xl bg-rose-50 dark:bg-rose-900/20 text-rose-600 dark:text-rose-400">
           <svg className="w-5 h-5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
           </svg>
-          <span className="text-sm">{error}</span>
+          <span className="text-sm font-medium">{error}</span>
         </div>
       )}
 
-      {/* 댓글 작성 폼 */}
-      <div className="mb-8">
-        <CommentForm
-          onSubmit={addComment}
-          placeholder="이 글에 대한 생각을 공유해주세요..."
-          buttonText="댓글 작성"
-        />
+      {/* 댓글 작성 폼 - 일반 댓글일 때만 위에 표시 */}
+      {!isGuestbook && (
+        <div className="mb-12 bg-zinc-50/50 dark:bg-zinc-900/30 p-6 rounded-3xl border border-zinc-100 dark:border-zinc-800">
+          <h3 className="text-sm font-black text-zinc-900 dark:text-zinc-50 mb-4 uppercase tracking-wider">
+            Leave a comment
+          </h3>
+          <CommentForm
+            onSubmit={addComment}
+            placeholder="이 글에 대한 생각을 공유해주세요..."
+            buttonText="댓글 작성"
+          />
+        </div>
+      )}
+
+      {/* 댓글/방명록 목록 */}
+      <div className={isGuestbook ? "mb-8" : "mb-12"}>
+        {comments.length === 0 ? (
+          <div className="py-12 px-6 text-center border-2 border-dashed border-zinc-100 dark:border-zinc-800 rounded-3xl">
+            <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-zinc-50 dark:bg-zinc-900 mb-4">
+              <svg className="w-6 h-6 text-zinc-300 dark:text-zinc-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+              </svg>
+            </div>
+            <p className="text-zinc-500 dark:text-zinc-400 font-bold">
+              {isGuestbook ? "첫 번째 방명록을 남겨주세요!" : "아직 댓글이 없습니다"}
+            </p>
+          </div>
+        ) : (
+          <div className={isGuestbook ? "grid gap-4 sm:grid-cols-2" : "space-y-4"}>
+            {comments.map((comment) => (
+              <CommentItem
+                key={comment.id}
+                comment={comment}
+                onReply={addReply}
+                onDelete={removeComment}
+                isGuestbookStyle={isGuestbook}
+              />
+            ))}
+          </div>
+        )}
       </div>
 
-      {/* 댓글 목록 */}
-      {comments.length === 0 ? (
-        <div className="py-16 text-center">
-          <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-gray-100 dark:bg-gray-800 mb-4">
-            <svg className="w-8 h-8 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
-            </svg>
-          </div>
-          <p className="text-gray-500 dark:text-gray-400 font-medium">
-            아직 댓글이 없습니다
-          </p>
-          <p className="text-sm text-gray-400 dark:text-gray-500 mt-1">
-            첫 번째 댓글을 남겨보세요!
-          </p>
-        </div>
-      ) : (
-        <div className="space-y-4">
-          {comments.map((comment) => (
-            <CommentItem
-              key={comment.id}
-              comment={comment}
-              onReply={addReply}
-              onDelete={removeComment}
-            />
-          ))}
+      {/* 방명록 작성 폼 - 방명록일 때만 아래에 표시 */}
+      {isGuestbook && (
+        <div className="bg-zinc-50/50 dark:bg-zinc-900/30 p-6 rounded-3xl border border-zinc-100 dark:border-zinc-800">
+          <h3 className="text-sm font-black text-zinc-900 dark:text-zinc-50 mb-4 uppercase tracking-wider">
+            Leave a message
+          </h3>
+          <CommentForm
+            onSubmit={addComment}
+            placeholder="따뜻한 한마디를 남겨주세요..."
+            buttonText="방명록 남기기"
+          />
         </div>
       )}
     </section>

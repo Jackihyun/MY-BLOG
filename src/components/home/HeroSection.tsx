@@ -61,9 +61,9 @@ export default function HeroSection() {
             animate={{ opacity: 1, scale: 1 }}
             transition={{ delay: 0.2 }}
           >
-            <Badge variant="secondary" className="px-4 py-1.5 text-sm font-medium bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm border border-gray-200/50 dark:border-gray-700/50">
-              <span className="w-2 h-2 rounded-full bg-green-500 mr-2 animate-pulse inline-block" />
-              Open to work
+            <Badge variant="secondary" className="px-4 py-1.5 text-xs font-bold uppercase tracking-wider bg-white/80 dark:bg-zinc-900/80 backdrop-blur-sm border border-zinc-200/50 dark:border-zinc-800/50 text-indigo-600 dark:text-indigo-400">
+              <span className="w-2 h-2 rounded-full bg-emerald-500 mr-2 animate-pulse inline-block" />
+              Available for new projects
             </Badge>
           </motion.div>
 
@@ -72,14 +72,14 @@ export default function HeroSection() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.3 }}
-            className="text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight"
+            className="text-4xl md:text-5xl lg:text-6xl font-black tracking-tight"
           >
-            <span className="text-gray-900 dark:text-white">안녕하세요, </span>
-            <span className="bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 bg-clip-text text-transparent">
+            <span className="text-zinc-900 dark:text-zinc-50">안녕하세요, </span>
+            <span className="bg-gradient-to-r from-indigo-600 via-violet-600 to-purple-600 bg-clip-text text-transparent">
               개발자
             </span>
             <br />
-            <span className="text-gray-900 dark:text-white">Jack입니다</span>
+            <span className="text-zinc-900 dark:text-zinc-50">Jack입니다</span>
           </motion.h1>
 
           {/* Description */}
@@ -87,7 +87,7 @@ export default function HeroSection() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.4 }}
-            className="text-lg md:text-xl text-gray-600 dark:text-gray-400 max-w-2xl mx-auto leading-relaxed"
+            className="text-lg md:text-xl text-zinc-600 dark:text-zinc-400 max-w-2xl mx-auto leading-relaxed"
           >
             프론트엔드와 백엔드를 넘나드는 풀스택 개발자입니다.
             <br className="hidden md:block" />
@@ -104,11 +104,11 @@ export default function HeroSection() {
             <Link
               href="/posts"
               className="inline-flex items-center justify-center gap-2 px-6 py-3
-                         bg-gray-900 dark:bg-white text-white dark:text-gray-900
-                         font-medium rounded-xl
-                         hover:bg-gray-800 dark:hover:bg-gray-100
+                         bg-zinc-900 dark:bg-zinc-50 text-white dark:text-zinc-900
+                         font-bold rounded-xl
+                         hover:opacity-90
                          transition-all duration-200 active:scale-95
-                         shadow-lg shadow-gray-900/20 dark:shadow-white/20"
+                         shadow-lg shadow-zinc-900/20 dark:shadow-zinc-50/10"
             >
               <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z" />
@@ -118,9 +118,9 @@ export default function HeroSection() {
             <Link
               href="/about"
               className="inline-flex items-center justify-center gap-2 px-6 py-3
-                         bg-white dark:bg-gray-800 text-gray-900 dark:text-white
-                         font-medium rounded-xl border border-gray-200 dark:border-gray-700
-                         hover:bg-gray-50 dark:hover:bg-gray-700
+                         bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-50
+                         font-bold rounded-xl border border-zinc-200 dark:border-zinc-800
+                         hover:bg-zinc-50 dark:hover:bg-zinc-800/50
                          transition-all duration-200 active:scale-95"
             >
               <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">

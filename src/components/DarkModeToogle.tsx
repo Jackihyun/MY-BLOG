@@ -11,16 +11,16 @@ export default function DarkModeToggle() {
   return (
     <button
       onClick={toggleTheme}
-      className="z-50 p-1 bg-gray-700 dark:bg-gray-100 cursor-pointer border border-gray-600 dark:border-gray-300 rounded-2xl flex items-center justify-center"
+      className="p-2 hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-xl transition-colors flex items-center justify-center text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-50"
     >
       {theme.value === "light" ? (
         <svg
           xmlns="http://www.w3.org/2000/svg"
           fill="none"
           viewBox="0 0 24 24"
-          strokeWidth="1.5"
+          strokeWidth="2"
           stroke="currentColor"
-          className="w-[20px] h-[20px] md:w-[25px] md:h-[25px] text-white"
+          className="w-5 h-5"
         >
           <path
             strokeLinecap="round"
@@ -33,9 +33,9 @@ export default function DarkModeToggle() {
           xmlns="http://www.w3.org/2000/svg"
           fill="none"
           viewBox="0 0 24 24"
-          strokeWidth="1.5"
+          strokeWidth="2"
           stroke="currentColor"
-          className="w-[20px] h-[20px] md:w-[25px] md:h-[25px] text-black"
+          className="w-5 h-5"
         >
           <path
             strokeLinecap="round"

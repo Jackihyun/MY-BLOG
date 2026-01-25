@@ -33,14 +33,15 @@ export default function TechStack() {
             whileHover={{ scale: 1.05, y: -5 }}
             className={`
               flex items-center gap-3 px-5 py-3
-              bg-gradient-to-r ${tech.color}
-              text-white font-medium rounded-xl
-              shadow-lg cursor-default
-              transition-shadow hover:shadow-xl
+              bg-white dark:bg-[#0a0a0a]
+              text-zinc-900 dark:text-zinc-50 font-bold rounded-2xl
+              border border-zinc-100 dark:border-zinc-800
+              shadow-sm cursor-default
+              transition-all hover:shadow-md hover:border-indigo-200 dark:hover:border-indigo-800/50
             `}
           >
-            <span className="text-xl">{tech.icon}</span>
-            <span>{tech.name}</span>
+            <span className="text-2xl filter grayscale group-hover:grayscale-0 transition-all">{tech.icon}</span>
+            <span className="text-sm tracking-tight">{tech.name}</span>
           </motion.div>
         ))}
       </div>

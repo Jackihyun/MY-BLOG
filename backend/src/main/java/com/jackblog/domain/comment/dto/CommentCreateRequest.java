@@ -27,5 +27,6 @@ public class CommentCreateRequest {
     private String password;
 
     @NotBlank(message = "Content is required")
+    @Size(max = 5000, message = "Content must be less than 5000 characters")
     private String content;
 }

@@ -9,21 +9,30 @@ export const useDarkMode = (): [Theme, () => void] => {
 
   useEffect(() => {
     const localTheme = window.localStorage.getItem("theme") as Theme | null;
-
-    if (localTheme) {
-      setTheme({ value: localTheme });
-      document.documentElement.classList.add(localTheme);
+    const initialTheme = localTheme || "light";
+    
+    setTheme({ value: initialTheme });
+    if (initialTheme === "dark") {
+      document.documentElement.classList.add("dark");
+      document.documentElement.style.colorScheme = "dark";
     } else {
-      setTheme({ value: "light" });
-      document.documentElement.classList.add("light");
+      document.documentElement.classList.remove("dark");
+      document.documentElement.style.colorScheme = "light";
     }
   }, [setTheme]);
 
   const toggleTheme = () => {
     const newTheme = theme.value === "light" ? "dark" : "light";
     window.localStorage.setItem("theme", newTheme);
-    document.documentElement.classList.remove(theme.value);
-    document.documentElement.classList.add(newTheme);
+    
+    if (newTheme === "dark") {
+      document.documentElement.classList.add("dark");
+      document.documentElement.style.colorScheme = "dark";
+    } else {
+      document.documentElement.classList.remove("dark");
+      document.documentElement.style.colorScheme = "light";
+    }
+    
     setTheme({ value: newTheme });
   };
 

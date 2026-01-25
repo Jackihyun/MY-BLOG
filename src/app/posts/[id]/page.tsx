@@ -69,15 +69,6 @@ export default async function PostPage({ params }: PostProps) {
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
       <PostDetailClient postData={postData} />
-      <div className="flex flex-col pt-[80px] text-[14px] md:text-[17px] text-center pb-[20px] gap-2 font-pretendard-semibold">
-        <p>재미있게 보셨다면! 방명록에 글을 남겨주세요!</p>
-        <Link
-          href="/guest"
-          className="text-blue-500 dark:text-red-400 inline-block underline hover:scale-95"
-        >
-          <p>방명록 바로가기 -&gt;</p>
-        </Link>
-      </div>
     </>
   );
 }

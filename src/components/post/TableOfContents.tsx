@@ -70,13 +70,13 @@ export default function TableOfContents({ contentHtml }: TableOfContentsProps) {
   if (items.length === 0) return null;
 
   return (
-    <nav className="hidden xl:block fixed left-[calc(50%+380px)] top-[120px] w-[220px] max-h-[calc(100vh-200px)] overflow-y-auto
-                    p-4 rounded-lg bg-gray-50/80 dark:bg-[#1a1a1a]/80 backdrop-blur-sm
-                    border border-gray-200 dark:border-gray-800 shadow-sm">
-      <h3 className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-3">
-        목차
+    <nav className="hidden xl:block fixed left-[calc(50%+400px)] top-[120px] w-[240px] max-h-[calc(100vh-200px)] overflow-y-auto
+                    p-6 rounded-2xl bg-white/50 dark:bg-black/50 backdrop-blur-xl
+                    border border-zinc-100 dark:border-zinc-800 shadow-sm">
+      <h3 className="text-[11px] font-black text-zinc-400 dark:text-zinc-500 uppercase tracking-[0.2em] mb-4">
+        Contents
       </h3>
-      <ul className="space-y-1.5 text-sm">
+      <ul className="space-y-1 text-sm font-semibold">
         {items.map((item) => (
           <li
             key={item.id}
@@ -84,10 +84,10 @@ export default function TableOfContents({ contentHtml }: TableOfContentsProps) {
           >
             <button
               onClick={() => handleClick(item.id)}
-              className={`text-left w-full truncate transition-all duration-200 py-1 px-2 rounded-md ${
+              className={`text-left w-full truncate transition-all duration-200 py-1.5 px-3 rounded-xl ${
                 activeId === item.id
-                  ? "text-blue-600 dark:text-blue-400 font-medium bg-blue-50 dark:bg-blue-900/30"
-                  : "text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800"
+                  ? "text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-900/30"
+                  : "text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 hover:bg-zinc-50 dark:hover:bg-zinc-800/50"
               }`}
             >
               {item.text}

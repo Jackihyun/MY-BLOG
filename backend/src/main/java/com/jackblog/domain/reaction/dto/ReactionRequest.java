@@ -18,5 +18,6 @@ public class ReactionRequest {
     private String emoji;
 
     @NotBlank(message = "Client ID is required")
+    @Size(max = 100, message = "Client ID must be less than 100 characters")
     private String clientId;
 }

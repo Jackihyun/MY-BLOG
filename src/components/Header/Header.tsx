@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useCallback } from "react";
+import { useEffect, useCallback } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useRecoilState } from "recoil";
@@ -24,67 +24,73 @@ export default function Header() {
     setIsSidebarOpen(false);
   }, [pathname, setIsSidebarOpen]);
 
-  const linkClasses = useCallback(
-    (path: string) => {
-      return pathname === path
-        ? "relative group inline-block text-black dark:text-white border-b-0 border-black dark:border-white"
-        : "relative group inline-block text-black dark:text-white";
-    },
-    [pathname]
-  );
-
-  const spanClasses = useCallback(
-    (path: string) => {
-      return pathname === path
-        ? "absolute left-0 bottom-0 w-full h-[2px] bg-black dark:bg-white transition-all duration-300"
-        : "absolute left-0 bottom-0 w-0 h-[2px] bg-black dark:bg-white transition-all duration-300 group-hover:w-full";
-    },
-    [pathname]
-  );
-
   return (
-    <header className="flex justify-between bg-[#e8e8e8] dark:bg-[#212121] z-100 h-[55px] fixed w-full top-0 items-center px-4 max-w-[720px] place-items-center font-bold">
-      {isLoading && <LoadingIndicator />}
-      <div className="grid grid-cols-2 font-pretendard-bold">
-        <Link href="/" className="relative group w-fit">
-          <span className="text-[16px] md:text-[18px] inline-block ">
-            Jack&#39;s Blog
-            <span className="absolute left-0 bottom-0 w-0 h-[2px] bg-black dark:bg-white md:transition-all md:duration-300 md:group-hover:w-full"></span>
+    <header className="fixed top-0 left-0 right-0 z-50 flex justify-center pt-4">
+      <div className="w-full max-w-6xl h-[56px] px-6 flex items-center justify-between bg-white/70 dark:bg-black/70 backdrop-blur-xl border border-zinc-200/50 dark:border-zinc-800/50 rounded-2xl shadow-sm mx-4">
+        {isLoading && <LoadingIndicator />}
+        {/* Logo */}
+        <Link href="/" className="group flex items-center gap-2">
+          <span className="text-lg md:text-xl font-black tracking-tighter text-zinc-900 dark:text-zinc-50 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">
+            JACK&#39;S
           </span>
         </Link>
-        <nav className="sm:grid sm:grid-cols-4 text-[16px] md:text-[18px] hidden font-pretendard-regualr">
-          <Link href="/posts" className={`w-fit ${linkClasses("/posts")}`}>
-            posts
-            <span className={spanClasses("/posts")}></span>
-          </Link>
-          <Link href="/about" className={`w-fit ${linkClasses("/about")}`}>
-            about
-            <span className={spanClasses("/about")}></span>
-          </Link>
-          <Link href="/guest" className={`w-fit ${linkClasses("/guest")}`}>
-            guest
-            <span className={spanClasses("/guest")}></span>
+
+        {/* Desktop Navigation */}
+        <nav className="hidden sm:flex items-center gap-1 text-sm font-semibold">
+          <Link
+            href="/posts"
+            className={`px-4 py-2 rounded-xl transition-all ${
+              pathname === "/posts"
+                ? "bg-zinc-100 dark:bg-zinc-800 text-indigo-600 dark:text-indigo-400"
+                : "text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-50 hover:bg-zinc-50 dark:hover:bg-zinc-800/50"
+            }`}
+          >
+            Posts
           </Link>
           <Link
-            href="/portfolio"
-            className={`w-fit ${linkClasses("/portfolio")}`}
+            href="/about"
+            className={`px-4 py-2 rounded-xl transition-all ${
+              pathname === "/about"
+                ? "bg-zinc-100 dark:bg-zinc-800 text-indigo-600 dark:text-indigo-400"
+                : "text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-50 hover:bg-zinc-50 dark:hover:bg-zinc-800/50"
+            }`}
           >
-            <span className={spanClasses("/portfolio")}></span>
-            portfolio
+            About
           </Link>
+          <Link
+            href="/guest"
+            className={`px-4 py-2 rounded-xl transition-all ${
+              pathname === "/guest"
+                ? "bg-zinc-100 dark:bg-zinc-800 text-indigo-600 dark:text-indigo-400"
+                : "text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-50 hover:bg-zinc-50 dark:hover:bg-zinc-800/50"
+            }`}
+          >
+            Guest
+          </Link>
+          <a
+            href="https://jackihyun.me"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="px-4 py-2 rounded-xl flex items-center gap-1.5 text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-50 hover:bg-zinc-50 dark:hover:bg-zinc-800/50 transition-all"
+          >
+            Portfolio
+            <svg className="w-3 h-3 opacity-60" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+            </svg>
+          </a>
         </nav>
+
+        {/* Right Side Controls */}
+        <div className="flex items-center gap-1">
+          <DarkModeToggle />
+          <div className="sm:hidden">
+            <HamburgerMenu isChecked={isSidebarOpen} onToggle={toggleSidebar} />
+          </div>
+        </div>
       </div>
-      <div className="flex gap-2 justify-center items-center">
-        <HamburgerMenu isChecked={isSidebarOpen} onToggle={toggleSidebar} />
-        <DarkModeToggle />
-      </div>
+
+      {/* Mobile Sidebar Menu - outside the header container */}
       <SidebarMenu isOpen={isSidebarOpen} onClose={toggleSidebar} />
-      {isSidebarOpen && (
-        <div
-          className="fixed inset-0 backdrop-blur-sm z-30"
-          onClick={toggleSidebar}
-        ></div>
-      )}
     </header>
   );
 }

@@ -1,5 +1,9 @@
 import PostEditor from "@/components/admin/PostEditor";
 
 export default function NewPostPage() {
-  return <PostEditor mode="create" />;
+  return (
+    <div className="py-24">
+      <PostEditor mode="create" />
+    </div>
+  );
 }
