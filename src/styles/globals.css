@@ -202,6 +202,21 @@ body {
 
 
 
+@layer components {
+  .prose pre {
+    @apply bg-zinc-950 border border-zinc-800 rounded-2xl overflow-x-auto max-w-full !important;
+  }
+  .prose code {
+    @apply break-words whitespace-pre-wrap !important;
+  }
+  .prose img {
+    @apply max-w-full h-auto rounded-2xl !important;
+  }
+  .prose {
+    @apply max-w-full overflow-hidden !important;
+  }
+}
+
 @layer base {
   * {
     @apply border-border;

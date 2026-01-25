@@ -107,13 +107,13 @@ export default function PostDetailClient({ postData }: PostDetailClientProps) {
 
         <article
           data-post-content
-          className="prose dark:prose-invert max-w-none 
+          className="prose dark:prose-invert max-w-none w-full overflow-hidden
                      prose-headings:font-bold prose-headings:text-zinc-900 dark:prose-headings:text-zinc-50
                      prose-p:text-zinc-700 dark:prose-p:text-zinc-300 prose-p:leading-relaxed
                      prose-a:text-indigo-600 dark:prose-a:text-indigo-400 prose-a:no-underline hover:prose-a:underline
                      prose-strong:text-zinc-900 dark:prose-strong:text-zinc-50
                      prose-code:text-indigo-600 dark:prose-code:text-indigo-400 prose-code:bg-zinc-100 dark:prose-code:bg-zinc-800 prose-code:px-1 prose-code:rounded
-                     prose-img:rounded-2xl prose-img:shadow-lg
+                     prose-img:rounded-2xl prose-img:shadow-lg prose-img:max-w-full
                      mb-16"
           dangerouslySetInnerHTML={{ __html: postData.contentHtml }}
         />

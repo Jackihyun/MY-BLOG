@@ -15,7 +15,6 @@ const SidebarMenu = ({
 
   const closeSidebar = () => {
     setSidebarOpen(false);
-    onClose();
   };
 
   const linkClasses = (path: string) => {

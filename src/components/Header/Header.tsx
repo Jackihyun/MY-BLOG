@@ -22,8 +22,8 @@ export default function Header() {
   }, [pathname, setIsSidebarOpen]);
 
   return (
-    <header className="fixed top-0 left-0 right-0 z-50 flex justify-center pt-4">
-      <div className="w-full max-w-5xl h-[56px] px-6 flex items-center justify-between bg-white/70 dark:bg-black/70 backdrop-blur-xl border border-zinc-200/50 dark:border-zinc-800/50 rounded-2xl shadow-sm mx-4">
+    <header className="fixed top-0 left-0 right-0 z-50 flex justify-center pt-4 px-4">
+      <div className="w-full max-w-5xl h-[56px] px-6 flex items-center justify-between bg-white/70 dark:bg-black/70 backdrop-blur-xl border border-zinc-200/50 dark:border-zinc-800/50 rounded-2xl shadow-sm">
         {/* Logo */}
         <Link href="/" className="group flex items-center gap-2">
           <span className="text-lg md:text-xl font-black tracking-tighter text-zinc-900 dark:text-zinc-50 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">
@@ -32,7 +32,7 @@ export default function Header() {
         </Link>
 
         {/* Desktop Navigation */}
-        <nav className="hidden sm:flex items-center gap-1 text-sm font-semibold">
+        <nav className="hidden md:flex items-center gap-1 text-sm font-semibold">
           <Link
             href="/posts"
             className={`px-4 py-2 rounded-xl transition-all ${
@@ -79,7 +79,7 @@ export default function Header() {
         {/* Right Side Controls */}
         <div className="flex items-center gap-1">
           <DarkModeToggle />
-          <div className="sm:hidden">
+          <div className="md:hidden">
             <HamburgerMenu isChecked={isSidebarOpen} onToggle={toggleSidebar} />
           </div>
         </div>

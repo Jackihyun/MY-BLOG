@@ -104,10 +104,10 @@ export default function TableOfContents({ contentHtml }: TableOfContentsProps) {
             exit={{ x: 20, opacity: 0, scale: 0.95 }}
             transition={{ type: "spring", damping: 20, stiffness: 300 }}
             className="absolute right-full top-0 w-[260px] max-h-[70vh] overflow-y-auto
-                       p-5 rounded-[24px] bg-[#1a1a1a] border border-white/10 shadow-2xl"
+                       p-5 rounded-[24px] bg-white dark:bg-[#1a1a1a] border border-zinc-200 dark:border-white/10 shadow-2xl"
           >
             <div className="space-y-4">
-              <h3 className="text-[11px] font-black text-zinc-500 uppercase tracking-[0.2em] px-2">
+              <h3 className="text-[11px] font-black text-zinc-400 dark:text-zinc-500 uppercase tracking-[0.2em] px-2">
                 Table of Contents
               </h3>
               <ul className="space-y-0.5">
@@ -120,8 +120,8 @@ export default function TableOfContents({ contentHtml }: TableOfContentsProps) {
                       onClick={() => handleClick(item.id)}
                       className={`text-left w-full truncate py-2 px-3 rounded-xl text-[14px] font-medium transition-colors ${
                         activeId === item.id
-                          ? "text-[#4dabf7] bg-white/5"
-                          : "text-zinc-400 hover:text-zinc-200 hover:bg-white/5"
+                          ? "text-[#4dabf7] bg-zinc-50 dark:bg-white/5"
+                          : "text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-200 hover:bg-zinc-50 dark:hover:bg-white/5"
                       }`}
                     >
                       {item.text}

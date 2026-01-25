@@ -90,12 +90,12 @@ export default function RootLayout({
         />
       </head>
       <body
-        className={`${inter.className} place-items-center flex flex-col min-h-screen`}
+        className={`${inter.className} flex flex-col min-h-screen overflow-x-hidden`}
       >
                 <Providers>
                   <Header />
 
-                  <main className="flex-grow w-full pt-32 pb-20 px-4 max-w-5xl">
+                  <main className="flex-grow w-full pt-32 pb-20 px-4 max-w-5xl mx-auto">
                     {children}
                   </main>
                   <Footer />
