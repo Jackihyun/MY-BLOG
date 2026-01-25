@@ -115,10 +115,14 @@ function PostsList({
                       <h2 className="text-lg font-bold text-zinc-900 dark:text-zinc-50 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors line-clamp-2">
                         {title}
                       </h2>
-                      <div
-                        className="mt-2 text-sm text-zinc-600 dark:text-zinc-400 line-clamp-2 leading-relaxed"
-                        dangerouslySetInnerHTML={{ __html: contentHtml }}
-                      />
+                      <p className="mt-2 text-sm text-zinc-600 dark:text-zinc-400 line-clamp-2 leading-relaxed font-medium">
+                        {excerpt || (() => {
+                          const plainText = contentHtml.replace(/<[^>]*>?/gm, '');
+                          return plainText.length > 160 
+                            ? plainText.substring(0, 160) + "..." 
+                            : plainText;
+                        })()}
+                      </p>
                       <div className="flex items-center gap-3 mt-4">
                         <span className="px-2.5 py-1 text-xs font-bold rounded-full bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400">
                           {category}
