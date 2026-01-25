@@ -107,16 +107,16 @@ export default function CommentForm({
         <div className="flex justify-between items-center px-4 py-3 bg-zinc-50 dark:bg-zinc-900/50 rounded-b-xl border-t border-zinc-100 dark:border-zinc-800">
           <div className="flex items-center gap-2">
             {session?.user?.image && (
-              <div className="relative w-5 h-5 flex-shrink-0">
+              <div className="relative w-7 h-7 flex-shrink-0 overflow-hidden rounded-lg ring-1 ring-zinc-200 dark:ring-zinc-800 shadow-sm">
                 <Image 
                   src={session.user.image} 
                   alt={session.user.name || ""} 
                   fill
-                  className="rounded-full object-cover"
+                  className="object-cover"
                 />
               </div>
             )}
-            <span className="text-xs text-zinc-400">
+            <span className="text-xs text-zinc-500 font-bold">
               {session ? `${session.user?.name}님으로 작성 중` : "로그인이 필요합니다"}
             </span>
           </div>
