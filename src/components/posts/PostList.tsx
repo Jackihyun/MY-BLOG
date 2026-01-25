@@ -95,53 +95,56 @@ function PostsList({
             </p>
           </div>
         ) : (
-          filteredPosts.map(({ id, date, title, contentHtml, category }, index) => (
-            <motion.article
-              key={id}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.3, delay: index * 0.05 }}
-            >
-              <Link href={`/posts/${id}`}>
-                <div
-                  className="group p-5 bg-white dark:bg-[#0a0a0a] rounded-2xl border border-zinc-100 dark:border-zinc-800
-                             transition-all duration-300 ease-out
-                             hover:shadow-xl hover:shadow-zinc-200/50 dark:hover:shadow-black/40
-                             hover:border-indigo-200 dark:hover:border-indigo-800/50
-                             hover:-translate-y-1"
-                >
-                  <div className="flex items-start justify-between gap-4">
-                    <div className="flex-1 min-w-0">
-                      <h2 className="text-lg font-bold text-zinc-900 dark:text-zinc-50 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors line-clamp-2">
-                        {title}
-                      </h2>
-                      <p className="mt-2 text-sm text-zinc-600 dark:text-zinc-400 line-clamp-2 leading-relaxed font-medium">
-                        {excerpt || (() => {
-                          const plainText = contentHtml.replace(/<[^>]*>?/gm, '');
-                          return plainText.length > 160 
-                            ? plainText.substring(0, 160) + "..." 
-                            : plainText;
-                        })()}
-                      </p>
-                      <div className="flex items-center gap-3 mt-4">
-                        <span className="px-2.5 py-1 text-xs font-bold rounded-full bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400">
-                          {category}
-                        </span>
-                        <span className="text-xs text-zinc-400 dark:text-zinc-500 font-medium">
-                          {date}
-                        </span>
+          filteredPosts.map((post, index) => {
+            const { id, date, title, contentHtml, category, excerpt } = post;
+            return (
+              <motion.article
+                key={id}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.3, delay: index * 0.05 }}
+              >
+                <Link href={`/posts/${id}`}>
+                  <div
+                    className="group p-5 bg-white dark:bg-[#0a0a0a] rounded-2xl border border-zinc-100 dark:border-zinc-800
+                               transition-all duration-300 ease-out
+                               hover:shadow-xl hover:shadow-zinc-200/50 dark:hover:shadow-black/40
+                               hover:border-indigo-200 dark:hover:border-indigo-800/50
+                               hover:-translate-y-1"
+                  >
+                    <div className="flex items-start justify-between gap-4">
+                      <div className="flex-1 min-w-0">
+                        <h2 className="text-lg font-bold text-zinc-900 dark:text-zinc-50 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors line-clamp-2">
+                          {title}
+                        </h2>
+                        <p className="mt-2 text-sm text-zinc-600 dark:text-zinc-400 line-clamp-2 leading-relaxed font-medium">
+                          {excerpt || (() => {
+                            const plainText = contentHtml.replace(/<[^>]*>?/gm, '');
+                            return plainText.length > 160 
+                              ? plainText.substring(0, 160) + "..." 
+                              : plainText;
+                          })()}
+                        </p>
+                        <div className="flex items-center gap-3 mt-4">
+                          <span className="px-2.5 py-1 text-xs font-bold rounded-full bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400">
+                            {category}
+                          </span>
+                          <span className="text-xs text-zinc-400 dark:text-zinc-500 font-medium">
+                            {date}
+                          </span>
+                        </div>
+                      </div>
+                      <div className="hidden sm:flex items-center justify-center w-10 h-10 rounded-full bg-zinc-50 dark:bg-zinc-800 group-hover:bg-indigo-50 dark:group-hover:bg-indigo-900/30 transition-colors">
+                        <svg className="w-5 h-5 text-zinc-400 group-hover:text-indigo-500 transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                        </svg>
                       </div>
                     </div>
-                    <div className="hidden sm:flex items-center justify-center w-10 h-10 rounded-full bg-zinc-50 dark:bg-zinc-800 group-hover:bg-indigo-50 dark:group-hover:bg-indigo-900/30 transition-colors">
-                      <svg className="w-5 h-5 text-zinc-400 group-hover:text-indigo-500 transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                      </svg>
-                    </div>
                   </div>
-                </div>
-              </Link>
-            </motion.article>
-          ))
+                </Link>
+              </motion.article>
+            );
+          })
         )}
       </div>
     </div>
