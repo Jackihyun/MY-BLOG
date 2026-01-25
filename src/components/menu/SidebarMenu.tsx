@@ -28,7 +28,7 @@ const SidebarMenu = ({
   };
 
   return (
-    <div className="sm:hidden">
+    <div className="min-[850px]:hidden">
       {isOpen && (
         <div
           className="fixed inset-0 bg-black/50 backdrop-blur-sm z-30"

@@ -32,7 +32,7 @@ export default function Header() {
         </Link>
 
         {/* Desktop Navigation */}
-        <nav className="hidden md:flex items-center gap-1 text-sm font-semibold">
+        <nav className="hidden min-[850px]:flex items-center gap-1 text-sm font-semibold">
           <Link
             href="/posts"
             className={`px-4 py-2 rounded-xl transition-all ${
@@ -79,7 +79,7 @@ export default function Header() {
         {/* Right Side Controls */}
         <div className="flex items-center gap-1">
           <DarkModeToggle />
-          <div className="md:hidden">
+          <div className="min-[850px]:hidden">
             <HamburgerMenu isChecked={isSidebarOpen} onToggle={toggleSidebar} />
           </div>
         </div>

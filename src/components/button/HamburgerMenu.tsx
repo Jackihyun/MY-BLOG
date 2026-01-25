@@ -8,7 +8,7 @@ const HamburgerMenu = ({
   onToggle: () => void;
 }) => {
   return (
-    <label className="hamburger cursor-pointer z-50 sm:hidden">
+    <label className="hamburger cursor-pointer z-50">
       <input
         type="checkbox"
         checked={isChecked}
