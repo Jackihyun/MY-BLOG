@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { toast } from "sonner";
 import { motion, AnimatePresence } from "framer-motion";
+import { useSession } from "next-auth/react";
 import { CommentResponse, CommentCreateRequest } from "@/types";
 import CommentForm from "./CommentForm";
 
@@ -57,9 +58,13 @@ export default function CommentItem({
   depth = 0,
   isGuestbookStyle = false,
 }: CommentItemProps) {
+  const { data: session } = useSession();
   const [showReplyForm, setShowReplyForm] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
+
+  // 본인 확인 로직
+  const isAuthor = session?.user?.email && comment.authorEmail === session.user.email;
 
   const handleReply = async (data: CommentCreateRequest) => {
     const success = await onReply(comment.id, data);
@@ -121,12 +126,14 @@ export default function CommentItem({
                 >
                   Reply
                 </button>
-                <button 
-                  onClick={() => setShowDeleteModal(true)}
-                  className="text-[10px] font-black text-zinc-400 hover:text-rose-500 uppercase tracking-widest"
-                >
-                  Delete
-                </button>
+                {isAuthor && (
+                  <button 
+                    onClick={() => setShowDeleteModal(true)}
+                    className="text-[10px] font-black text-zinc-400 hover:text-rose-500 uppercase tracking-widest"
+                  >
+                    Delete
+                  </button>
+                )}
               </div>
             )}
           </div>
@@ -250,15 +257,17 @@ export default function CommentItem({
                     {showReplyForm ? "취소" : "답글"}
                   </button>
                 )}
-                <button
-                  onClick={() => setShowDeleteModal(true)}
-                  className="flex items-center gap-1.5 text-xs text-zinc-500 hover:text-red-500 dark:text-gray-400 dark:hover:text-red-400 transition-colors opacity-0 group-hover:opacity-100"
-                >
-                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                  </svg>
-                  삭제
-                </button>
+                {isAuthor && (
+                  <button
+                    onClick={() => setShowDeleteModal(true)}
+                    className="flex items-center gap-1.5 text-xs text-zinc-500 hover:text-red-500 dark:text-gray-400 dark:hover:text-red-400 transition-colors opacity-0 group-hover:opacity-100"
+                  >
+                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                    </svg>
+                    삭제
+                  </button>
+                )}
               </div>
             )}
           </div>

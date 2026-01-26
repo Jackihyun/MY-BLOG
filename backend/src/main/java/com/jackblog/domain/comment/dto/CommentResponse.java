@@ -18,6 +18,7 @@ import java.util.stream.Collectors;
 public class CommentResponse {
     private Long id;
     private String authorName;
+    private String authorEmail;
     private String content;
     private Integer depth;
     private Boolean isDeleted;
@@ -28,6 +29,7 @@ public class CommentResponse {
         return CommentResponse.builder()
             .id(comment.getId())
             .authorName(comment.getAuthorName())
+            .authorEmail(comment.getAuthorEmail())
             .content(comment.getContent())
             .depth(comment.getDepth())
             .isDeleted(comment.getIsDeleted())

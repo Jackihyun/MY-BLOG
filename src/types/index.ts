@@ -58,6 +58,7 @@ export interface PostUpdateRequest {
 export interface CommentResponse {
   id: number;
   authorName: string;
+  authorEmail?: string;
   content: string;
   depth: number;
   isDeleted: boolean;
