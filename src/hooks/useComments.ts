@@ -64,15 +64,15 @@ export function useComments(slug: string) {
   );
 
   const removeComment = useCallback(
-    async (commentId: number, password: string): Promise<boolean> => {
+    async (commentId: number, password: string, requesterEmail?: string): Promise<boolean> => {
       try {
-        await deleteComment(commentId, password);
+        await deleteComment(commentId, password, requesterEmail);
         await loadComments();
         toast.success("댓글이 삭제되었습니다.");
         return true;
       } catch (err) {
-        setError("댓글 삭제에 실패했습니다. 비밀번호를 확인해주세요.");
-        toast.error("댓글 삭제에 실패했습니다. 비밀번호를 확인해주세요.");
+        setError("댓글 삭제에 실패했습니다. 권한이 없거나 비밀번호가 틀렸습니다.");
+        toast.error("댓글 삭제에 실패했습니다. 권한이 없거나 비밀번호가 틀렸습니다.");
         console.error(err);
         return false;
       }

@@ -101,12 +101,20 @@ public class CommentService {
     }
 
     @Transactional
-    public void deleteComment(Long commentId, String password) {
+    public void deleteComment(Long commentId, String password, String requesterEmail) {
         Comment comment = commentRepository.findById(commentId)
             .orElseThrow(() -> ResourceNotFoundException.comment(commentId));
 
-        if (!passwordEncoder.matches(password, comment.getPasswordHash())) {
-            throw new UnauthorizedException("Invalid password");
+        // 소셜 로그인 댓글인 경우 이메일로 검증
+        if ("social-login".equals(password)) {
+            if (comment.getAuthorEmail() == null || !comment.getAuthorEmail().equals(requesterEmail)) {
+                throw new UnauthorizedException("You can only delete your own comments");
+            }
+        } else {
+            // 일반 댓글인 경우 비밀번호로 검증
+            if (!passwordEncoder.matches(password, comment.getPasswordHash())) {
+                throw new UnauthorizedException("Invalid password");
+            }
         }
 
         if (comment.hasReplies()) {

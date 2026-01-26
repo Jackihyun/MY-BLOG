@@ -174,11 +174,12 @@ export async function createReply(
 
 export async function deleteComment(
   commentId: number,
-  password: string
+  password: string,
+  requesterEmail?: string
 ): Promise<void> {
   await fetchApi<void>(`/comments/${commentId}`, {
     method: "DELETE",
-    body: JSON.stringify({ password }),
+    body: JSON.stringify({ password, requesterEmail }),
   });
 }
 

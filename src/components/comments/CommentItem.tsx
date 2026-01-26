@@ -10,7 +10,7 @@ import CommentForm from "./CommentForm";
 interface CommentItemProps {
   comment: CommentResponse;
   onReply: (parentId: number, data: CommentCreateRequest) => Promise<boolean>;
-  onDelete: (commentId: number, password: string) => Promise<boolean>;
+  onDelete: (commentId: number, password: string, requesterEmail?: string) => Promise<boolean>;
   depth?: number;
   isGuestbookStyle?: boolean;
 }
@@ -80,7 +80,7 @@ export default function CommentItem({
 
     setIsDeleting(true);
     try {
-      const success = await onDelete(comment.id, "social-login");
+      const success = await onDelete(comment.id, "social-login", session?.user?.email || undefined);
       if (success) {
         toast.success("댓글이 삭제되었습니다.");
         setShowDeleteModal(false);

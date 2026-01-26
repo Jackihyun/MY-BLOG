@@ -53,7 +53,7 @@ public class CommentController {
         @PathVariable Long id,
         @Valid @RequestBody CommentDeleteRequest request
     ) {
-        commentService.deleteComment(id, request.getPassword());
+        commentService.deleteComment(id, request.getPassword(), request.getRequesterEmail());
         return ResponseEntity.ok(ApiResponse.success("Comment deleted"));
     }
 
