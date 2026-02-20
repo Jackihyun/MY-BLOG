@@ -5,7 +5,13 @@ import { useRouter } from "next/navigation";
 import dynamic from "next/dynamic";
 import { toast } from "sonner";
 import { useAuth } from "@/hooks/useAuth";
-import { createPost, updatePost, fetchPostAdmin, fetchCategories } from "@/lib/api";
+import {
+  createPost,
+  updatePost,
+  fetchPostAdmin,
+  fetchPost,
+  fetchCategories,
+} from "@/lib/api";
 
 const TiptapEditor = dynamic(
   () => import("@/components/editor/TiptapEditor"),
@@ -37,10 +43,15 @@ export default function PostEditor({ slug, mode }: PostEditorProps) {
   const [isLoading, setIsLoading] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [existingCategories, setExistingCategories] = useState<string[]>([]);
+  const defaultCategories = ["TIL", "개발", "회고", "트러블슈팅", "일상"];
+  const mergedCategories = [
+    ...existingCategories,
+    ...defaultCategories.filter((cat) => !existingCategories.includes(cat)),
+  ];
   const categoryOptions =
-    category && !existingCategories.includes(category)
-      ? [category, ...existingCategories]
-      : existingCategories;
+    category && !mergedCategories.includes(category)
+      ? [category, ...mergedCategories]
+      : mergedCategories;
 
   const createExcerptFromContent = (html: string) => {
     const excerptLimit = 160;
@@ -80,6 +91,10 @@ export default function PostEditor({ slug, mode }: PostEditorProps) {
     if (mode === "edit" && slug && token) {
       setIsLoading(true);
       fetchPostAdmin(slug, token)
+        .catch(async (adminError) => {
+          console.warn("Admin fetch failed, fallback to public post:", adminError);
+          return fetchPost(slug);
+        })
         .then((post) => {
           setTitle(post.title);
           setContent(post.contentHtml || post.content);
@@ -87,7 +102,7 @@ export default function PostEditor({ slug, mode }: PostEditorProps) {
         })
         .catch((error) => {
           console.error("Failed to load post:", error);
-          toast.error("글을 불러오는데 실패했습니다.");
+          toast.error("기존 글을 불러오지 못했습니다. 잠시 후 다시 시도해주세요.");
           router.push("/posts");
         })
         .finally(() => setIsLoading(false));

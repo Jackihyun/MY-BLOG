@@ -7,5 +7,6 @@ interface EditPostPageProps {
 }
 
 export default function EditPostPage({ params }: EditPostPageProps) {
-  return <PostEditor mode="edit" slug={params.slug} />;
+  const decodedSlug = decodeURIComponent(params.slug);
+  return <PostEditor mode="edit" slug={decodedSlug} />;
 }
