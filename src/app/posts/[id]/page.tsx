@@ -11,19 +11,25 @@ interface PostProps {
 
 export async function generateMetadata({ params }: PostProps): Promise<Metadata> {
   const postData = await getPostData(params.id);
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://blog.jackihyun.me";
+  const ogUrl = `/api/og?title=${encodeURIComponent(postData.title)}&category=${encodeURIComponent(postData.category)}`;
 
   return {
     title: `${postData.title} | Jack's Blog`,
     description: postData.excerpt || postData.title,
+    alternates: {
+      canonical: `${siteUrl}/posts/${params.id}`,
+    },
     openGraph: {
       title: postData.title,
       description: postData.excerpt || postData.title,
       type: "article",
+      url: `${siteUrl}/posts/${params.id}`,
       publishedTime: postData.date,
       authors: ["Jackihyun"],
       images: [
         {
-          url: `/api/og?title=${encodeURIComponent(postData.title)}`,
+          url: ogUrl,
           width: 1200,
           height: 630,
           alt: postData.title,
@@ -34,6 +40,7 @@ export async function generateMetadata({ params }: PostProps): Promise<Metadata>
       card: "summary_large_image",
       title: postData.title,
       description: postData.excerpt || postData.title,
+      images: [ogUrl],
     },
   };
 }

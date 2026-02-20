@@ -34,7 +34,7 @@ export const metadata: Metadata = {
     description: "개발 블로그 by Jackihyun",
     images: [
       {
-        url: "/api/og",
+        url: `/api/og?title=${encodeURIComponent(siteName)}`,
         width: 1200,
         height: 630,
         alt: siteName,
@@ -45,7 +45,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: siteName,
     description: "개발 블로그 by Jackihyun",
-    images: ["/api/og"],
+    images: [`/api/og?title=${encodeURIComponent(siteName)}`],
   },
   robots: {
     index: true,
@@ -70,10 +70,12 @@ export const metadata: Metadata = {
   icons: {
     icon: [
       { url: "/favicon.svg", type: "image/svg+xml" },
+      { url: "/icon.svg", type: "image/svg+xml" },
     ],
     shortcut: "/favicon.svg",
     apple: "/favicon.svg",
   },
+  manifest: "/site.webmanifest",
 };
 
 export default function RootLayout({
@@ -94,14 +96,16 @@ export default function RootLayout({
       <body
         className={`${inter.className} flex flex-col min-h-screen overflow-x-hidden`}
       >
-                <Providers>
-                  <Header />
+        <Providers>
+          <div className="flex flex-col min-h-screen">
+            <Header />
 
-                  <main className="flex-grow w-full pt-32 pb-20 px-4 max-w-5xl mx-auto">
-                    {children}
-                  </main>
-                  <Footer />
-                </Providers>
+            <main className="flex-grow w-full pt-32 pb-20 px-4 max-w-5xl mx-auto">
+              {children}
+            </main>
+            <Footer />
+          </div>
+        </Providers>
       </body>
     </html>
   );

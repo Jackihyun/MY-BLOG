@@ -7,6 +7,8 @@ export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
   const title = searchParams.get("title") || "Jack's Blog";
   const category = searchParams.get("category") || "";
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://blog.jackihyun.me";
+  const host = new URL(siteUrl).host;
 
   return new ImageResponse(
     (
@@ -18,9 +20,9 @@ export async function GET(request: NextRequest) {
           flexDirection: "column",
           alignItems: "center",
           justifyContent: "center",
-          backgroundColor: "#1a1a2e",
+          backgroundColor: "#0b1120",
           backgroundImage:
-            "linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%)",
+            "radial-gradient(circle at 12% 15%, #1d4ed8 0%, rgba(29, 78, 216, 0) 36%), radial-gradient(circle at 88% 18%, #0891b2 0%, rgba(8, 145, 178, 0) 32%), linear-gradient(145deg, #0b1120 0%, #111827 60%, #020617 100%)",
           padding: "40px 80px",
         }}
       >
@@ -41,15 +43,16 @@ export async function GET(request: NextRequest) {
                 alignItems: "center",
                 justifyContent: "center",
                 padding: "8px 24px",
-                backgroundColor: "rgba(255, 255, 255, 0.1)",
-                borderRadius: "24px",
+                 backgroundColor: "rgba(59, 130, 246, 0.16)",
+                 border: "1px solid rgba(125, 211, 252, 0.35)",
+                 borderRadius: "24px",
                 marginBottom: "24px",
               }}
             >
               <span
                 style={{
                   fontSize: "24px",
-                  color: "#a5b4fc",
+                   color: "#bfdbfe",
                   fontWeight: 500,
                 }}
               >
@@ -81,22 +84,22 @@ export async function GET(request: NextRequest) {
           >
             <div
               style={{
-                width: "48px",
-                height: "48px",
-                borderRadius: "50%",
-                backgroundColor: "#4f46e5",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-              }}
-            >
-              <span style={{ fontSize: "24px", color: "#fff" }}>J</span>
-            </div>
+                 width: "54px",
+                 height: "54px",
+                 borderRadius: "14px",
+                 background: "linear-gradient(160deg, #38bdf8, #2563eb)",
+                 display: "flex",
+                 alignItems: "center",
+                 justifyContent: "center",
+               }}
+             >
+               <span style={{ fontSize: "30px", color: "#fff", fontWeight: 700 }}>J</span>
+             </div>
             <span
               style={{
                 fontSize: "28px",
-                color: "#94a3b8",
-                fontWeight: 500,
+                 color: "#cbd5e1",
+                 fontWeight: 500,
               }}
             >
               Jack&apos;s Blog
@@ -117,11 +120,11 @@ export async function GET(request: NextRequest) {
           <span
             style={{
               fontSize: "20px",
-              color: "#64748b",
-            }}
-          >
-            jackblog.com
-          </span>
+               color: "#94a3b8",
+             }}
+           >
+             {host}
+           </span>
         </div>
       </div>
     ),

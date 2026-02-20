@@ -1,3 +1,4 @@
+import { useCallback, useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useRecoilState } from "recoil";
@@ -13,9 +14,24 @@ const SidebarMenu = ({
   const pathname = usePathname();
   const [, setSidebarOpen] = useRecoilState(sidebarState);
 
-  const closeSidebar = () => {
+  const closeSidebar = useCallback(() => {
+    onClose();
     setSidebarOpen(false);
-  };
+  }, [onClose, setSidebarOpen]);
+
+  useEffect(() => {
+    if (isOpen) {
+      document.body.style.overflow = "hidden";
+      const handleEsc = (e: KeyboardEvent) => {
+        if (e.key === "Escape") closeSidebar();
+      };
+      window.addEventListener("keydown", handleEsc);
+      return () => {
+        document.body.style.overflow = "unset";
+        window.removeEventListener("keydown", handleEsc);
+      };
+    }
+  }, [isOpen, closeSidebar]);
 
   const linkClasses = (path: string) => {
     const baseClasses = "flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200";
@@ -36,6 +52,10 @@ const SidebarMenu = ({
         ></div>
       )}
       <div
+        id="mobile-sidebar"
+        role="dialog"
+        aria-modal="true"
+        aria-label="Mobile navigation menu"
         className={`fixed top-0 right-0 h-full w-72 bg-white dark:bg-[#050505] shadow-2xl z-40 transform ${
           isOpen ? "translate-x-0" : "translate-x-full"
         } transition-transform duration-300 ease-in-out border-l border-zinc-100 dark:border-zinc-800`}
@@ -44,6 +64,7 @@ const SidebarMenu = ({
         <div className="flex justify-end p-6">
           <button
             onClick={closeSidebar}
+            aria-label="Close menu"
             className="p-2 rounded-xl text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors"
           >
             <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">

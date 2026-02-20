@@ -16,10 +16,24 @@ interface CommentItemProps {
 }
 
 function formatRelativeTime(dateString: string): string {
-  const date = new Date(dateString);
+  // 백엔드가 UTC 시간을 Z 없이 보내는 경우를 대비해 보정
+  let parsedDate = dateString;
+  if (!parsedDate.endsWith('Z') && !parsedDate.includes('+')) {
+    parsedDate += 'Z';
+  }
+  
+  const date = new Date(parsedDate);
   const now = new Date();
-  const diffMs = now.getTime() - date.getTime();
-  const diffSec = Math.floor(diffMs / 1000);
+  
+  let diffMs = now.getTime() - date.getTime();
+  
+  // 혹시라도 서버가 KST 시간을 Z 없이 보냈는데 우리가 Z를 붙여서
+  // 미래 시간(예: -9시간)이 되어버린 경우 원래대로 복구
+  if (diffMs < -1000 * 60 * 60) {
+    diffMs += 9 * 60 * 60 * 1000;
+  }
+  
+  const diffSec = Math.floor(Math.max(0, diffMs) / 1000);
   const diffMin = Math.floor(diffSec / 60);
   const diffHour = Math.floor(diffMin / 60);
   const diffDay = Math.floor(diffHour / 24);

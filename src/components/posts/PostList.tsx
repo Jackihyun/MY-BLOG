@@ -5,6 +5,7 @@ import Link from "next/link";
 import { motion } from "framer-motion";
 import { PostData } from "@/lib/posts";
 import { useAuth } from "@/hooks/useAuth";
+import { getPostPreview } from "@/lib/utils";
 
 function PostsList({
   allPostsData,
@@ -118,12 +119,7 @@ function PostsList({
                           {title}
                         </h2>
                         <p className="mt-2 text-sm text-zinc-600 dark:text-zinc-400 line-clamp-2 leading-relaxed font-medium">
-                          {excerpt || (() => {
-                            const plainText = contentHtml.replace(/<[^>]*>?/gm, '');
-                            return plainText.length > 160 
-                              ? plainText.substring(0, 160) + "..." 
-                              : plainText;
-                          })()}
+                          {getPostPreview(excerpt, contentHtml, 160)}
                         </p>
                         <div className="flex items-center gap-3 mt-4">
                           <span className="px-2.5 py-1 text-xs font-bold rounded-full bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400">

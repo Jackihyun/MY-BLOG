@@ -1,0 +1,21 @@
+{
+  "name": "Jack's Blog",
+  "short_name": "JackBlog",
+  "description": "Frontend, backend, and AI development notes by Jackihyun",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0b1120",
+  "theme_color": "#2563eb",
+  "icons": [
+    {
+      "src": "/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml"
+    },
+    {
+      "src": "/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml"
+    }
+  ]
+}

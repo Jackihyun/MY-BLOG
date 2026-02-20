@@ -11,6 +11,7 @@ export default function DarkModeToggle() {
   return (
     <button
       onClick={toggleTheme}
+      aria-label="Toggle dark mode"
       className="p-2 hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-xl transition-colors flex items-center justify-center text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-50"
     >
       {theme.value === "light" ? (

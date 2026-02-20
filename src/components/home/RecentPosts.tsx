@@ -5,6 +5,7 @@ import { motion } from "framer-motion";
 import { PostData } from "@/lib/posts";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { getPostPreview } from "@/lib/utils";
 
 interface RecentPostsProps {
   posts: PostData[];
@@ -72,9 +73,10 @@ export default function RecentPosts({ posts }: RecentPostsProps) {
                   </CardHeader>
                   <CardContent className="pt-0">
                     <CardDescription
-                      className="line-clamp-2 text-sm text-zinc-600 dark:text-zinc-400 leading-relaxed"
-                      dangerouslySetInnerHTML={{ __html: post.contentHtml }}
-                    />
+                      className="line-clamp-2 text-sm text-zinc-600 dark:text-zinc-400 leading-relaxed font-medium"
+                    >
+                      {getPostPreview(post.excerpt, post.contentHtml, 120)}
+                    </CardDescription>
                     <div className="flex items-center gap-2 mt-6 text-indigo-600 dark:text-indigo-400 text-sm font-bold opacity-0 group-hover:opacity-100 transition-all transform translate-y-2 group-hover:translate-y-0">
                       읽어보기
                       <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">

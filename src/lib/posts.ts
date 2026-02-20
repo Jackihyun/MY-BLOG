@@ -8,8 +8,36 @@ import { PostData } from "@/types";
 export type { PostData };
 
 const postsDirectory = path.join(process.cwd(), "src/posts");
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080/api";
+const SERVER_API_BASE =
+  process.env.NEXT_PUBLIC_API_URL?.replace(/\/$/, "") ||
+  "http://localhost:8080/api";
+const CLIENT_API_BASE =
+  process.env.NEXT_PUBLIC_API_PROXY_PATH?.replace(/\/$/, "") || "/api/proxy";
+const API_BASE = typeof window === "undefined" ? SERVER_API_BASE : CLIENT_API_BASE;
 const USE_API = true;
+
+// ============ Utility functions ============
+
+export function sanitizeExcerpt(htmlOrText?: string): string {
+  if (!htmlOrText) return "";
+  
+  // 1) Decode basic HTML entities first
+  const decodedText = htmlOrText
+    .replace(/&lt;/g, "<")
+    .replace(/&gt;/g, ">")
+    .replace(/&amp;/g, "&")
+    .replace(/&quot;/g, '"')
+    .replace(/&#39;/g, "'")
+    .replace(/&nbsp;/g, " ");
+
+  // 2) Remove all HTML tags (including potentially broken ones like <p or <strong)
+  const plainText = decodedText
+    .replace(/<[^>]*>?/g, "")
+    .replace(/\s+/g, " ")
+    .trim();
+
+  return plainText;
+}
 
 // ============ API-based functions ============
 
@@ -29,23 +57,35 @@ async function fetchFromApi<T>(endpoint: string): Promise<T | null> {
 function apiPostToPostData(apiPost: {
   slug: string;
   title: string;
-  publishedAt: string;
+  publishedAt?: string;
+  createdAt?: string;
   category: string;
-  contentHtml: string;
+  contentHtml?: string;
   excerpt?: string;
   readingTime?: number;
   viewCount?: number;
 }): PostData {
+  let dateStr = new Date().toISOString().split("T")[0];
+  if (apiPost.publishedAt) {
+    const d = new Date(apiPost.publishedAt);
+    d.setHours(d.getHours() + 9);
+    dateStr = d.toISOString().split("T")[0];
+  } else if (apiPost.createdAt) {
+    const d = new Date(apiPost.createdAt);
+    d.setHours(d.getHours() + 9);
+    dateStr = d.toISOString().split("T")[0];
+  }
+
+  const normalizedExcerpt = sanitizeExcerpt(apiPost.excerpt || apiPost.contentHtml);
+
   return {
     id: apiPost.slug,
     slug: apiPost.slug,
     title: apiPost.title,
-    date: apiPost.publishedAt
-      ? new Date(apiPost.publishedAt).toISOString().split("T")[0]
-      : new Date().toISOString().split("T")[0],
+    date: dateStr,
     category: apiPost.category,
-    contentHtml: apiPost.contentHtml,
-    excerpt: apiPost.excerpt,
+    contentHtml: apiPost.contentHtml || "",
+    excerpt: normalizedExcerpt || "요약이 아직 등록되지 않았습니다.",
     readingTime: apiPost.readingTime,
     viewCount: apiPost.viewCount,
   };
@@ -115,7 +155,7 @@ interface ApiPostResponse {
   title: string;
   publishedAt: string;
   category: string;
-  contentHtml: string;
+  contentHtml?: string;
   excerpt?: string;
   readingTime?: number;
   viewCount?: number;

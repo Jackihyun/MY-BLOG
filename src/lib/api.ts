@@ -13,7 +13,13 @@ import {
   LoginResponse,
 } from "@/types";
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080/api";
+const SERVER_API_BASE =
+  process.env.NEXT_PUBLIC_API_URL?.replace(/\/$/, "") ||
+  "http://localhost:8080/api";
+const CLIENT_API_BASE =
+  process.env.NEXT_PUBLIC_API_PROXY_PATH?.replace(/\/$/, "") || "/api/proxy";
+
+const API_BASE = typeof window === "undefined" ? SERVER_API_BASE : CLIENT_API_BASE;
 
 class ApiError extends Error {
   constructor(

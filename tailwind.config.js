@@ -9,14 +9,6 @@ module.exports = {
   ],
   theme: {
     extend: {
-      fontFamily: {
-        'pretendard-regular': ['Pretendard-Regular', 'sans-serif'],
-        'pretendard-semibold': ['Pretendard-Semibold', 'sans-serif'],
-        'pretendard-bold': ['Pretendard-Bold', 'sans-serif'],
-        'roboto-regular': ['Roboto-Regular', 'sans-serif'],
-        'roboto-medium': ['Roboto-Medium', 'sans-serif'],
-        'roboto-bold': ['Roboto-Bold', 'sans-serif'],
-      },
       typography: (theme) => ({
         DEFAULT: {
           css: {

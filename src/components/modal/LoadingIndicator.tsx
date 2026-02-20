@@ -27,8 +27,8 @@ const LoadingIndicator = () => (
       <motion.span 
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
-        transition={{ delay: 0.2 }}
-        className="mt-4 text-[11px] font-bold text-zinc-400 dark:text-zinc-500 tracking-[0.2em] uppercase"
+        transition={{ delay: 0.1 }}
+        className="mt-4 text-[10px] font-black text-zinc-400 dark:text-zinc-500 tracking-[0.3em] uppercase"
       >
         Loading
       </motion.span>

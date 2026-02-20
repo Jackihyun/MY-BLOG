@@ -22,7 +22,7 @@ export default function TableOfContents({ contentHtml }: TableOfContentsProps) {
   useEffect(() => {
     const parser = new DOMParser();
     const doc = parser.parseFromString(contentHtml, "text/html");
-    const headings = doc.querySelectorAll("h1, h2, h3");
+    const headings = doc.querySelectorAll("h2");
 
     const tocItems: TOCItem[] = [];
     headings.forEach((heading, index) => {
@@ -42,7 +42,7 @@ export default function TableOfContents({ contentHtml }: TableOfContentsProps) {
     const contentDiv = document.querySelector('[data-post-content]');
     if (!contentDiv) return;
 
-    const headings = contentDiv.querySelectorAll("h1, h2, h3");
+    const headings = contentDiv.querySelectorAll("h2");
     headings.forEach((heading, index) => {
       heading.id = `heading-${index}`;
     });
@@ -120,7 +120,7 @@ export default function TableOfContents({ contentHtml }: TableOfContentsProps) {
                       onClick={() => handleClick(item.id)}
                       className={`text-left w-full truncate py-2 px-3 rounded-xl text-[14px] font-medium transition-colors ${
                         activeId === item.id
-                          ? "text-[#4dabf7] bg-zinc-50 dark:bg-white/5"
+                          ? "text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-900/20"
                           : "text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-200 hover:bg-zinc-50 dark:hover:bg-white/5"
                       }`}
                     >

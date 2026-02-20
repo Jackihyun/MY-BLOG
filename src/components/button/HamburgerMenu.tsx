@@ -8,16 +8,16 @@ const HamburgerMenu = ({
   onToggle: () => void;
 }) => {
   return (
-    <label className="hamburger cursor-pointer z-50">
-      <input
-        type="checkbox"
-        checked={isChecked}
-        onChange={onToggle}
-        className="hidden"
-      />
+    <button
+      className="hamburger cursor-pointer z-50 p-1"
+      onClick={onToggle}
+      aria-label={isChecked ? "Close menu" : "Open menu"}
+      aria-expanded={isChecked}
+      aria-controls="mobile-sidebar"
+    >
       <svg
         viewBox="0 0 34 34"
-        className={`transition-transform duration-600 ease-in-out ${
+        className={`w-8 h-8 transition-transform duration-600 ease-in-out ${
           isChecked ? "transform -rotate-45" : ""
         }`}
       >
@@ -30,9 +30,9 @@ const HamburgerMenu = ({
         <path
           className="line transition-all duration-600 ease-in-out"
           d="M7 16 27 16"
-        ></path>
+        >        </path>
       </svg>
-    </label>
+    </button>
   );
 };
 

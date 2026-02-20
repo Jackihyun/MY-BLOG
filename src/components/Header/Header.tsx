@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useCallback } from "react";
+import { useEffect, useCallback, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useRecoilState } from "recoil";
@@ -8,10 +8,12 @@ import { sidebarState } from "@/store/sidebarState";
 import DarkModeToggle from "@/components/DarkModeToogle";
 import HamburgerMenu from "@/components/button/HamburgerMenu";
 import SidebarMenu from "@/components/menu/SidebarMenu";
+import SearchModal from "@/components/search/SearchModal";
 
 export default function Header() {
   const pathname = usePathname();
   const [isSidebarOpen, setIsSidebarOpen] = useRecoilState(sidebarState);
+  const [isSearchOpen, setIsSearchOpen] = useState(false);
 
   const toggleSidebar = useCallback(() => {
     setIsSidebarOpen((prev) => !prev);
@@ -25,14 +27,14 @@ export default function Header() {
     <header className="fixed top-0 left-0 right-0 z-50 flex justify-center pt-4 px-4">
       <div className="w-full max-w-5xl h-[56px] px-6 flex items-center justify-between bg-white/70 dark:bg-black/70 backdrop-blur-xl border border-zinc-200/50 dark:border-zinc-800/50 rounded-2xl shadow-sm">
         {/* Logo */}
-        <Link href="/" className="group flex items-center gap-2">
+        <Link href="/" className="group flex items-center gap-2" aria-label="Home">
           <span className="text-lg md:text-xl font-black tracking-tighter text-zinc-900 dark:text-zinc-50 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">
             JACK&#39;S
           </span>
         </Link>
 
         {/* Desktop Navigation */}
-        <nav className="hidden min-[850px]:flex items-center gap-1 text-sm font-semibold">
+        <nav className="hidden min-[850px]:flex items-center gap-1 text-sm font-semibold" aria-label="Main navigation">
           <Link
             href="/posts"
             className={`px-4 py-2 rounded-xl transition-all ${
@@ -78,6 +80,15 @@ export default function Header() {
 
         {/* Right Side Controls */}
         <div className="flex items-center gap-1">
+          <button
+            onClick={() => setIsSearchOpen(true)}
+            aria-label="Search"
+            className="p-2 hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-xl transition-colors flex items-center justify-center text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-50"
+          >
+            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+            </svg>
+          </button>
           <DarkModeToggle />
           <div className="min-[850px]:hidden">
             <HamburgerMenu isChecked={isSidebarOpen} onToggle={toggleSidebar} />
@@ -87,6 +98,9 @@ export default function Header() {
 
       {/* Mobile Sidebar Menu - outside the header container */}
       <SidebarMenu isOpen={isSidebarOpen} onClose={toggleSidebar} />
+      
+      {/* Search Modal */}
+      <SearchModal isOpen={isSearchOpen} onClose={() => setIsSearchOpen(false)} />
     </header>
   );
 }

@@ -5,14 +5,10 @@ import { PostData } from "@/types";
 import AdminButtons from "@/components/admin/AdminButtons";
 import ReadingProgress from "@/components/post/ReadingProgress";
 import ReadingTime from "@/components/post/ReadingTime";
+import TableOfContents from "@/components/post/TableOfContents";
 import { CommentSkeletonList } from "@/components/skeletons/CommentSkeleton";
 import { Skeleton } from "@/components/ui/Skeleton";
 import { motion } from "framer-motion";
-
-const TableOfContents = dynamic(
-  () => import("@/components/post/TableOfContents"),
-  { ssr: false }
-);
 
 const ReactionBar = dynamic(
   () => import("@/components/reactions/ReactionBar"),
@@ -84,9 +80,6 @@ export default function PostDetailClient({ postData }: PostDetailClientProps) {
             </div>
             
             <div className="flex items-center gap-1.5">
-              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-              </svg>
               <ReadingTime
                 minutes={postData.readingTime}
                 content={postData.contentHtml}
@@ -109,11 +102,11 @@ export default function PostDetailClient({ postData }: PostDetailClientProps) {
           data-post-content
           className="prose dark:prose-invert max-w-none w-full overflow-hidden
                      prose-headings:font-bold prose-headings:text-zinc-900 dark:prose-headings:text-zinc-50
-                     prose-p:text-zinc-700 dark:prose-p:text-zinc-300 prose-p:leading-relaxed
-                     prose-a:text-indigo-600 dark:prose-a:text-indigo-400 prose-a:no-underline hover:prose-a:underline
+                     prose-p:text-zinc-700 dark:prose-p:text-zinc-300 prose-p:leading-[1.8]
+                     prose-a:text-indigo-600 dark:prose-a:text-indigo-400 prose-a:no-underline hover:prose-a:underline prose-a:font-semibold
                      prose-strong:text-zinc-900 dark:prose-strong:text-zinc-50
-                     prose-code:text-indigo-600 dark:prose-code:text-indigo-400 prose-code:bg-zinc-100 dark:prose-code:bg-zinc-800 prose-code:px-1 prose-code:rounded
-                     prose-img:rounded-2xl prose-img:shadow-lg prose-img:max-w-full
+                     prose-code:text-indigo-600 dark:prose-code:text-indigo-400 prose-code:bg-zinc-100 dark:prose-code:bg-zinc-800/50 prose-code:px-1.5 prose-code:py-0.5 prose-code:rounded-md prose-code:before:content-none prose-code:after:content-none
+                     prose-img:rounded-2xl prose-img:shadow-xl prose-img:max-w-full
                      mb-16"
           dangerouslySetInnerHTML={{ __html: postData.contentHtml }}
         />

@@ -7,13 +7,12 @@ export const useRouteChange = () => {
 
   useEffect(() => {
     setIsLoading(true);
-    const handleComplete = () => setIsLoading(false);
+    // 원래 있던 1초 로딩 대신 220ms 정도로 가벼운 전환만 유지
+    const timer = setTimeout(() => {
+      setIsLoading(false);
+    }, 220);
 
-    // Simulate route change completion after a delay
-    // You can adjust the delay or use a more appropriate method to detect when the new route has fully loaded
-    const timeoutId = setTimeout(handleComplete, 1000);
-
-    return () => clearTimeout(timeoutId);
+    return () => clearTimeout(timer);
   }, [pathname]);
 
   return isLoading;
