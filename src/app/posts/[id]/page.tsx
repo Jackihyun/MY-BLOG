@@ -1,5 +1,4 @@
-import { getPostData, getAllPostIds } from "@/lib/posts";
-import Link from "next/link";
+import { getPostData, getAllPostIds, getSortedPostsData } from "@/lib/posts";
 import { Metadata } from "next";
 import PostDetailClient from "./PostDetailClient";
 
@@ -47,6 +46,14 @@ export async function generateMetadata({ params }: PostProps): Promise<Metadata>
 
 export default async function PostPage({ params }: PostProps) {
   const postData = await getPostData(params.id);
+  const allPosts = await getSortedPostsData();
+  const currentIndex = allPosts.findIndex((post) => post.slug === params.id);
+
+  const previousPost =
+    currentIndex >= 0 && currentIndex + 1 < allPosts.length
+      ? allPosts[currentIndex + 1]
+      : null;
+  const nextPost = currentIndex > 0 ? allPosts[currentIndex - 1] : null;
 
   const jsonLd = {
     "@context": "https://schema.org",
@@ -75,7 +82,29 @@ export default async function PostPage({ params }: PostProps) {
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
-      <PostDetailClient postData={postData} />
+      <PostDetailClient
+        postData={postData}
+        previousPost={
+          previousPost
+            ? {
+                slug: previousPost.slug,
+                title: previousPost.title,
+                date: previousPost.date,
+                category: previousPost.category,
+              }
+            : null
+        }
+        nextPost={
+          nextPost
+            ? {
+                slug: nextPost.slug,
+                title: nextPost.title,
+                date: nextPost.date,
+                category: nextPost.category,
+              }
+            : null
+        }
+      />
     </>
   );
 }

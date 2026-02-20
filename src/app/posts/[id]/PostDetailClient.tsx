@@ -1,6 +1,7 @@
 "use client";
 
 import dynamic from "next/dynamic";
+import Link from "next/link";
 import { PostData } from "@/types";
 import AdminButtons from "@/components/admin/AdminButtons";
 import ReadingProgress from "@/components/post/ReadingProgress";
@@ -41,9 +42,25 @@ const CommentList = dynamic(
 
 interface PostDetailClientProps {
   postData: PostData;
+  previousPost: {
+    slug: string;
+    title: string;
+    date: string;
+    category: string;
+  } | null;
+  nextPost: {
+    slug: string;
+    title: string;
+    date: string;
+    category: string;
+  } | null;
 }
 
-export default function PostDetailClient({ postData }: PostDetailClientProps) {
+export default function PostDetailClient({
+  postData,
+  previousPost,
+  nextPost,
+}: PostDetailClientProps) {
   return (
     <>
       <ReadingProgress />
@@ -113,6 +130,52 @@ export default function PostDetailClient({ postData }: PostDetailClientProps) {
 
         <div className="space-y-12">
           <ReactionBar slug={postData.id} />
+
+          {(previousPost || nextPost) && (
+            <nav
+              className="grid grid-cols-1 md:grid-cols-2 gap-4"
+              aria-label="이전글 다음글"
+            >
+              {previousPost ? (
+                <Link
+                  href={`/posts/${previousPost.slug}`}
+                  className="group rounded-2xl border border-zinc-200 dark:border-zinc-800 p-5 bg-white dark:bg-zinc-900/60 hover:border-zinc-300 dark:hover:border-zinc-700 transition-colors"
+                >
+                  <p className="text-xs font-semibold uppercase tracking-wider text-zinc-500 dark:text-zinc-400 mb-2">
+                    이전글
+                  </p>
+                  <h3 className="text-base font-bold text-zinc-900 dark:text-zinc-100 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 line-clamp-2 mb-3 transition-colors">
+                    {previousPost.title}
+                  </h3>
+                  <p className="text-xs text-zinc-500 dark:text-zinc-400">
+                    {previousPost.category} · {previousPost.date}
+                  </p>
+                </Link>
+              ) : (
+                <div className="hidden md:block" />
+              )}
+
+              {nextPost ? (
+                <Link
+                  href={`/posts/${nextPost.slug}`}
+                  className="group rounded-2xl border border-zinc-200 dark:border-zinc-800 p-5 bg-white dark:bg-zinc-900/60 hover:border-zinc-300 dark:hover:border-zinc-700 transition-colors md:text-right"
+                >
+                  <p className="text-xs font-semibold uppercase tracking-wider text-zinc-500 dark:text-zinc-400 mb-2">
+                    다음글
+                  </p>
+                  <h3 className="text-base font-bold text-zinc-900 dark:text-zinc-100 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 line-clamp-2 mb-3 transition-colors">
+                    {nextPost.title}
+                  </h3>
+                  <p className="text-xs text-zinc-500 dark:text-zinc-400">
+                    {nextPost.category} · {nextPost.date}
+                  </p>
+                </Link>
+              ) : (
+                <div className="hidden md:block" />
+              )}
+            </nav>
+          )}
+
           <CommentList slug={postData.id} />
         </div>
       </motion.div>
