@@ -33,13 +33,38 @@ export default function PostEditor({ slug, mode }: PostEditorProps) {
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
   const [category, setCategory] = useState("");
-  const [excerpt, setExcerpt] = useState("");
   const [customSlug, setCustomSlug] = useState("");
-  const [publish, setPublish] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
-  const [editorMode, setEditorMode] = useState<"wysiwyg" | "markdown">("wysiwyg");
   const [existingCategories, setExistingCategories] = useState<string[]>([]);
+  const categoryOptions =
+    category && !existingCategories.includes(category)
+      ? [category, ...existingCategories]
+      : existingCategories;
+
+  const createExcerptFromContent = (html: string) => {
+    const excerptLimit = 160;
+    const container = document.createElement("div");
+    container.innerHTML = html;
+
+    container
+      .querySelectorAll("h1, h2, h3, h4, h5, h6, pre, code, blockquote, hr")
+      .forEach((node) => node.remove());
+
+    const plainText = (container.textContent || "")
+      .replace(/\s+/g, " ")
+      .trim();
+
+    if (!plainText) {
+      return "";
+    }
+
+    if (plainText.length <= excerptLimit) {
+      return plainText;
+    }
+
+    return `${plainText.slice(0, excerptLimit).trimEnd()}...`;
+  };
 
   useEffect(() => {
     if (!isAuthenticated) {
@@ -57,10 +82,8 @@ export default function PostEditor({ slug, mode }: PostEditorProps) {
       fetchPostAdmin(slug, token)
         .then((post) => {
           setTitle(post.title);
-          setContent(post.content);
+          setContent(post.contentHtml || post.content);
           setCategory(post.category);
-          setExcerpt(post.excerpt || "");
-          setPublish(post.isPublished);
         })
         .catch((error) => {
           console.error("Failed to load post:", error);
@@ -87,6 +110,8 @@ export default function PostEditor({ slug, mode }: PostEditorProps) {
     setIsSaving(true);
 
     try {
+      const excerpt = createExcerptFromContent(content);
+
       if (mode === "create") {
         const newPost = await createPost(
           {
@@ -95,12 +120,12 @@ export default function PostEditor({ slug, mode }: PostEditorProps) {
             category,
             excerpt: excerpt || undefined,
             slug: customSlug || undefined,
-            publish,
+            publish: true,
           },
           token
         );
-        toast.success("글이 작성되었습니다.");
-        router.push(`/posts/${newPost.slug}`);
+        toast.success("글이 저장되고 발행되었습니다.");
+        router.push("/posts");
       } else if (slug) {
         await updatePost(
           slug,
@@ -109,12 +134,12 @@ export default function PostEditor({ slug, mode }: PostEditorProps) {
             content,
             category,
             excerpt: excerpt || undefined,
-            publish,
+            publish: true,
           },
           token
         );
-        toast.success("글이 수정되었습니다.");
-        router.push(`/posts/${slug}`);
+        toast.success("글이 수정되고 발행되었습니다.");
+        router.push("/posts");
       }
     } catch (error) {
       console.error("Failed to save post:", error);
@@ -144,33 +169,9 @@ export default function PostEditor({ slug, mode }: PostEditorProps) {
         <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">
           {mode === "create" ? "새 글 작성" : "글 수정"}
         </h1>
-        <div className="flex items-center gap-2">
-          <span className="text-sm text-gray-500">에디터:</span>
-          <div className="flex rounded-lg bg-gray-100 dark:bg-gray-800 p-1">
-            <button
-              type="button"
-              onClick={() => setEditorMode("wysiwyg")}
-              className={`px-3 py-1.5 text-sm font-medium rounded-md transition-all ${
-                editorMode === "wysiwyg"
-                  ? "bg-white dark:bg-gray-700 text-gray-900 dark:text-white shadow-sm"
-                  : "text-gray-500 dark:text-gray-400"
-              }`}
-            >
-              리치 텍스트
-            </button>
-            <button
-              type="button"
-              onClick={() => setEditorMode("markdown")}
-              className={`px-3 py-1.5 text-sm font-medium rounded-md transition-all ${
-                editorMode === "markdown"
-                  ? "bg-white dark:bg-gray-700 text-gray-900 dark:text-white shadow-sm"
-                  : "text-gray-500 dark:text-gray-400"
-              }`}
-            >
-              Markdown
-            </button>
-          </div>
-        </div>
+        <p className="text-sm text-gray-500 dark:text-gray-400">
+          Notion 스타일 에디터
+        </p>
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-6">
@@ -212,52 +213,31 @@ export default function PostEditor({ slug, mode }: PostEditorProps) {
             <label className="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1.5 uppercase tracking-wider">
               카테고리 *
             </label>
-            <div className="flex gap-2">
-              <input
-                type="text"
-                value={category}
-                onChange={(e) => setCategory(e.target.value)}
-                className="flex-grow px-3 py-2.5 text-sm border border-gray-200 dark:border-gray-700 rounded-xl
-                           bg-white dark:bg-[#1e1e1e] text-gray-900 dark:text-gray-100
-                           focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent
-                           transition-all"
-                placeholder="TIL, 개발, 회고 등"
-              />
-              {existingCategories.length > 0 && (
-                <select
-                  value={existingCategories.includes(category) ? category : ""}
-                  onChange={(e) => {
-                    if (e.target.value) setCategory(e.target.value);
-                  }}
-                  className="w-32 px-2 py-2.5 text-sm border border-gray-200 dark:border-gray-700 rounded-xl
-                             bg-white dark:bg-[#1e1e1e] text-gray-900 dark:text-gray-100
-                             focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent
-                             transition-all cursor-pointer"
-                >
-                  <option value="">선택 안함</option>
-                  {existingCategories.map((cat) => (
-                    <option key={cat} value={cat}>
-                      {cat}
-                    </option>
-                  ))}
-                </select>
-              )}
-            </div>
-          </div>
-          <div className={mode === "create" ? "" : "md:col-span-2"}>
-            <label className="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1.5 uppercase tracking-wider">
-              요약 (선택)
-            </label>
-            <input
-              type="text"
-              value={excerpt}
-              onChange={(e) => setExcerpt(e.target.value)}
+            <select
+              value={category}
+              onChange={(e) => setCategory(e.target.value)}
               className="w-full px-3 py-2.5 text-sm border border-gray-200 dark:border-gray-700 rounded-xl
                          bg-white dark:bg-[#1e1e1e] text-gray-900 dark:text-gray-100
                          focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent
-                         transition-all"
-              placeholder="글 요약 (목록에 표시됨)"
-            />
+                         transition-all cursor-pointer"
+            >
+              <option value="" disabled>
+                카테고리를 선택하세요
+              </option>
+              {categoryOptions.map((cat) => (
+                <option key={cat} value={cat}>
+                  {cat}
+                </option>
+              ))}
+            </select>
+          </div>
+          <div className={mode === "create" ? "" : "md:col-span-2"}>
+            <label className="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1.5 uppercase tracking-wider">
+              요약
+            </label>
+            <p className="px-3 py-2.5 text-sm border border-dashed border-gray-200 dark:border-gray-700 rounded-xl text-gray-500 dark:text-gray-400 bg-gray-50 dark:bg-[#1e1e1e]">
+              본문에서 자동 생성됩니다. (제목/코드 블록 제외, 최대 160자)
+            </p>
           </div>
         </div>
 
@@ -266,49 +246,19 @@ export default function PostEditor({ slug, mode }: PostEditorProps) {
           <label className="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-2 uppercase tracking-wider">
             내용 *
           </label>
-          {editorMode === "wysiwyg" ? (
-            <TiptapEditor
-              content={content}
-              onChange={setContent}
-              placeholder="이야기를 시작해보세요..."
-            />
-          ) : (
-            <textarea
-              value={content}
-              onChange={(e) => setContent(e.target.value)}
-              rows={20}
-              className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-xl
-                         bg-white dark:bg-[#1e1e1e] text-gray-900 dark:text-gray-100
-                         focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent
-                         font-mono text-sm leading-relaxed resize-none
-                         transition-all"
-              placeholder="마크다운으로 내용을 작성하세요..."
-            />
-          )}
+          <TiptapEditor
+            content={content}
+            onChange={setContent}
+            placeholder="이야기를 시작해보세요..."
+          />
         </div>
 
         {/* 하단 액션 바 */}
         <div className="fixed bottom-0 left-0 right-0 bg-white/80 dark:bg-[#1a1a1a]/80 backdrop-blur-lg border-t border-gray-200 dark:border-gray-800">
           <div className="max-w-4xl mx-auto px-4 py-4 flex items-center justify-between">
-            <label className="flex items-center gap-3 cursor-pointer group">
-              <div className="relative">
-                <input
-                  type="checkbox"
-                  checked={publish}
-                  onChange={(e) => setPublish(e.target.checked)}
-                  className="sr-only peer"
-                />
-                <div className="w-11 h-6 bg-gray-200 dark:bg-gray-700 rounded-full
-                                peer-checked:bg-green-500
-                                transition-colors" />
-                <div className="absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow-sm
-                                peer-checked:translate-x-5
-                                transition-transform" />
-              </div>
-              <span className="text-sm text-gray-600 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-gray-200 transition-colors">
-                {publish ? "발행됨" : "발행하기"}
-              </span>
-            </label>
+            <p className="text-sm text-gray-600 dark:text-gray-400">
+              저장하면 바로 발행됩니다.
+            </p>
 
             <div className="flex gap-3">
               <button
@@ -338,13 +288,9 @@ export default function PostEditor({ slug, mode }: PostEditorProps) {
                       <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
                       <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
                     </svg>
-                    저장 중...
+                    저장 및 발행 중...
                   </span>
-                ) : mode === "create" ? (
-                  "작성하기"
-                ) : (
-                  "수정하기"
-                )}
+                ) : "저장 및 발행"}
               </button>
             </div>
           </div>

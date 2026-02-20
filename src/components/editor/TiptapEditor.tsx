@@ -239,7 +239,7 @@ export default function TiptapEditor({
       {/* 하단 정보 */}
       <div className="flex justify-between items-center px-4 py-2 border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-[#252525] text-xs text-gray-500">
         <span>{editor.storage.characterCount?.characters?.() || 0}자</span>
-        <span>Markdown 문법 지원</span>
+        <span>블록 기반 에디터</span>
       </div>
     </div>
   );
