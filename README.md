@@ -67,3 +67,9 @@ The migration script runs in upsert mode:
 
 - creates DB posts that do not exist
 - updates DB posts when the same slug already exists
+
+You can also spread published dates for existing DB posts:
+
+```bash
+API_URL=https://blog.jackihyun.me/api ADMIN_PASSWORD=<admin-password> START_DATE=2024-07-01 npm run spread:post-dates
+```

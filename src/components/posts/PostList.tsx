@@ -125,16 +125,18 @@ function PostsList({
                           <span className="px-2.5 py-1 text-xs font-bold rounded-full bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400">
                             {category}
                           </span>
-                          <span
-                            className={`inline-flex items-center gap-1.5 px-2.5 py-1 text-xs font-bold rounded-full ${
-                              isPublished === false
-                                ? "bg-amber-50 text-amber-700 dark:bg-amber-950/40 dark:text-amber-300"
-                                : "bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300"
-                            }`}
-                          >
-                            <span className="w-1.5 h-1.5 rounded-full bg-current" />
-                            {isPublished === false ? "임시" : "발행"}
-                          </span>
+                          {isAuthenticated && (
+                            <span
+                              className={`inline-flex items-center gap-1.5 px-2.5 py-1 text-xs font-bold rounded-full ${
+                                isPublished === false
+                                  ? "bg-amber-50 text-amber-700 dark:bg-amber-950/40 dark:text-amber-300"
+                                  : "bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300"
+                              }`}
+                            >
+                              <span className="w-1.5 h-1.5 rounded-full bg-current" />
+                              {isPublished === false ? "임시" : "발행"}
+                            </span>
+                          )}
                           <span className="text-xs text-zinc-400 dark:text-zinc-500 font-medium">
                             {date}
                           </span>

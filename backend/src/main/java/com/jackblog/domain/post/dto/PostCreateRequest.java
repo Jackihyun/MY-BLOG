@@ -32,4 +32,7 @@ public class PostCreateRequest {
     private String category;
 
     private Boolean publish;
+
+    @Size(max = 50, message = "Published date format is too long")
+    private String publishedAt;
 }

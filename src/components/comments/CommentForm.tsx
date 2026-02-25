@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { toast } from "sonner";
-import { useSession } from "next-auth/react";
+import { signOut, useSession } from "next-auth/react";
 import Image from "next/image";
 import { CommentCreateRequest } from "@/types";
 import AuthModal from "@/components/modal/AuthModal";
@@ -119,6 +119,15 @@ export default function CommentForm({
             <span className="text-xs text-zinc-500 font-bold">
               {session ? `${session.user?.name}님으로 작성 중` : "로그인이 필요합니다"}
             </span>
+            {session && (
+              <button
+                type="button"
+                onClick={() => signOut({ callbackUrl: window.location.pathname })}
+                className="text-xs text-zinc-500 hover:text-zinc-800 dark:text-zinc-400 dark:hover:text-zinc-200 underline underline-offset-2"
+              >
+                로그아웃
+              </button>
+            )}
           </div>
           
           <div className="flex gap-2">
