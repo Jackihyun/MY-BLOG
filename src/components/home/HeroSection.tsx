@@ -140,7 +140,7 @@ export default function HeroSection() {
               href="https://github.com/jackihyun"
               target="_blank"
               rel="noopener noreferrer"
-              aria-label="GitHub"
+              aria-label="GitHub 프로필 열기"
               className="p-3.5 rounded-2xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 text-zinc-600 dark:text-zinc-400 hover:text-indigo-600 dark:hover:text-indigo-400 hover:border-indigo-200 dark:hover:border-indigo-800/50 transition-all shadow-sm"
             >
               <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
@@ -149,7 +149,7 @@ export default function HeroSection() {
             </a>
             <a
               href={`mailto:${process.env.NEXT_PUBLIC_CONTACT_EMAIL || 'your@email.com'}`}
-              aria-label="Email"
+              aria-label="이메일 보내기"
               className="p-3.5 rounded-2xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 text-zinc-600 dark:text-zinc-400 hover:text-indigo-600 dark:hover:text-indigo-400 hover:border-indigo-200 dark:hover:border-indigo-800/50 transition-all shadow-sm"
             >
               <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">

@@ -30,11 +30,15 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
             initial={{ opacity: 0, scale: 0.9, y: 20 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.9, y: 20 }}
+            role="dialog"
+            aria-modal="true"
+            aria-label="로그인 모달"
             className="relative w-full max-w-sm mx-4 p-8 bg-white dark:bg-[#0d0d0d] rounded-3xl shadow-2xl border border-zinc-100 dark:border-zinc-800"
           >
             {/* Close Button */}
             <button
               onClick={onClose}
+              aria-label="로그인 모달 닫기"
               className="absolute top-4 right-4 p-2 text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-50 transition-colors"
             >
               <X size={20} />

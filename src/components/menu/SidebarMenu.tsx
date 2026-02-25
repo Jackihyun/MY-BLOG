@@ -64,7 +64,7 @@ const SidebarMenu = ({
         <div className="flex justify-end p-6">
           <button
             onClick={closeSidebar}
-            aria-label="Close menu"
+            aria-label="사이드 메뉴 닫기"
             className="p-2 rounded-xl text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors"
           >
             <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">

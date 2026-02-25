@@ -34,3 +34,23 @@ You can check out [the Next.js GitHub repository](https://github.com/vercel/next
 The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
 
 Check out our [Next.js deployment documentation](https://nextjs.org/docs/deployment) for more details.
+
+## Lighthouse
+
+Run the app first, then execute Lighthouse scripts in another terminal.
+
+```bash
+npm run dev
+```
+
+```bash
+npm run lighthouse:mobile
+npm run lighthouse:desktop
+# or
+npm run lighthouse:all
+```
+
+Reports are generated at:
+
+- `lighthouse-mobile-report.html`
+- `lighthouse-desktop-report.html`

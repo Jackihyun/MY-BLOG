@@ -110,7 +110,7 @@ export default function CommentForm({
               <div className="relative w-7 h-7 flex-shrink-0 overflow-hidden rounded-lg ring-1 ring-zinc-200 dark:ring-zinc-800 shadow-sm">
                 <Image 
                   src={session.user.image} 
-                  alt={session.user.name || ""} 
+                  alt={session.user.name || "사용자 프로필 이미지"} 
                   fill
                   className="object-cover"
                 />
