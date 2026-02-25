@@ -44,10 +44,22 @@ export function sanitizeExcerpt(htmlOrText?: string): string {
 
 // ============ API-based functions ============
 
-async function fetchFromApi<T>(endpoint: string): Promise<T | null> {
+async function fetchFromApi<T>(
+  endpoint: string,
+  options?: RequestInit & { next?: { revalidate?: number } }
+): Promise<T | null> {
   try {
-    const response = await fetch(`${API_BASE}${endpoint}`, {
+    const requestOptions: RequestInit & { next?: { revalidate?: number } } = {
       next: { revalidate: 60 },
+      ...options,
+    };
+
+    if (!options?.next && options?.cache !== "no-store") {
+      requestOptions.next = { revalidate: 60 };
+    }
+
+    const response = await fetch(`${API_BASE}${endpoint}`, {
+      ...requestOptions,
     });
     if (!response.ok) return null;
     const data = await response.json();
@@ -215,7 +227,9 @@ interface ApiPostDetailResponse extends ApiPostResponse {
 export async function getPostData(id: string): Promise<PostData> {
   // 1. API에서 먼저 시도
   if (USE_API) {
-    const apiPost = await fetchFromApi<ApiPostDetailResponse>(`/posts/${id}`);
+    const apiPost = await fetchFromApi<ApiPostDetailResponse>(`/posts/${id}`, {
+      cache: "no-store",
+    });
     if (apiPost) {
       return apiPostToPostData(apiPost);
     }
@@ -315,4 +329,3 @@ export async function getPostsByCategory(
 
   return posts.sort((a, b) => (a.date < b.date ? 1 : -1));
 }
-
