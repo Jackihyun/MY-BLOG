@@ -13,14 +13,15 @@ const SERVER_API_BASE =
   "http://localhost:8080/api";
 const CLIENT_API_BASE =
   process.env.NEXT_PUBLIC_API_PROXY_PATH?.replace(/\/$/, "") || "/api/proxy";
-const API_BASE = typeof window === "undefined" ? SERVER_API_BASE : CLIENT_API_BASE;
+const API_BASE =
+  typeof window === "undefined" ? SERVER_API_BASE : CLIENT_API_BASE;
 const USE_API = true;
 
 // ============ Utility functions ============
 
 export function sanitizeExcerpt(htmlOrText?: string): string {
   if (!htmlOrText) return "";
-  
+
   // 1) Decode basic HTML entities first
   const decodedText = htmlOrText
     .replace(/&lt;/g, "<")
@@ -76,7 +77,9 @@ function apiPostToPostData(apiPost: {
     dateStr = d.toISOString().split("T")[0];
   }
 
-  const normalizedExcerpt = sanitizeExcerpt(apiPost.excerpt || apiPost.contentHtml);
+  const normalizedExcerpt = sanitizeExcerpt(
+    apiPost.excerpt || apiPost.contentHtml
+  );
 
   return {
     id: apiPost.slug,
@@ -215,14 +218,17 @@ export async function getPostData(id: string): Promise<PostData> {
   try {
     return await getPostDataFromFile(id);
   } catch (error) {
-    console.warn(`Post ${id} not found in API or file system, returning dummy data`);
+    console.warn(
+      `Post ${id} not found in API or file system, returning dummy data`
+    );
     return {
       id,
       slug: id,
       title: "글을 찾을 수 없습니다",
       date: new Date().toISOString().split("T")[0],
       category: "None",
-      contentHtml: "<p>요청하신 글이 존재하지 않거나 불러오는데 실패했습니다.</p>",
+      contentHtml:
+        "<p>요청하신 글이 존재하지 않거나 불러오는데 실패했습니다.</p>",
     };
   }
 }
@@ -274,7 +280,9 @@ export async function getCategories(): Promise<string[]> {
 
 // ============ Filtered posts function ============
 
-export async function getPostsByCategory(category: string): Promise<PostData[]> {
+export async function getPostsByCategory(
+  category: string
+): Promise<PostData[]> {
   let posts: PostData[] = [];
 
   if (USE_API) {
@@ -299,4 +307,3 @@ export async function getPostsByCategory(category: string): Promise<PostData[]> 
 
   return posts.sort((a, b) => (a.date < b.date ? 1 : -1));
 }
-

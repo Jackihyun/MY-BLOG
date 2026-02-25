@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React from "react";
 
 const HamburgerMenu = ({
   isChecked,
@@ -32,9 +32,9 @@ const HamburgerMenu = ({
         <path
           className="line transition-all duration-600 ease-in-out"
           d="M7 16 27 16"
-        >        </path>
+        ></path>
       </svg>
-    </button>
+    </label>
   );
 };
 
