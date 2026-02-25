@@ -1,6 +1,9 @@
-import { getPostData, getAllPostIds, getSortedPostsData } from "@/lib/posts";
+import { getPostData, getSortedPostsData } from "@/lib/posts";
 import { Metadata } from "next";
 import PostDetailClient from "./PostDetailClient";
+
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
 
 interface PostProps {
   params: {
@@ -110,8 +113,5 @@ export default async function PostPage({ params }: PostProps) {
 }
 
 export async function generateStaticParams() {
-  const ids = getAllPostIds();
-  return ids.map((id) => ({
-    id: id.id,
-  }));
+  return [];
 }
