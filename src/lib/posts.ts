@@ -48,10 +48,16 @@ async function fetchFromApi<T>(
   endpoint: string,
   options?: RequestInit & { next?: { revalidate?: number } }
 ): Promise<T | null> {
+  let timeout: ReturnType<typeof setTimeout> | undefined;
+
   try {
+    const controller = new AbortController();
+    timeout = setTimeout(() => controller.abort(), 5000);
+
     const requestOptions: RequestInit & { next?: { revalidate?: number } } = {
       next: { revalidate: 60 },
       ...options,
+      signal: controller.signal,
     };
 
     if (!options?.next && options?.cache !== "no-store") {
@@ -66,6 +72,10 @@ async function fetchFromApi<T>(
     return data.data;
   } catch {
     return null;
+  } finally {
+    if (timeout) {
+      clearTimeout(timeout);
+    }
   }
 }
 
