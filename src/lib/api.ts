@@ -17,7 +17,9 @@ const SERVER_API_BASE =
   process.env.NEXT_PUBLIC_API_URL?.replace(/\/$/, "") ||
   "http://localhost:8080/api";
 const CLIENT_API_BASE =
-  process.env.NEXT_PUBLIC_API_PROXY_PATH?.replace(/\/$/, "") || "/api/proxy";
+  (process.env.NEXT_PUBLIC_API_PROXY_PATH || "/api")
+    .replace(/\/$/, "")
+    .replace(/\/api\/proxy(?=\/|$)/, "/api");
 
 const API_BASE =
   typeof window === "undefined" ? SERVER_API_BASE : CLIENT_API_BASE;
