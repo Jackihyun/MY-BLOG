@@ -259,6 +259,22 @@ export async function verifyToken(
   });
 }
 
+export interface LegacyPostResponse {
+  slug: string;
+  title: string;
+  category: string;
+  contentHtml: string;
+  excerpt?: string;
+}
+
+export async function fetchLegacyPost(slug: string): Promise<LegacyPostResponse> {
+  const response = await fetch(`/api/admin/legacy-post/${encodeURIComponent(slug)}`);
+  if (!response.ok) {
+    throw new ApiError(response.status, "Legacy post not found");
+  }
+  return response.json();
+}
+
 // ============ Client ID Utils ============
 
 export function getClientId(): string {

@@ -54,3 +54,16 @@ Reports are generated at:
 
 - `lighthouse-mobile-report.html`
 - `lighthouse-desktop-report.html`
+
+## Migrate legacy markdown posts
+
+If old posts are still in `src/posts/*.md`, migrate them into the DB API so they can be edited in the admin editor.
+
+```bash
+API_URL=https://blog.jackihyun.me/api ADMIN_PASSWORD=<admin-password> npm run migrate:posts
+```
+
+The migration script runs in upsert mode:
+
+- creates DB posts that do not exist
+- updates DB posts when the same slug already exists

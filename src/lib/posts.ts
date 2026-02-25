@@ -67,6 +67,7 @@ function apiPostToPostData(apiPost: {
   excerpt?: string;
   readingTime?: number;
   viewCount?: number;
+  isPublished?: boolean;
 }): PostData {
   let dateStr = new Date().toISOString().split("T")[0];
   if (apiPost.publishedAt) {
@@ -93,6 +94,8 @@ function apiPostToPostData(apiPost: {
     excerpt: normalizedExcerpt || "요약이 아직 등록되지 않았습니다.",
     readingTime: apiPost.readingTime,
     viewCount: apiPost.viewCount,
+    isPublished: apiPost.isPublished ?? true,
+    publishedAt: apiPost.publishedAt,
   };
 }
 
@@ -116,6 +119,7 @@ async function getPostDataFromFile(id: string): Promise<PostData> {
     id,
     slug: id,
     contentHtml,
+    isPublished: true,
     ...(matterResult.data as { title: string; date: string; category: string }),
   };
 }
@@ -164,6 +168,7 @@ interface ApiPostResponse {
   excerpt?: string;
   readingTime?: number;
   viewCount?: number;
+  isPublished?: boolean;
 }
 
 export async function getSortedPostsData(): Promise<PostData[]> {
@@ -231,6 +236,7 @@ export async function getPostData(id: string): Promise<PostData> {
       category: "None",
       contentHtml:
         "<p>요청하신 글이 존재하지 않거나 불러오는데 실패했습니다.</p>",
+      isPublished: false,
     };
   }
 }
@@ -309,3 +315,4 @@ export async function getPostsByCategory(
 
   return posts.sort((a, b) => (a.date < b.date ? 1 : -1));
 }
+

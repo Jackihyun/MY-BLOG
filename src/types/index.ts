@@ -110,4 +110,6 @@ export interface PostData {
   excerpt?: string;
   readingTime?: number;
   viewCount?: number;
+  isPublished?: boolean;
+  publishedAt?: string;
 }

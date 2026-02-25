@@ -11,6 +11,7 @@ import {
   fetchPostAdmin,
   fetchPost,
   fetchCategories,
+  fetchLegacyPost,
 } from "@/lib/api";
 
 const TiptapEditor = dynamic(
@@ -42,16 +43,13 @@ export default function PostEditor({ slug, mode }: PostEditorProps) {
   const [customSlug, setCustomSlug] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
+  const [isLegacySource, setIsLegacySource] = useState(false);
+  const [publishStatus, setPublishStatus] = useState<"published" | "draft">("published");
   const [existingCategories, setExistingCategories] = useState<string[]>([]);
   const defaultCategories = ["TIL", "개발", "회고", "트러블슈팅", "일상"];
-  const mergedCategories = [
-    ...existingCategories,
-    ...defaultCategories.filter((cat) => !existingCategories.includes(cat)),
-  ];
-  const categoryOptions =
-    category && !mergedCategories.includes(category)
-      ? [category, ...mergedCategories]
-      : mergedCategories;
+  const categoryOptions = Array.from(
+    new Set([...existingCategories, ...defaultCategories, ...(category ? [category] : [])])
+  );
 
   const createExcerptFromContent = (html: string) => {
     const excerptLimit = 160;
@@ -85,7 +83,9 @@ export default function PostEditor({ slug, mode }: PostEditorProps) {
 
     // 기존 카테고리 목록 가져오기
     fetchCategories()
-      .then(setExistingCategories)
+      .then((categories) => {
+        setExistingCategories(Array.from(new Set(categories.map((cat) => cat.trim()).filter(Boolean))));
+      })
       .catch(console.error);
 
     if (mode === "edit" && slug && token) {
@@ -99,15 +99,41 @@ export default function PostEditor({ slug, mode }: PostEditorProps) {
           setTitle(post.title);
           setContent(post.contentHtml || post.content);
           setCategory(post.category);
+          setPublishStatus(post.isPublished ? "published" : "draft");
+          setIsLegacySource(false);
         })
-        .catch((error) => {
-          console.error("Failed to load post:", error);
-          toast.error("기존 글을 불러오지 못했습니다. 잠시 후 다시 시도해주세요.");
-          router.push("/posts");
+        .catch(async (error) => {
+          if (!slug) {
+            throw error;
+          }
+
+          try {
+            const legacyPost = await fetchLegacyPost(slug);
+            setTitle(legacyPost.title);
+            setContent(legacyPost.contentHtml);
+            setCategory(legacyPost.category);
+            setPublishStatus("draft");
+            setIsLegacySource(true);
+            toast.info("레거시 파일 글을 불러왔습니다. 저장하면 DB로 마이그레이션됩니다.");
+          } catch (legacyError) {
+            console.error("Failed to load post:", error, legacyError);
+            toast.error("기존 글을 불러오지 못했습니다. 잠시 후 다시 시도해주세요.");
+            router.push("/posts");
+          }
         })
         .finally(() => setIsLoading(false));
     }
   }, [isAuthenticated, mode, slug, token, router]);
+
+  const addCategoryOption = (nextCategory: string) => {
+    const normalized = nextCategory.trim();
+    if (!normalized) return;
+
+    setCategory(normalized);
+    setExistingCategories((prev) =>
+      prev.includes(normalized) ? prev : [...prev, normalized]
+    );
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -128,7 +154,7 @@ export default function PostEditor({ slug, mode }: PostEditorProps) {
       const excerpt = createExcerptFromContent(content);
 
       if (mode === "create") {
-        const newPost = await createPost(
+        await createPost(
           {
             title,
             content,
@@ -139,20 +165,52 @@ export default function PostEditor({ slug, mode }: PostEditorProps) {
           },
           token
         );
+        setPublishStatus("published");
+        setIsLegacySource(false);
         toast.success("글이 저장되고 발행되었습니다.");
         router.push("/posts");
       } else if (slug) {
-        await updatePost(
-          slug,
-          {
-            title,
-            content,
-            category,
-            excerpt: excerpt || undefined,
-            publish: true,
-          },
-          token
-        );
+        const payload = {
+          title,
+          content,
+          category,
+          excerpt: excerpt || undefined,
+          publish: true,
+        };
+
+        if (isLegacySource) {
+          await createPost(
+            {
+              ...payload,
+              slug,
+            },
+            token
+          );
+        } else {
+          try {
+            await updatePost(slug, payload, token);
+          } catch (error: unknown) {
+            const status =
+              typeof error === "object" && error !== null && "status" in error
+                ? (error as { status?: number }).status
+                : undefined;
+
+            if (status !== 404) {
+              throw error;
+            }
+
+            await createPost(
+              {
+                ...payload,
+                slug,
+              },
+              token
+            );
+            setIsLegacySource(true);
+          }
+        }
+
+        setPublishStatus("published");
         toast.success("글이 수정되고 발행되었습니다.");
         router.push("/posts");
       }
@@ -187,6 +245,17 @@ export default function PostEditor({ slug, mode }: PostEditorProps) {
         <p className="text-sm text-gray-500 dark:text-gray-400">
           Notion 스타일 에디터
         </p>
+      </div>
+
+      <div
+        className={`mb-6 inline-flex items-center gap-2 px-3 py-1.5 rounded-full border text-xs font-semibold ${
+          publishStatus === "published"
+            ? "border-emerald-200 dark:border-emerald-900/60 bg-emerald-50 dark:bg-emerald-950/20 text-emerald-700 dark:text-emerald-300"
+            : "border-amber-200 dark:border-amber-900/60 bg-amber-50 dark:bg-amber-950/20 text-amber-700 dark:text-amber-300"
+        }`}
+      >
+        <span className="w-2 h-2 rounded-full bg-current" />
+        {publishStatus === "published" ? "발행 상태" : "임시 상태"}
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-6">
@@ -228,23 +297,45 @@ export default function PostEditor({ slug, mode }: PostEditorProps) {
             <label className="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1.5 uppercase tracking-wider">
               카테고리 *
             </label>
-            <select
+            <input
+              type="text"
+              list="category-options"
               value={category}
               onChange={(e) => setCategory(e.target.value)}
+              onBlur={(e) => addCategoryOption(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") {
+                  e.preventDefault();
+                  addCategoryOption(category);
+                }
+              }}
               className="w-full px-3 py-2.5 text-sm border border-gray-200 dark:border-gray-700 rounded-xl
-                         bg-white dark:bg-[#1e1e1e] text-gray-900 dark:text-gray-100
-                         focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent
-                         transition-all cursor-pointer"
-            >
-              <option value="" disabled>
-                카테고리를 선택하세요
-              </option>
+                          bg-white dark:bg-[#1e1e1e] text-gray-900 dark:text-gray-100
+                          focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent
+                          transition-all"
+              placeholder="카테고리를 선택하거나 새로 입력하세요"
+            />
+            <datalist id="category-options">
               {categoryOptions.map((cat) => (
-                <option key={cat} value={cat}>
-                  {cat}
-                </option>
+                <option key={cat} value={cat} />
               ))}
-            </select>
+            </datalist>
+            <div className="mt-2 flex flex-wrap gap-2">
+              {categoryOptions.slice(0, 8).map((cat) => (
+                <button
+                  key={cat}
+                  type="button"
+                  onClick={() => addCategoryOption(cat)}
+                  className={`px-2.5 py-1 rounded-full text-xs font-semibold border transition-colors ${
+                    category === cat
+                      ? "bg-blue-50 border-blue-200 text-blue-700 dark:bg-blue-900/30 dark:border-blue-700 dark:text-blue-300"
+                      : "bg-zinc-50 border-zinc-200 text-zinc-600 hover:bg-zinc-100 dark:bg-zinc-900 dark:border-zinc-700 dark:text-zinc-300 dark:hover:bg-zinc-800"
+                  }`}
+                >
+                  {cat}
+                </button>
+              ))}
+            </div>
           </div>
           <div className={mode === "create" ? "" : "md:col-span-2"}>
             <label className="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1.5 uppercase tracking-wider">
