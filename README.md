@@ -122,13 +122,24 @@ flowchart LR
 - 관리자: 글 작성/수정 에디터, 발행 관리
 - 방명록: 방문자 메시지 등록/조회
 
-> 스크린샷은 `docs/screenshots/` 경로에 추가 후 아래처럼 연결하면 됩니다.
+1. 홈 화면
+<p align="center"> <img src="https://github.com/user-attachments/assets/828868cc-7702-421a-a6b7-4c0ae1ddfc75" width="600"/> </p>
 
-```md
-![홈 화면](docs/screenshots/home.png)
-![포스트 상세](docs/screenshots/post-detail.png)
-![관리자 에디터](docs/screenshots/admin-editor.png)
-```
+- 최신 글 미리보기와 카테고리 중심으로 설계된 메인 화면
+
+2. 블로그 글 상세 화면
+<p align="center"> <img src="https://github.com/user-attachments/assets/82a2e7a5-dedf-44e2-be00-0f00962cbee0" width="600"/> </p>
+
+- 본문 가독성 중심 레이아웃
+- 코드 블록 및 마크다운 스타일링 지원
+- SEO 구조 고려
+
+3. 관리자 에디터
+<p align="center"> <img src="https://github.com/user-attachments/assets/8be478bb-b024-4b53-9dca-e5a342182426" width="600"/> </p>
+
+- 콘텐츠 작성을 위한 관리자 전용 에디터
+- 마크다운 기반 작성 환경
+- 게시글 CRUD 기능 구현
 
 ---
 
