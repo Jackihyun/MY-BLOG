@@ -20,15 +20,15 @@ const SERVER_API_BASE =
   process.env.NEXT_PUBLIC_API_URL?.replace(/\/$/, "") ||
   "http://localhost:8080/api";
 const CLIENT_API_BASE =
-  process.env.NEXT_PUBLIC_API_PROXY_PATH?.replace(/\/$/, "") || "/api/proxy";
+  (process.env.NEXT_PUBLIC_API_PROXY_PATH || "/api")
+    .replace(/\/$/, "")
+    .replace(/\/api\/proxy(?=\/|$)/, "/api");
 
-const API_BASE = typeof window === "undefined" ? SERVER_API_BASE : CLIENT_API_BASE;
+const API_BASE =
+  typeof window === "undefined" ? SERVER_API_BASE : CLIENT_API_BASE;
 
 class ApiError extends Error {
-  constructor(
-    public status: number,
-    message: string
-  ) {
+  constructor(public status: number, message: string) {
     super(message);
     this.name = "ApiError";
   }
@@ -144,7 +144,9 @@ export async function deletePost(slug: string, token: string): Promise<void> {
 }
 
 export async function searchPosts(query: string): Promise<PostResponse[]> {
-  return fetchApi<PostResponse[]>(`/posts/search?q=${encodeURIComponent(query)}`);
+  return fetchApi<PostResponse[]>(
+    `/posts/search?q=${encodeURIComponent(query)}`
+  );
 }
 
 export async function fetchCategories(): Promise<string[]> {
@@ -292,6 +294,22 @@ export async function verifyToken(
   });
 }
 
+export interface LegacyPostResponse {
+  slug: string;
+  title: string;
+  category: string;
+  contentHtml: string;
+  excerpt?: string;
+}
+
+export async function fetchLegacyPost(slug: string): Promise<LegacyPostResponse> {
+  const response = await fetch(`/api/admin/legacy-post/${encodeURIComponent(slug)}`);
+  if (!response.ok) {
+    throw new ApiError(response.status, "Legacy post not found");
+  }
+  return response.json();
+}
+
 // ============ Client ID Utils ============
 
 export function getClientId(): string {
@@ -299,7 +317,9 @@ export function getClientId(): string {
 
   let clientId = localStorage.getItem("clientId");
   if (!clientId) {
-    clientId = `client_${Date.now()}_${Math.random().toString(36).substring(2, 15)}`;
+    clientId = `client_${Date.now()}_${Math.random()
+      .toString(36)
+      .substring(2, 15)}`;
     localStorage.setItem("clientId", clientId);
   }
   return clientId;

@@ -12,15 +12,18 @@ const SERVER_API_BASE =
   process.env.NEXT_PUBLIC_API_URL?.replace(/\/$/, "") ||
   "http://localhost:8080/api";
 const CLIENT_API_BASE =
-  process.env.NEXT_PUBLIC_API_PROXY_PATH?.replace(/\/$/, "") || "/api/proxy";
-const API_BASE = typeof window === "undefined" ? SERVER_API_BASE : CLIENT_API_BASE;
+  (process.env.NEXT_PUBLIC_API_PROXY_PATH || "/api")
+    .replace(/\/$/, "")
+    .replace(/\/api\/proxy(?=\/|$)/, "/api");
+const API_BASE =
+  typeof window === "undefined" ? SERVER_API_BASE : CLIENT_API_BASE;
 const USE_API = true;
 
 // ============ Utility functions ============
 
 export function sanitizeExcerpt(htmlOrText?: string): string {
   if (!htmlOrText) return "";
-  
+
   // 1) Decode basic HTML entities first
   const decodedText = htmlOrText
     .replace(/&lt;/g, "<")
@@ -41,16 +44,38 @@ export function sanitizeExcerpt(htmlOrText?: string): string {
 
 // ============ API-based functions ============
 
-async function fetchFromApi<T>(endpoint: string): Promise<T | null> {
+async function fetchFromApi<T>(
+  endpoint: string,
+  options?: RequestInit & { next?: { revalidate?: number } }
+): Promise<T | null> {
+  let timeout: ReturnType<typeof setTimeout> | undefined;
+
   try {
-    const response = await fetch(`${API_BASE}${endpoint}`, {
+    const controller = new AbortController();
+    timeout = setTimeout(() => controller.abort(), 5000);
+
+    const requestOptions: RequestInit & { next?: { revalidate?: number } } = {
       next: { revalidate: 60 },
+      ...options,
+      signal: controller.signal,
+    };
+
+    if (!options?.next && options?.cache !== "no-store") {
+      requestOptions.next = { revalidate: 60 };
+    }
+
+    const response = await fetch(`${API_BASE}${endpoint}`, {
+      ...requestOptions,
     });
     if (!response.ok) return null;
     const data = await response.json();
     return data.data;
   } catch {
     return null;
+  } finally {
+    if (timeout) {
+      clearTimeout(timeout);
+    }
   }
 }
 
@@ -64,6 +89,7 @@ function apiPostToPostData(apiPost: {
   excerpt?: string;
   readingTime?: number;
   viewCount?: number;
+  isPublished?: boolean;
 }): PostData {
   let dateStr = new Date().toISOString().split("T")[0];
   if (apiPost.publishedAt) {
@@ -76,7 +102,9 @@ function apiPostToPostData(apiPost: {
     dateStr = d.toISOString().split("T")[0];
   }
 
-  const normalizedExcerpt = sanitizeExcerpt(apiPost.excerpt || apiPost.contentHtml);
+  const normalizedExcerpt = sanitizeExcerpt(
+    apiPost.excerpt || apiPost.contentHtml
+  );
 
   return {
     id: apiPost.slug,
@@ -88,6 +116,8 @@ function apiPostToPostData(apiPost: {
     excerpt: normalizedExcerpt || "요약이 아직 등록되지 않았습니다.",
     readingTime: apiPost.readingTime,
     viewCount: apiPost.viewCount,
+    isPublished: apiPost.isPublished ?? true,
+    publishedAt: apiPost.publishedAt,
   };
 }
 
@@ -111,6 +141,7 @@ async function getPostDataFromFile(id: string): Promise<PostData> {
     id,
     slug: id,
     contentHtml,
+    isPublished: true,
     ...(matterResult.data as { title: string; date: string; category: string }),
   };
 }
@@ -159,6 +190,7 @@ interface ApiPostResponse {
   excerpt?: string;
   readingTime?: number;
   viewCount?: number;
+  isPublished?: boolean;
 }
 
 export async function getSortedPostsData(): Promise<PostData[]> {
@@ -205,7 +237,9 @@ interface ApiPostDetailResponse extends ApiPostResponse {
 export async function getPostData(id: string): Promise<PostData> {
   // 1. API에서 먼저 시도
   if (USE_API) {
-    const apiPost = await fetchFromApi<ApiPostDetailResponse>(`/posts/${id}`);
+    const apiPost = await fetchFromApi<ApiPostDetailResponse>(`/posts/${id}`, {
+      cache: "no-store",
+    });
     if (apiPost) {
       return apiPostToPostData(apiPost);
     }
@@ -215,14 +249,18 @@ export async function getPostData(id: string): Promise<PostData> {
   try {
     return await getPostDataFromFile(id);
   } catch (error) {
-    console.warn(`Post ${id} not found in API or file system, returning dummy data`);
+    console.warn(
+      `Post ${id} not found in API or file system, returning dummy data`
+    );
     return {
       id,
       slug: id,
       title: "글을 찾을 수 없습니다",
       date: new Date().toISOString().split("T")[0],
       category: "None",
-      contentHtml: "<p>요청하신 글이 존재하지 않거나 불러오는데 실패했습니다.</p>",
+      contentHtml:
+        "<p>요청하신 글이 존재하지 않거나 불러오는데 실패했습니다.</p>",
+      isPublished: false,
     };
   }
 }
@@ -274,7 +312,9 @@ export async function getCategories(): Promise<string[]> {
 
 // ============ Filtered posts function ============
 
-export async function getPostsByCategory(category: string): Promise<PostData[]> {
+export async function getPostsByCategory(
+  category: string
+): Promise<PostData[]> {
   let posts: PostData[] = [];
 
   if (USE_API) {
@@ -299,5 +339,3 @@ export async function getPostsByCategory(category: string): Promise<PostData[]> 
 
   return posts.sort((a, b) => (a.date < b.date ? 1 : -1));
 }
-
-

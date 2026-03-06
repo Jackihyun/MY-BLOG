@@ -6,12 +6,15 @@ import { PostData } from "@/lib/posts";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { getPostPreview } from "@/lib/utils";
+import { useAuth } from "@/hooks/useAuth";
 
 interface RecentPostsProps {
   posts: PostData[];
 }
 
 export default function RecentPosts({ posts }: RecentPostsProps) {
+  const { isAuthenticated } = useAuth();
+
   return (
     <section className="space-y-6">
       <div className="flex items-center justify-between">
@@ -60,9 +63,23 @@ export default function RecentPosts({ posts }: RecentPostsProps) {
                 <Card className="h-full group hover:shadow-lg hover:border-indigo-200 dark:hover:border-indigo-800/50 transition-all duration-300 cursor-pointer overflow-hidden border-zinc-100 dark:border-zinc-800 dark:bg-[#0a0a0a]">
                   <CardHeader className="pb-3">
                     <div className="flex items-start justify-between gap-2">
-                      <Badge variant="secondary" className="text-xs bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400 border-none">
-                        {post.category}
-                      </Badge>
+                      <div className="flex items-center gap-2">
+                        <Badge variant="secondary" className="text-xs bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400 border-none">
+                          {post.category}
+                        </Badge>
+                        {isAuthenticated && (
+                          <span
+                            className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[10px] font-bold ${
+                              post.isPublished === false
+                                ? "bg-amber-50 text-amber-700 dark:bg-amber-950/40 dark:text-amber-300"
+                                : "bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300"
+                            }`}
+                          >
+                            <span className="w-1.5 h-1.5 rounded-full bg-current" />
+                            {post.isPublished === false ? "임시" : "발행"}
+                          </span>
+                        )}
+                      </div>
                       <span className="text-xs text-zinc-400 dark:text-zinc-500 font-medium">
                         {post.date}
                       </span>

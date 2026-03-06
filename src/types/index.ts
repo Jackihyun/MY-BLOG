@@ -44,6 +44,7 @@ export interface PostCreateRequest {
   excerpt?: string;
   category: string;
   publish?: boolean;
+  publishedAt?: string;
 }
 
 export interface PostUpdateRequest {
@@ -52,6 +53,7 @@ export interface PostUpdateRequest {
   excerpt?: string;
   category?: string;
   publish?: boolean;
+  publishedAt?: string;
 }
 
 // Comment Types
@@ -132,4 +134,6 @@ export interface PostData {
   excerpt?: string;
   readingTime?: number;
   viewCount?: number;
+  isPublished?: boolean;
+  publishedAt?: string;
 }

@@ -1,48 +1,64 @@
-/**
- * Post Migration Script
- *
- * This script migrates existing markdown posts from the file system to the database.
- *
- * Usage:
- * 1. Set up your environment variables (API URL and admin password)
- * 2. Run: node scripts/migrate-posts.js
- *
- * Environment variables required:
- * - API_URL: The backend API URL (e.g., http://localhost:8080/api)
- * - ADMIN_PASSWORD: The admin password for authentication
- */
-
 const fs = require("fs");
 const path = require("path");
 const matter = require("gray-matter");
 
-const API_URL = process.env.API_URL || "http://localhost:8080/api";
-const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || "admin123";
-
+const API_URL = (process.env.API_URL || "http://localhost:8080/api").replace(/\/$/, "");
+const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD;
 const postsDirectory = path.join(process.cwd(), "src/posts");
 
-async function login() {
-  console.log("Logging in...");
+if (!ADMIN_PASSWORD) {
+  console.error("Missing ADMIN_PASSWORD environment variable.");
+  process.exit(1);
+}
 
-  const response = await fetch(`${API_URL}/admin/login`, {
+async function requestJson(url, options = {}) {
+  const response = await fetch(url, options);
+  const data = await response.json().catch(() => ({}));
+
+  if (!response.ok) {
+    throw new Error(data.message || `Request failed: ${response.status}`);
+  }
+
+  return data;
+}
+
+async function login() {
+  const data = await requestJson(`${API_URL}/admin/login`, {
     method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
+    headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ password: ADMIN_PASSWORD }),
   });
 
-  if (!response.ok) {
-    throw new Error("Login failed. Check your admin password.");
-  }
-
-  const data = await response.json();
   return data.data.token;
 }
 
-async function createPost(token, postData) {
-  const response = await fetch(`${API_URL}/posts`, {
-    method: "POST",
+async function fetchExistingPost(token, slug) {
+  const response = await fetch(`${API_URL}/posts/${encodeURIComponent(slug)}/admin`, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+
+  if (response.status === 404) {
+    return null;
+  }
+
+  if (!response.ok) {
+    const error = await response.json().catch(() => ({}));
+    throw new Error(error.message || `Failed to fetch existing post: ${response.status}`);
+  }
+
+  const data = await response.json();
+  return data.data;
+}
+
+async function createOrUpdatePost(token, postData) {
+  const existing = await fetchExistingPost(token, postData.slug);
+  const method = existing ? "PUT" : "POST";
+  const endpoint = existing
+    ? `${API_URL}/posts/${encodeURIComponent(postData.slug)}`
+    : `${API_URL}/posts`;
+
+  await requestJson(endpoint, {
+    method,
     headers: {
       "Content-Type": "application/json",
       Authorization: `Bearer ${token}`,
@@ -50,67 +66,79 @@ async function createPost(token, postData) {
     body: JSON.stringify(postData),
   });
 
-  if (!response.ok) {
-    const error = await response.json();
-    throw new Error(`Failed to create post: ${error.message}`);
+  return existing ? "updated" : "created";
+}
+
+function toPublishedAt(value) {
+  if (!value) return undefined;
+
+  const raw = String(value).trim();
+  if (!raw) return undefined;
+
+  if (/^\d{4}-\d{2}-\d{2}$/.test(raw)) {
+    return `${raw}T09:00:00`;
   }
 
-  return response.json();
+  const parsed = new Date(raw);
+  if (Number.isNaN(parsed.getTime())) {
+    return undefined;
+  }
+
+  return parsed.toISOString().slice(0, 19);
 }
 
 async function migrate() {
-  console.log("Starting migration...\n");
+  console.log("Starting markdown -> DB migration\n");
 
-  try {
-    // Login to get token
-    const token = await login();
-    console.log("Login successful!\n");
+  const token = await login();
+  console.log("Admin login success\n");
 
-    // Read all markdown files
-    const fileNames = fs.readdirSync(postsDirectory);
-    console.log(`Found ${fileNames.length} posts to migrate.\n`);
+  const fileNames = fs
+    .readdirSync(postsDirectory)
+    .filter((name) => name.endsWith(".md"));
 
-    let successCount = 0;
-    let failCount = 0;
+  console.log(`Found ${fileNames.length} markdown posts\n`);
 
-    for (const fileName of fileNames) {
-      if (!fileName.endsWith(".md")) continue;
+  let created = 0;
+  let updated = 0;
+  let failed = 0;
 
-      const slug = fileName.replace(/\.md$/, "");
-      const fullPath = path.join(postsDirectory, fileName);
-      const fileContents = fs.readFileSync(fullPath, "utf8");
-      const matterResult = matter(fileContents);
+  for (const fileName of fileNames) {
+    const slug = fileName.replace(/\.md$/, "");
+    const fullPath = path.join(postsDirectory, fileName);
+    const fileContents = fs.readFileSync(fullPath, "utf8");
+    const matterResult = matter(fileContents);
 
-      const postData = {
-        slug,
-        title: matterResult.data.title || slug,
-        content: matterResult.content,
-        category: matterResult.data.category || "Uncategorized",
-        excerpt: matterResult.data.excerpt || "",
-        publish: true,
-      };
+    const postData = {
+      slug,
+      title: matterResult.data.title || slug,
+      content: matterResult.content,
+      category: matterResult.data.category || "Uncategorized",
+      excerpt: matterResult.data.excerpt || undefined,
+      publish: true,
+      publishedAt: toPublishedAt(matterResult.data.date),
+    };
 
-      console.log(`Migrating: ${postData.title}`);
+    process.stdout.write(`- ${postData.title} ... `);
 
-      try {
-        await createPost(token, postData);
-        console.log(`  ✓ Success\n`);
-        successCount++;
-      } catch (error) {
-        console.log(`  ✗ Failed: ${error.message}\n`);
-        failCount++;
-      }
+    try {
+      const mode = await createOrUpdatePost(token, postData);
+      if (mode === "created") created += 1;
+      if (mode === "updated") updated += 1;
+      console.log(mode);
+    } catch (error) {
+      failed += 1;
+      console.log(`failed (${error.message})`);
     }
-
-    console.log("=====================================");
-    console.log(`Migration complete!`);
-    console.log(`  Success: ${successCount}`);
-    console.log(`  Failed: ${failCount}`);
-    console.log("=====================================");
-  } catch (error) {
-    console.error("Migration failed:", error.message);
-    process.exit(1);
   }
+
+  console.log("\nMigration complete");
+  console.log(`created: ${created}`);
+  console.log(`updated: ${updated}`);
+  console.log(`failed: ${failed}`);
 }
 
-migrate();
+migrate().catch((error) => {
+  console.error("Migration failed:", error.message);
+  process.exit(1);
+});

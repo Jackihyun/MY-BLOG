@@ -19,6 +19,10 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
 import java.text.Normalizer;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
+import java.time.format.DateTimeParseException;
 import java.util.List;
 import java.util.Locale;
 import java.util.regex.Pattern;
@@ -111,6 +115,8 @@ public class PostService {
             post.publish();
         }
 
+        resolvePublishedAt(request.getPublishedAt()).ifPresent(post::setPublishedAt);
+
         Post savedPost = postRepository.save(post);
         return PostResponse.from(savedPost);
     }
@@ -142,6 +148,8 @@ public class PostService {
                 post.unpublish();
             }
         }
+
+        resolvePublishedAt(request.getPublishedAt()).ifPresent(post::setPublishedAt);
 
         return PostResponse.from(post);
     }
@@ -211,5 +219,28 @@ public class PostService {
             return plainText;
         }
         return plainText.substring(0, 197) + "...";
+    }
+
+    private java.util.Optional<LocalDateTime> resolvePublishedAt(String value) {
+        if (!StringUtils.hasText(value)) {
+            return java.util.Optional.empty();
+        }
+
+        try {
+            return java.util.Optional.of(LocalDateTime.parse(value));
+        } catch (DateTimeParseException ignored) {
+        }
+
+        try {
+            return java.util.Optional.of(OffsetDateTime.parse(value).toLocalDateTime());
+        } catch (DateTimeParseException ignored) {
+        }
+
+        try {
+            return java.util.Optional.of(LocalDate.parse(value).atTime(9, 0));
+        } catch (DateTimeParseException ignored) {
+        }
+
+        throw new BadRequestException("Invalid publishedAt format. Use YYYY-MM-DD or ISO datetime.");
     }
 }

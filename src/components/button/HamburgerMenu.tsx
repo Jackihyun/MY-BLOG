@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React from "react";
 
 const HamburgerMenu = ({
   isChecked,
@@ -8,13 +8,15 @@ const HamburgerMenu = ({
   onToggle: () => void;
 }) => {
   return (
-    <button
-      className="hamburger cursor-pointer z-50 p-1"
-      onClick={onToggle}
-      aria-label={isChecked ? "Close menu" : "Open menu"}
-      aria-expanded={isChecked}
-      aria-controls="mobile-sidebar"
-    >
+    <label className="hamburger cursor-pointer z-50">
+      <input
+        type="checkbox"
+        checked={isChecked}
+        onChange={onToggle}
+        aria-label={isChecked ? "메뉴 닫기" : "메뉴 열기"}
+        aria-expanded={isChecked}
+        className="hidden"
+      />
       <svg
         viewBox="0 0 34 34"
         className={`w-8 h-8 transition-transform duration-600 ease-in-out ${
@@ -30,9 +32,9 @@ const HamburgerMenu = ({
         <path
           className="line transition-all duration-600 ease-in-out"
           d="M7 16 27 16"
-        >        </path>
+        ></path>
       </svg>
-    </button>
+    </label>
   );
 };
 
