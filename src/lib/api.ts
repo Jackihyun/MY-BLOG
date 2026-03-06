@@ -11,6 +11,9 @@ import {
   ReactionRequest,
   LikeResponse,
   LoginResponse,
+  VisitorStatsResponse,
+  VisitTrackResponse,
+  CategoryTreeResponse,
 } from "@/types";
 
 const SERVER_API_BASE =
@@ -150,6 +153,38 @@ export async function fetchCategories(): Promise<string[]> {
 
 export async function fetchPopularPosts(limit = 5): Promise<PostResponse[]> {
   return fetchApi<PostResponse[]>(`/posts/popular?limit=${limit}`);
+}
+
+// ============ Visitor API ============
+
+export async function trackVisitor(clientId: string): Promise<VisitTrackResponse> {
+  return fetchApi<VisitTrackResponse>(
+    `/visitors/track?clientId=${encodeURIComponent(clientId)}`,
+    {
+      method: "POST",
+    }
+  );
+}
+
+export async function fetchVisitorStats(): Promise<VisitorStatsResponse> {
+  return fetchApi<VisitorStatsResponse>("/visitors/stats");
+}
+
+// ============ Category Tree API ============
+
+export async function fetchCategoryTree(): Promise<CategoryTreeResponse> {
+  return fetchApi<CategoryTreeResponse>("/category-tree");
+}
+
+export async function updateCategoryTree(
+  data: CategoryTreeResponse,
+  token: string
+): Promise<CategoryTreeResponse> {
+  return fetchApi<CategoryTreeResponse>("/category-tree", {
+    method: "PUT",
+    headers: getAuthHeaders(token),
+    body: JSON.stringify(data),
+  });
 }
 
 // ============ Comment API ============

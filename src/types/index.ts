@@ -99,6 +99,28 @@ export interface LoginResponse {
   expiresIn: number;
 }
 
+export interface VisitTrackResponse {
+  counted: boolean;
+}
+
+export interface VisitorStatsResponse {
+  total: number;
+  today: number;
+  yesterday: number;
+}
+
+export interface CategoryNode {
+  id: string;
+  name: string;
+  parentId: string | null;
+  order: number;
+}
+
+export interface CategoryTreeResponse {
+  nodes: CategoryNode[];
+  postCategoryOverrides: Record<string, string>;
+}
+
 // Legacy PostData for backward compatibility
 export interface PostData {
   id: string;

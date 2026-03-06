@@ -52,6 +52,22 @@ CREATE TABLE IF NOT EXISTS post_like (
     UNIQUE(post_id, client_id)
 );
 
+-- Visitor 로그 테이블
+CREATE TABLE IF NOT EXISTS visitor_log (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    client_id VARCHAR(255) NOT NULL,
+    visit_date VARCHAR(10) NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE(client_id, visit_date)
+);
+
+-- Category Tree 설정 테이블
+CREATE TABLE IF NOT EXISTS category_tree_config (
+    id INTEGER PRIMARY KEY,
+    payload_json TEXT NOT NULL,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
 -- 인덱스 생성
 CREATE INDEX IF NOT EXISTS idx_post_slug ON post(slug);
 CREATE INDEX IF NOT EXISTS idx_post_category ON post(category);
@@ -60,3 +76,5 @@ CREATE INDEX IF NOT EXISTS idx_comment_post_id ON comment(post_id);
 CREATE INDEX IF NOT EXISTS idx_comment_parent_id ON comment(parent_id);
 CREATE INDEX IF NOT EXISTS idx_reaction_post_id ON reaction(post_id);
 CREATE INDEX IF NOT EXISTS idx_post_like_post_id ON post_like(post_id);
+CREATE INDEX IF NOT EXISTS idx_visitor_log_visit_date ON visitor_log(visit_date);
+CREATE INDEX IF NOT EXISTS idx_category_tree_updated_at ON category_tree_config(updated_at);

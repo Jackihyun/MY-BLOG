@@ -35,6 +35,7 @@ public class SecurityConfig {
                 .requestMatchers(HttpMethod.GET, "/api/posts/**").permitAll()
                 .requestMatchers(HttpMethod.GET, "/api/comments/**").permitAll()
                 .requestMatchers(HttpMethod.GET, "/api/reactions/**").permitAll()
+                .requestMatchers(HttpMethod.GET, "/api/category-tree").permitAll()
                 .requestMatchers("/api/posts/*/comments").permitAll()
                 .requestMatchers("/api/posts/*/reactions").permitAll()
                 .requestMatchers("/api/comments/*/reply").permitAll()
@@ -45,6 +46,7 @@ public class SecurityConfig {
                 .requestMatchers(HttpMethod.POST, "/api/posts").authenticated()
                 .requestMatchers(HttpMethod.PUT, "/api/posts/**").authenticated()
                 .requestMatchers(HttpMethod.DELETE, "/api/posts/**").authenticated()
+                .requestMatchers(HttpMethod.PUT, "/api/category-tree").authenticated()
                 .anyRequest().permitAll())
             .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 

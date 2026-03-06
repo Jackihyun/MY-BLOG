@@ -1,13 +1,22 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import LoginModal from "@/components/admin/LoginModal";
 import { useAuth } from "@/hooks/useAuth";
+import { useTrackVisitorMutation } from "@/hooks/queries/useVisitorStatsQuery";
+import { getClientId } from "@/lib/api";
 
 export default function Footer() {
   const [clickCount, setClickCount] = useState(0);
   const [showLoginModal, setShowLoginModal] = useState(false);
   const { isAuthenticated } = useAuth();
+  const { mutate: trackVisitor } = useTrackVisitorMutation();
+
+  useEffect(() => {
+    const clientId = getClientId();
+    if (!clientId) return;
+    trackVisitor(clientId);
+  }, [trackVisitor]);
 
   const handleNameClick = () => {
     if (isAuthenticated) return;
@@ -25,20 +34,22 @@ export default function Footer() {
   return (
     <>
       <footer className="flex justify-center items-center w-full py-6 text-sm text-gray-500 dark:text-gray-400 border-t border-gray-200 dark:border-gray-800 bg-white/50 dark:bg-gray-900/50">
-        <p>
-          &copy; {new Date().getFullYear()} Developed by{" "}
-          <span
-            onClick={handleNameClick}
-            className={`cursor-pointer select-none hover:text-gray-900 dark:hover:text-white transition-colors ${
-              clickCount > 0 ? "text-blue-500" : ""
-            }`}
-          >
-            Jackihyun
-          </span>
-          {isAuthenticated && (
-            <span className="ml-2 text-green-500 text-xs">(Admin)</span>
-          )}
-        </p>
+        <div className="flex flex-col items-center gap-2 text-center px-4">
+          <p>
+            &copy; {new Date().getFullYear()} Developed by{" "}
+            <span
+              onClick={handleNameClick}
+              className={`cursor-pointer select-none hover:text-gray-900 dark:hover:text-white transition-colors ${
+                clickCount > 0 ? "text-blue-500" : ""
+              }`}
+            >
+              Jackihyun
+            </span>
+            {isAuthenticated && (
+              <span className="ml-2 text-green-500 text-xs">(Admin)</span>
+            )}
+          </p>
+        </div>
       </footer>
 
       {showLoginModal && (

@@ -56,9 +56,9 @@ const SidebarMenu = ({
         role="dialog"
         aria-modal="true"
         aria-label="Mobile navigation menu"
-        className={`fixed top-0 right-0 h-full w-72 bg-white dark:bg-[#050505] shadow-2xl z-40 transform ${
+        className={`fixed top-0 right-0 h-full w-64 max-w-[82vw] bg-white dark:bg-[#050505] shadow-2xl z-40 transform ${
           isOpen ? "translate-x-0" : "translate-x-full"
-        } transition-transform duration-300 ease-in-out border-l border-zinc-100 dark:border-zinc-800`}
+        } transition-transform duration-200 ease-out border-l border-zinc-100 dark:border-zinc-800`}
       >
         {/* Close Button */}
         <div className="flex justify-end p-6">
@@ -86,6 +86,7 @@ const SidebarMenu = ({
             </svg>
             Posts
           </Link>
+
           <Link
             href="/about"
             className={linkClasses("/about")}
