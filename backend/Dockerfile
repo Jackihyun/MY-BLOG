@@ -9,8 +9,8 @@ RUN gradle build -x test --no-daemon
 FROM eclipse-temurin:17-jre-alpine
 WORKDIR /app
 
-# Create directory for SQLite database
-RUN mkdir -p /app/data
+# Create directory for SQLite database and uploads
+RUN mkdir -p /app/data/uploads && chmod 777 /app/data/uploads
 
 COPY --from=build /app/build/libs/*.jar app.jar
 

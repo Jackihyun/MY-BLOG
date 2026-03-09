@@ -98,7 +98,7 @@ export default function Header() {
 
   return (
     <header className="fixed top-0 left-0 right-0 z-50 flex justify-center pt-4 px-4 md:px-10">
-      <div className="w-full max-w-7xl h-[56px] px-6 flex items-center justify-between bg-white/70 dark:bg-black/70 backdrop-blur-xl border border-zinc-200/50 dark:border-zinc-800/50 rounded-2xl shadow-sm">
+      <div className="relative w-full max-w-7xl h-[56px] px-6 flex items-center justify-between bg-white/70 dark:bg-black/70 backdrop-blur-xl border border-zinc-200/50 dark:border-zinc-800/50 rounded-2xl shadow-sm">
         {/* Logo */}
         <Link
           href="/"
@@ -112,7 +112,7 @@ export default function Header() {
 
         {/* Desktop Navigation */}
         <nav
-          className="hidden min-[850px]:flex items-center gap-1 text-sm font-semibold"
+          className="hidden min-[850px]:flex absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 items-center gap-1 text-sm font-semibold"
           aria-label="Main navigation"
         >
           <Link

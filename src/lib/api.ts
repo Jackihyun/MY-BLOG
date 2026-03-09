@@ -294,6 +294,32 @@ export async function verifyToken(
   });
 }
 
+// ============ File Upload API ============
+
+export async function uploadImage(file: File, token: string): Promise<string> {
+  const formData = new FormData();
+  formData.append("file", file);
+
+  const response = await fetch(`${API_BASE}/admin/upload`, {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+    body: formData,
+  });
+
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => ({}));
+    throw new ApiError(
+      response.status,
+      errorData.message || "이미지 업로드에 실패했습니다."
+    );
+  }
+
+  const data: ApiResponse<string> = await response.json();
+  return data.data;
+}
+
 export interface LegacyPostResponse {
   slug: string;
   title: string;

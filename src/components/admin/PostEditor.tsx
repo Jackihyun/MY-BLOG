@@ -13,6 +13,7 @@ import {
   fetchPost,
   fetchCategories,
   fetchLegacyPost,
+  uploadImage,
 } from "@/lib/api";
 
 const TiptapEditor = dynamic(
@@ -45,6 +46,7 @@ export default function PostEditor({ slug, mode }: PostEditorProps) {
   const [customSlug, setCustomSlug] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
+  const [isUploading, setIsUploading] = useState(false);
   const [isLegacySource, setIsLegacySource] = useState(false);
   const [publishStatus, setPublishStatus] = useState<"published" | "draft">("published");
   const [existingCategories, setExistingCategories] = useState<string[]>([]);
@@ -136,6 +138,28 @@ export default function PostEditor({ slug, mode }: PostEditorProps) {
     setExistingCategories((prev) =>
       prev.includes(normalized) ? prev : [...prev, normalized]
     );
+  };
+
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (!token) {
+      toast.error("로그인이 필요합니다.");
+      return;
+    }
+
+    setIsUploading(true);
+    try {
+      const imageUrl = await uploadImage(file, token);
+      setThumbnail(imageUrl);
+      toast.success("이미지가 업로드되었습니다.");
+    } catch (error) {
+      console.error("Upload failed:", error);
+      toast.error("이미지 업로드에 실패했습니다.");
+    } finally {
+      setIsUploading(false);
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -355,19 +379,40 @@ export default function PostEditor({ slug, mode }: PostEditorProps) {
 
           <div>
             <label className="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1.5 uppercase tracking-wider">
-              썸네일 이미지 URL
+              썸네일 이미지
             </label>
             <div className="space-y-3">
-              <input
-                type="text"
-                value={thumbnail}
-                onChange={(e) => setThumbnail(e.target.value)}
-                className="w-full px-3 py-2.5 text-sm border border-gray-200 dark:border-gray-700 rounded-xl
-                           bg-white dark:bg-[#1e1e1e] text-gray-900 dark:text-gray-100
-                           focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent
-                           transition-all"
-                placeholder="https://example.com/image.jpg"
-              />
+              <div className="flex gap-2">
+                <input
+                  type="text"
+                  value={thumbnail}
+                  onChange={(e) => setThumbnail(e.target.value)}
+                  className="flex-1 px-3 py-2.5 text-sm border border-gray-200 dark:border-gray-700 rounded-xl
+                             bg-white dark:bg-[#1e1e1e] text-gray-900 dark:text-gray-100
+                             focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent
+                             transition-all"
+                  placeholder="이미지 URL을 입력하거나 직접 업로드하세요"
+                />
+                <label className="shrink-0 cursor-pointer inline-flex items-center justify-center px-4 py-2.5 bg-zinc-100 dark:bg-zinc-800 hover:bg-zinc-200 dark:hover:bg-zinc-700 text-zinc-700 dark:text-zinc-300 rounded-xl transition-colors border border-zinc-200 dark:border-zinc-700">
+                  <input
+                    type="file"
+                    className="hidden"
+                    accept="image/*"
+                    onChange={handleFileUpload}
+                    disabled={isUploading}
+                  />
+                  {isUploading ? (
+                    <svg className="animate-spin h-5 w-5" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                    </svg>
+                  ) : (
+                    <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
+                    </svg>
+                  )}
+                </label>
+              </div>
               <div className="relative aspect-video rounded-xl overflow-hidden border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-[#1e1e1e] flex items-center justify-center group">
                 {thumbnail ? (
                   <>

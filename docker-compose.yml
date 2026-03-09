@@ -9,6 +9,7 @@ services:
       - "8080:8080"
     volumes:
       - backend-data:/app/data
+      - ./backend/data/uploads:/app/data/uploads
     environment:
       - SPRING_PROFILES_ACTIVE=prod
       - JWT_SECRET=your-super-secret-jwt-key-minimum-32-characters-long
