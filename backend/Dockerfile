@@ -18,7 +18,7 @@ COPY --from=build /app/build/libs/*.jar app.jar
 ENV SPRING_PROFILES_ACTIVE=prod
 ENV JWT_SECRET=your-super-secret-jwt-key-minimum-32-characters-long
 ENV ADMIN_PASSWORD=admin123
-ENV FRONTEND_URL=http://localhost:3000
+ENV FRONTEND_URL=https://blog.jackihyun.com
 
 EXPOSE 8080
 

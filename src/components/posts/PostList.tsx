@@ -46,7 +46,9 @@ function getUniqueCategoryId(baseName: string, existingIds: Set<string>) {
 }
 
 function buildDefaultNodes(posts: PostData[]): CategoryNode[] {
-  const uniqueNames = Array.from(new Set(posts.map((post) => post.category))).sort();
+  const uniqueNames = Array.from(
+    new Set(posts.map((post) => post.category)),
+  ).sort();
 
   const existingIds = new Set<string>();
 
@@ -143,7 +145,7 @@ function moveCategoryNode(
   nodes: CategoryNode[],
   sourceId: string,
   newParentId: string | null,
-  targetIndex: number
+  targetIndex: number,
 ) {
   const source = nodes.find((node) => node.id === sourceId);
   if (!source) {
@@ -170,7 +172,10 @@ function moveCategoryNode(
   const withoutSource = nodes.filter((node) => node.id !== sourceId);
 
   const siblingsOfNewParent = getSortedSiblings(withoutSource, newParentId);
-  const safeIndex = Math.max(0, Math.min(targetIndex, siblingsOfNewParent.length));
+  const safeIndex = Math.max(
+    0,
+    Math.min(targetIndex, siblingsOfNewParent.length),
+  );
 
   const movedNode: CategoryNode = {
     ...source,
@@ -179,7 +184,7 @@ function moveCategoryNode(
   };
 
   const updatedMap = new Map<string, CategoryNode>(
-    withoutSource.map((node) => [node.id, { ...node }])
+    withoutSource.map((node) => [node.id, { ...node }]),
   );
 
   const orderedNewSiblings = [
@@ -250,7 +255,11 @@ function CategoryManagerModal({
   nodes: CategoryNode[];
   onCreate: (name: string) => void;
   onDelete: (id: string) => void;
-  onMove: (sourceId: string, parentId: string | null, targetIndex: number) => void;
+  onMove: (
+    sourceId: string,
+    parentId: string | null,
+    targetIndex: number,
+  ) => void;
 }) {
   const [newCategoryName, setNewCategoryName] = useState("");
   const [draggingId, setDraggingId] = useState<string | null>(null);
@@ -258,7 +267,9 @@ function CategoryManagerModal({
     parentId: string | null;
     index: number;
   } | null>(null);
-  const [insideTargetRootId, setInsideTargetRootId] = useState<string | null>(null);
+  const [insideTargetRootId, setInsideTargetRootId] = useState<string | null>(
+    null,
+  );
   const dragPreviewRef = useRef<HTMLElement | null>(null);
 
   const roots = useMemo(() => getSortedSiblings(nodes, null), [nodes]);
@@ -313,7 +324,7 @@ function CategoryManagerModal({
 
   const handleDragStart = (
     event: React.DragEvent<HTMLDivElement>,
-    categoryId: string
+    categoryId: string,
   ) => {
     setDraggingId(categoryId);
     clearDropIndicators();
@@ -356,7 +367,9 @@ function CategoryManagerModal({
     <div className="fixed inset-0 z-50 bg-black/60 flex items-center justify-center p-4">
       <div className="w-full max-w-2xl rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950 p-5">
         <div className="flex items-center justify-between">
-          <h3 className="text-lg font-bold text-zinc-900 dark:text-zinc-50">카테고리 관리</h3>
+          <h3 className="text-lg font-bold text-zinc-900 dark:text-zinc-50">
+            카테고리 관리
+          </h3>
           <button
             onClick={onClose}
             className="px-3 py-1.5 rounded-lg text-sm font-semibold bg-zinc-100 dark:bg-zinc-900 text-zinc-700 dark:text-zinc-300"
@@ -398,7 +411,9 @@ function CategoryManagerModal({
               }}
               onDrop={() => handleDropToInsert(null, 0)}
             >
-              <div className={`w-full border-t-2 ${insertTarget?.parentId === null && insertTarget.index === 0 ? "border-indigo-500" : "border-transparent"}`} />
+              <div
+                className={`w-full border-t-2 ${insertTarget?.parentId === null && insertTarget.index === 0 ? "border-indigo-500" : "border-transparent"}`}
+              />
             </div>
 
             {roots.map((root, rootIndex) => {
@@ -439,10 +454,23 @@ function CategoryManagerModal({
                     } ${draggingId === root.id ? "opacity-60 scale-[0.98] cursor-grabbing" : "cursor-grab"}`}
                   >
                     <div className="flex items-center gap-2 min-w-0">
-                      <svg className="w-4 h-4 text-zinc-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden>
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M3 7a2 2 0 012-2h4l2 2h8a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2V7z" />
+                      <svg
+                        className="w-4 h-4 text-zinc-400 shrink-0"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                        aria-hidden
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={1.8}
+                          d="M3 7a2 2 0 012-2h4l2 2h8a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2V7z"
+                        />
                       </svg>
-                      <span className="truncate text-sm text-zinc-700 dark:text-zinc-200">{root.name}</span>
+                      <span className="truncate text-sm text-zinc-700 dark:text-zinc-200">
+                        {root.name}
+                      </span>
                     </div>
                     <div className="flex items-center gap-1.5">
                       <div
@@ -455,8 +483,19 @@ function CategoryManagerModal({
                         }`}
                         title="카테고리 안으로 드롭 가능"
                       >
-                        <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden>
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 5v14m7-7H5" />
+                        <svg
+                          className="w-3.5 h-3.5"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                          stroke="currentColor"
+                          aria-hidden
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M12 5v14m7-7H5"
+                          />
                         </svg>
                       </div>
                       <button
@@ -479,24 +518,43 @@ function CategoryManagerModal({
                         }}
                         onDrop={() => handleDropToInsert(root.id, 0)}
                       >
-                        <div className={`w-full border-t-2 ${insertTarget?.parentId === root.id && insertTarget.index === 0 ? "border-indigo-500" : "border-transparent"}`} />
+                        <div
+                          className={`w-full border-t-2 ${insertTarget?.parentId === root.id && insertTarget.index === 0 ? "border-indigo-500" : "border-transparent"}`}
+                        />
                       </div>
 
                       {children.map((child, childIndex) => (
                         <div key={child.id}>
                           <div
                             draggable
-                            onDragStart={(event) => handleDragStart(event, child.id)}
+                            onDragStart={(event) =>
+                              handleDragStart(event, child.id)
+                            }
                             onDragEnd={handleDragEnd}
                             className={`flex items-center justify-between gap-2 rounded-lg bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 px-2 py-2 transition-all ${
-                              draggingId === child.id ? "opacity-60 scale-[0.98] cursor-grabbing" : "cursor-grab"
+                              draggingId === child.id
+                                ? "opacity-60 scale-[0.98] cursor-grabbing"
+                                : "cursor-grab"
                             }`}
                           >
                             <div className="flex items-center gap-2 min-w-0">
-                              <svg className="w-4 h-4 text-zinc-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden>
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M3 7a2 2 0 012-2h4l2 2h8a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2V7z" />
+                              <svg
+                                className="w-4 h-4 text-zinc-400 shrink-0"
+                                fill="none"
+                                viewBox="0 0 24 24"
+                                stroke="currentColor"
+                                aria-hidden
+                              >
+                                <path
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                  strokeWidth={1.8}
+                                  d="M3 7a2 2 0 012-2h4l2 2h8a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2V7z"
+                                />
                               </svg>
-                              <span className="truncate text-sm text-zinc-700 dark:text-zinc-200">{child.name}</span>
+                              <span className="truncate text-sm text-zinc-700 dark:text-zinc-200">
+                                {child.name}
+                              </span>
                             </div>
                             <button
                               onClick={() => onDelete(child.id)}
@@ -510,12 +568,19 @@ function CategoryManagerModal({
                             className="h-3 flex items-center"
                             onDragOver={(event) => {
                               event.preventDefault();
-                              setInsertTarget({ parentId: root.id, index: childIndex + 1 });
+                              setInsertTarget({
+                                parentId: root.id,
+                                index: childIndex + 1,
+                              });
                               setInsideTargetRootId(null);
                             }}
-                            onDrop={() => handleDropToInsert(root.id, childIndex + 1)}
+                            onDrop={() =>
+                              handleDropToInsert(root.id, childIndex + 1)
+                            }
                           >
-                            <div className={`w-full border-t-2 ${insertTarget?.parentId === root.id && insertTarget.index === childIndex + 1 ? "border-indigo-500" : "border-transparent"}`} />
+                            <div
+                              className={`w-full border-t-2 ${insertTarget?.parentId === root.id && insertTarget.index === childIndex + 1 ? "border-indigo-500" : "border-transparent"}`}
+                            />
                           </div>
                         </div>
                       ))}
@@ -531,7 +596,9 @@ function CategoryManagerModal({
                     }}
                     onDrop={() => handleDropToInsert(null, rootIndex + 1)}
                   >
-                    <div className={`w-full border-t-2 ${insertTarget?.parentId === null && insertTarget.index === rootIndex + 1 ? "border-indigo-500" : "border-transparent"}`} />
+                    <div
+                      className={`w-full border-t-2 ${insertTarget?.parentId === null && insertTarget.index === rootIndex + 1 ? "border-indigo-500" : "border-transparent"}`}
+                    />
                   </div>
                 </div>
               );
@@ -547,17 +614,16 @@ function CategoryManagerModal({
   );
 }
 
-function PostsList({
-  allPostsData,
-}: {
-  allPostsData: PostData[];
-}) {
+function PostsList({ allPostsData }: { allPostsData: PostData[] }) {
   const [selectedCategoryId, setSelectedCategoryId] = useState<string>("all");
   const [categoryNodes, setCategoryNodes] = useState<CategoryNode[]>([]);
-  const [postCategoryOverrides, setPostCategoryOverrides] = useState<Record<string, string>>({});
+  const [postCategoryOverrides, setPostCategoryOverrides] = useState<
+    Record<string, string>
+  >({});
   const [isManagerOpen, setIsManagerOpen] = useState(false);
-  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-  const [isMobileCategoryPopupOpen, setIsMobileCategoryPopupOpen] = useState(false);
+  const [isMobileCategoryPopupOpen, setIsMobileCategoryPopupOpen] =
+    useState(false);
+  const [isAtBottom, setIsAtBottom] = useState(false);
   const mobileCategoryPopupRef = useRef<HTMLDivElement | null>(null);
 
   const { isAuthenticated, token } = useAuth();
@@ -569,7 +635,9 @@ function PostsList({
   const searchParams = useSearchParams();
   const hasHydratedCategoryTreeRef = useRef(false);
   const lastSavedCategoryTreeRef = useRef("");
-  const saveCategoryTreeTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const saveCategoryTreeTimerRef = useRef<ReturnType<typeof setTimeout> | null>(
+    null,
+  );
 
   useEffect(() => {
     const defaultNodes = buildDefaultNodes(allPostsData);
@@ -629,7 +697,7 @@ function PostsList({
           onSuccess: () => {
             lastSavedCategoryTreeRef.current = serializedPayload;
           },
-        }
+        },
       );
     }, 350);
 
@@ -640,10 +708,9 @@ function PostsList({
     };
   }, [categoryNodes, postCategoryOverrides, token, updateCategoryTreeMutation]);
 
-
   const categoryById = useMemo(
     () => new Map(categoryNodes.map((node) => [node.id, node])),
-    [categoryNodes]
+    [categoryNodes],
   );
 
   const categoryIdByName = useMemo(() => {
@@ -670,7 +737,7 @@ function PostsList({
 
       return "";
     },
-    [categoryById, categoryIdByName, postCategoryOverrides]
+    [categoryById, categoryIdByName, postCategoryOverrides],
   );
 
   useEffect(() => {
@@ -720,11 +787,14 @@ function PostsList({
       } else {
         nextParams.set("category", categoryId);
       }
+      nextParams.delete("page");
 
       const nextQuery = nextParams.toString();
-      router.replace(nextQuery ? `${pathname}?${nextQuery}` : pathname, { scroll: false });
+      router.replace(nextQuery ? `${pathname}?${nextQuery}` : pathname, {
+        scroll: false,
+      });
     },
-    [pathname, router, searchParams]
+    [pathname, router, searchParams],
   );
 
   useEffect(() => {
@@ -734,7 +804,11 @@ function PostsList({
 
     const handleOutside = (event: MouseEvent | TouchEvent) => {
       const target = event.target as Node | null;
-      if (mobileCategoryPopupRef.current && target && !mobileCategoryPopupRef.current.contains(target)) {
+      if (
+        mobileCategoryPopupRef.current &&
+        target &&
+        !mobileCategoryPopupRef.current.contains(target)
+      ) {
         setIsMobileCategoryPopupOpen(false);
       }
     };
@@ -755,6 +829,24 @@ function PostsList({
       window.removeEventListener("keydown", handleEscape);
     };
   }, [isMobileCategoryPopupOpen]);
+
+  useEffect(() => {
+    const updateScrollPosition = () => {
+      const doc = document.documentElement;
+      const scrollBottom = window.scrollY + window.innerHeight;
+      const maxScroll = doc.scrollHeight;
+      setIsAtBottom(scrollBottom >= maxScroll - 8);
+    };
+
+    updateScrollPosition();
+    window.addEventListener("scroll", updateScrollPosition, { passive: true });
+    window.addEventListener("resize", updateScrollPosition);
+
+    return () => {
+      window.removeEventListener("scroll", updateScrollPosition);
+      window.removeEventListener("resize", updateScrollPosition);
+    };
+  }, [allPostsData.length, categoryNodes.length, selectedCategoryId]);
 
   const selectedCategoryIds = useMemo(() => {
     if (selectedCategoryId === "all") {
@@ -810,13 +902,57 @@ function PostsList({
     return flattenTree(categoryNodes);
   }, [categoryNodes]);
 
-  const filteredPosts = useMemo(() => {
+  const categoryFilteredPosts = useMemo(() => {
     if (!selectedCategoryIds) {
       return allPostsData;
     }
 
-    return allPostsData.filter((post) => selectedCategoryIds.has(getPostCategoryId(post)));
+    return allPostsData.filter((post) =>
+      selectedCategoryIds.has(getPostCategoryId(post)),
+    );
   }, [allPostsData, getPostCategoryId, selectedCategoryIds]);
+
+  const pageSize = useMemo(() => {
+    const sizeParam = Number(searchParams.get("size") ?? "10");
+    return sizeParam === 20 ? 20 : 10;
+  }, [searchParams]);
+
+  const totalPages = useMemo(
+    () => Math.max(1, Math.ceil(categoryFilteredPosts.length / pageSize)),
+    [categoryFilteredPosts.length, pageSize],
+  );
+
+  const currentPage = useMemo(() => {
+    const pageParam = Number(searchParams.get("page") ?? "1");
+    if (!Number.isFinite(pageParam) || pageParam < 1) {
+      return 1;
+    }
+    return Math.min(Math.floor(pageParam), totalPages);
+  }, [searchParams, totalPages]);
+
+  const paginatedPosts = useMemo(() => {
+    const start = (currentPage - 1) * pageSize;
+    return categoryFilteredPosts.slice(start, start + pageSize);
+  }, [categoryFilteredPosts, currentPage, pageSize]);
+
+  useEffect(() => {
+    const currentQueryPage = Number(searchParams.get("page") ?? "1");
+    if (Number.isFinite(currentQueryPage) && currentQueryPage === currentPage) {
+      return;
+    }
+
+    const nextParams = new URLSearchParams(searchParams.toString());
+    if (currentPage <= 1) {
+      nextParams.delete("page");
+    } else {
+      nextParams.set("page", String(currentPage));
+    }
+
+    const nextQuery = nextParams.toString();
+    router.replace(nextQuery ? `${pathname}?${nextQuery}` : pathname, {
+      scroll: false,
+    });
+  }, [currentPage, pathname, router, searchParams]);
 
   const selectedCategoryLabel =
     selectedCategoryId === "all"
@@ -857,7 +993,7 @@ function PostsList({
                 ...node,
                 parentId: target.parentId,
               }
-            : node
+            : node,
         );
 
       let uncategorizedId = "";
@@ -884,9 +1020,45 @@ function PostsList({
   const moveCategory = (
     sourceId: string,
     parentId: string | null,
-    targetIndex: number
+    targetIndex: number,
   ) => {
-    setCategoryNodes((prev) => moveCategoryNode(prev, sourceId, parentId, targetIndex));
+    setCategoryNodes((prev) =>
+      moveCategoryNode(prev, sourceId, parentId, targetIndex),
+    );
+  };
+
+  const moveListViewport = () => {
+    const behavior: ScrollBehavior = "smooth";
+    if (isAtBottom) {
+      window.scrollTo({ top: 0, behavior });
+      return;
+    }
+    window.scrollTo({ top: document.documentElement.scrollHeight, behavior });
+  };
+
+  const changePageSize = (size: 10 | 20) => {
+    const nextParams = new URLSearchParams(searchParams.toString());
+    nextParams.set("size", String(size));
+    nextParams.delete("page");
+    const nextQuery = nextParams.toString();
+    router.replace(nextQuery ? `${pathname}?${nextQuery}` : pathname, {
+      scroll: false,
+    });
+  };
+
+  const goToPage = (page: number) => {
+    const safePage = Math.max(1, Math.min(page, totalPages));
+    const nextParams = new URLSearchParams(searchParams.toString());
+    if (safePage <= 1) {
+      nextParams.delete("page");
+    } else {
+      nextParams.set("page", String(safePage));
+    }
+    const nextQuery = nextParams.toString();
+    router.replace(nextQuery ? `${pathname}?${nextQuery}` : pathname, {
+      scroll: false,
+    });
+    window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
   return (
@@ -903,11 +1075,40 @@ function PostsList({
       <div className="space-y-6 w-full min-w-0">
         <div className="flex items-center justify-between gap-3">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Posts</h1>
-            <p className="text-gray-500 dark:text-gray-400 mt-1">{filteredPosts.length}개의 글</p>
+            <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
+              Posts
+            </h1>
+            <p className="text-gray-500 dark:text-gray-400 mt-1">
+              {categoryFilteredPosts.length}개의 글
+            </p>
           </div>
 
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 flex-wrap justify-end">
+            <div className="hidden sm:flex items-center rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 p-1">
+              <button
+                type="button"
+                onClick={() => changePageSize(10)}
+                className={`px-2.5 py-1 text-xs font-semibold rounded-lg transition-colors ${
+                  pageSize === 10
+                    ? "bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900"
+                    : "text-zinc-600 dark:text-zinc-400"
+                }`}
+              >
+                10개
+              </button>
+              <button
+                type="button"
+                onClick={() => changePageSize(20)}
+                className={`px-2.5 py-1 text-xs font-semibold rounded-lg transition-colors ${
+                  pageSize === 20
+                    ? "bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900"
+                    : "text-zinc-600 dark:text-zinc-400"
+                }`}
+              >
+                20개
+              </button>
+            </div>
+
             <div className="relative lg:hidden" ref={mobileCategoryPopupRef}>
               <button
                 type="button"
@@ -917,16 +1118,31 @@ function PostsList({
                 aria-expanded={isMobileCategoryPopupOpen}
                 aria-label="카테고리 선택"
               >
-                <span className="max-w-[120px] truncate">{selectedCategoryLabel}</span>
-                <svg className={`w-4 h-4 transition-transform ${isMobileCategoryPopupOpen ? "rotate-180" : "rotate-0"}`} fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden>
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                <span className="max-w-[120px] truncate">
+                  {selectedCategoryLabel}
+                </span>
+                <svg
+                  className={`w-4 h-4 transition-transform ${isMobileCategoryPopupOpen ? "rotate-180" : "rotate-0"}`}
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                  aria-hidden
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M19 9l-7 7-7-7"
+                  />
                 </svg>
               </button>
 
               {isMobileCategoryPopupOpen && (
-                <div className="absolute right-0 top-full mt-2 z-30 w-[min(86vw,320px)] rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-[#0a0a0a] p-3 shadow-xl">
+                <div className="absolute right-0 top-full mt-2 z-30 w-[min(60vw,320px)] rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-[#0a0a0a] p-3 shadow-xl">
                   <div className="mb-2 flex items-center justify-between px-1">
-                    <p className="text-xs font-bold tracking-wide uppercase text-zinc-500 dark:text-zinc-400">Categories</p>
+                    <p className="text-xs font-bold tracking-wide uppercase text-zinc-500 dark:text-zinc-400">
+                      Categories
+                    </p>
                     {isAuthenticated && (
                       <button
                         type="button"
@@ -954,12 +1170,25 @@ function PostsList({
                       }}
                     >
                       <span className="flex items-center gap-2">
-                        <svg className="w-4 h-4 opacity-80" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden>
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M3 7a2 2 0 012-2h4l2 2h8a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2V7z" />
+                        <svg
+                          className="w-4 h-4 opacity-80"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                          stroke="currentColor"
+                          aria-hidden
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={1.8}
+                            d="M3 7a2 2 0 012-2h4l2 2h8a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2V7z"
+                          />
                         </svg>
                         전체 글
                       </span>
-                      <span className="text-xs opacity-80">{allPostsData.length}</span>
+                      <span className="text-xs opacity-80">
+                        {allPostsData.length}
+                      </span>
                     </button>
 
                     {visibleCategoryRows.map(({ node, depth }) => {
@@ -980,8 +1209,19 @@ function PostsList({
                           style={{ paddingLeft: `${12 + depth * 16}px` }}
                         >
                           <span className="flex items-center gap-2 min-w-0">
-                            <svg className="w-4 h-4 opacity-80 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden>
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M3 7a2 2 0 012-2h4l2 2h8a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2V7z" />
+                            <svg
+                              className="w-4 h-4 opacity-80 shrink-0"
+                              fill="none"
+                              viewBox="0 0 24 24"
+                              stroke="currentColor"
+                              aria-hidden
+                            >
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth={1.8}
+                                d="M3 7a2 2 0 012-2h4l2 2h8a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2V7z"
+                              />
                             </svg>
                             <span className="truncate">{node.name}</span>
                           </span>
@@ -1003,8 +1243,18 @@ function PostsList({
                            shadow-lg shadow-zinc-900/20 dark:shadow-zinc-50/10
                            transition-all duration-200 active:scale-95"
               >
-                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                <svg
+                  className="w-5 h-5"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M12 4v16m8-8H4"
+                  />
                 </svg>
                 글쓰기
               </Link>
@@ -1012,164 +1262,155 @@ function PostsList({
           </div>
         </div>
 
-        <div
-          className={`grid grid-cols-1 gap-6 transition-[grid-template-columns] duration-200 ease-out ${
-            isSidebarOpen ? "lg:grid-cols-[264px_minmax(0,1fr)]" : "lg:grid-cols-[52px_minmax(0,1fr)]"
-          }`}
-        >
-          <aside className="hidden lg:block relative min-w-0">
-            <div
-              role="button"
-              tabIndex={0}
-              onClick={() => {
-                if (!isSidebarOpen) {
-                  setIsSidebarOpen(true);
-                }
-              }}
-              onKeyDown={(event) => {
-                if ((event.key === "Enter" || event.key === " ") && !isSidebarOpen) {
-                  event.preventDefault();
-                  setIsSidebarOpen(true);
-                }
-              }}
-              className={`rounded-2xl justify-center items-center border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-[#0a0a0a] transition-all duration-200 overflow-hidden ${
-                isSidebarOpen ? "p-4 opacity-100 cursor-default h-fit" : "p-2 opacity-100 cursor-pointer h-20"
-              }`}
-            >
-              <div className="flex items-center justify-between">
-                <p
-                  className={`text-xs font-bold tracking-wide text-zinc-500 dark:text-zinc-400 uppercase transition-opacity duration-200 ${
-                    isSidebarOpen ? "opacity-100" : "opacity-0"
-                  }`}
-                >
-                  Sidebar
+        <div className="grid grid-cols-1 gap-6 lg:grid-cols-[264px_minmax(0,1fr)]">
+          <aside className="hidden lg:block min-w-0">
+            <div className="sticky top-24 space-y-4">
+              <div className="rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-[#0a0a0a] p-4">
+                <p className="text-xs font-bold tracking-wide text-zinc-500 dark:text-zinc-400 uppercase">
+                  Visitor
                 </p>
-                <button
-                  type="button"
-                  onClick={(event) => {
-                    event.stopPropagation();
-                    setIsSidebarOpen((prev) => !prev);
-                  }}
-                  className="h-8 w-8 rounded-lg bg-zinc-100 dark:bg-zinc-900 items-center justify-center text-zinc-500 dark:text-zinc-400 flex"
-                  aria-label="사이드바 토글"
-                >
-                  <svg className={`w-4 h-4 transition-transform duration-200 ${isSidebarOpen ? "rotate-270" : "rotate-0"}`} fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden>
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-                  </svg>
-                </button>
+                <div className="mt-3 grid grid-cols-3 gap-2 text-center">
+                  <div className="rounded-xl bg-zinc-50 dark:bg-zinc-900 px-2 py-3">
+                    <p className="text-[11px] text-zinc-500 dark:text-zinc-400">
+                      Total
+                    </p>
+                    <p className="mt-1 text-base font-bold text-zinc-900 dark:text-zinc-100">
+                      {visitorStats?.total ?? "-"}
+                    </p>
+                  </div>
+                  <div className="rounded-xl bg-zinc-50 dark:bg-zinc-900 px-2 py-3">
+                    <p className="text-[11px] text-zinc-500 dark:text-zinc-400">
+                      Today
+                    </p>
+                    <p className="mt-1 text-base font-bold text-zinc-900 dark:text-zinc-100">
+                      {visitorStats?.today ?? "-"}
+                    </p>
+                  </div>
+                  <div className="rounded-xl bg-zinc-50 dark:bg-zinc-900 px-2 py-3">
+                    <p className="text-[11px] text-zinc-500 dark:text-zinc-400">
+                      Yesterday
+                    </p>
+                    <p className="mt-1 text-base font-bold text-zinc-900 dark:text-zinc-100">
+                      {visitorStats?.yesterday ?? "-"}
+                    </p>
+                  </div>
+                </div>
               </div>
 
-              {!isSidebarOpen && (
-                <div className="mt-1 flex items-center justify-center">
-                  <div className="flex flex-col items-center text-zinc-500 dark:text-zinc-400">
-                    <svg className="size-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden>
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M3 7a2 2 0 012-2h4l2 2h8a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2V7z" />
-                    </svg>
-                  </div>
-                </div>
-              )}
-
-              <div
-                className={`space-y-4 transition-all duration-200 ${
-                  isSidebarOpen
-                    ? "mt-4 opacity-100 translate-x-0 max-h-[1200px]"
-                    : "mt-0 opacity-0 -translate-x-2 pointer-events-none max-h-0 overflow-hidden"
-                }`}
-              >
-                <div className="rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-[#0a0a0a] p-4">
-                  <p className="text-xs font-bold tracking-wide text-zinc-500 dark:text-zinc-400 uppercase">Visitor</p>
-                  <div className="mt-3 grid grid-cols-3 gap-2 text-center">
-                    <div className="rounded-xl bg-zinc-50 dark:bg-zinc-900 px-2 py-3">
-                      <p className="text-[11px] text-zinc-500 dark:text-zinc-400">Total</p>
-                      <p className="mt-1 text-base font-bold text-zinc-900 dark:text-zinc-100">{visitorStats?.total ?? "-"}</p>
-                    </div>
-                    <div className="rounded-xl bg-zinc-50 dark:bg-zinc-900 px-2 py-3">
-                      <p className="text-[11px] text-zinc-500 dark:text-zinc-400">Today</p>
-                      <p className="mt-1 text-base font-bold text-zinc-900 dark:text-zinc-100">{visitorStats?.today ?? "-"}</p>
-                    </div>
-                    <div className="rounded-xl bg-zinc-50 dark:bg-zinc-900 px-2 py-3">
-                      <p className="text-[11px] text-zinc-500 dark:text-zinc-400">Yesterday</p>
-                      <p className="mt-1 text-base font-bold text-zinc-900 dark:text-zinc-100">{visitorStats?.yesterday ?? "-"}</p>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-[#0a0a0a] p-3">
-                  <div className="px-2 pb-2 flex items-center justify-between gap-2">
-                    <p className="text-xs font-bold tracking-wide text-zinc-500 dark:text-zinc-400 uppercase">Categories</p>
-                    {isAuthenticated && (
-                      <button
-                        onClick={() => setIsManagerOpen(true)}
-                        className="px-2.5 py-1 rounded-md text-xs font-semibold bg-zinc-100 dark:bg-zinc-900 text-zinc-700 dark:text-zinc-300 hover:bg-zinc-200 dark:hover:bg-zinc-800"
-                      >
-                        편집
-                      </button>
-                    )}
-                  </div>
-
-                  <div className="space-y-1">
+              <div className="rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-[#0a0a0a] p-3">
+                <div className="px-2 pb-2 flex items-center justify-between gap-2">
+                  <p className="text-xs font-bold tracking-wide text-zinc-500 dark:text-zinc-400 uppercase">
+                    Categories
+                  </p>
+                  {isAuthenticated && (
                     <button
-                      className={`w-full flex items-center justify-between rounded-xl px-3 py-2 text-sm font-semibold transition-colors ${
-                        selectedCategoryId === "all"
-                          ? "bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900"
-                          : "text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-900"
-                      }`}
-                      onClick={() => applyCategoryFilter("all")}
+                      onClick={() => setIsManagerOpen(true)}
+                      className="px-2.5 py-1 rounded-md text-xs font-semibold bg-zinc-100 dark:bg-zinc-900 text-zinc-700 dark:text-zinc-300 hover:bg-zinc-200 dark:hover:bg-zinc-800"
                     >
-                      <span className="flex items-center gap-2">
-                        <svg className="w-4 h-4 opacity-80" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden>
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M3 7a2 2 0 012-2h4l2 2h8a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2V7z" />
-                        </svg>
-                        전체 글
-                      </span>
-                      <span className="text-xs opacity-80">{allPostsData.length}</span>
+                      편집
                     </button>
+                  )}
+                </div>
 
-                    {visibleCategoryRows.map(({ node, depth }) => {
-                      const count = categoryCountMap.get(node.id) ?? 0;
+                <div className="space-y-1">
+                  <button
+                    className={`w-full flex items-center justify-between rounded-xl px-3 py-2 text-sm font-semibold transition-colors ${
+                      selectedCategoryId === "all"
+                        ? "bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900"
+                        : "text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-900"
+                    }`}
+                    onClick={() => applyCategoryFilter("all")}
+                  >
+                    <span className="flex items-center gap-2">
+                      <svg
+                        className="w-4 h-4 opacity-80"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                        aria-hidden
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={1.8}
+                          d="M3 7a2 2 0 012-2h4l2 2h8a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2V7z"
+                        />
+                      </svg>
+                      전체 글
+                    </span>
+                    <span className="text-xs opacity-80">
+                      {allPostsData.length}
+                    </span>
+                  </button>
 
-                      return (
-                        <button
-                          key={node.id}
-                          className={`w-full flex items-center justify-between rounded-xl px-3 py-2 text-sm font-semibold transition-colors ${
-                            selectedCategoryId === node.id
-                              ? "bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900"
-                              : "text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-900"
-                          }`}
-                          onClick={() => applyCategoryFilter(node.id)}
-                          style={{ paddingLeft: `${12 + depth * 16}px` }}
-                        >
-                          <span className="flex items-center gap-2 min-w-0">
-                            <svg className="w-4 h-4 opacity-80 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden>
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M3 7a2 2 0 012-2h4l2 2h8a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2V7z" />
-                            </svg>
-                            <span className="truncate">{node.name}</span>
-                          </span>
-                          <span className="text-xs opacity-80">{count}</span>
-                        </button>
-                      );
-                    })}
-                  </div>
+                  {visibleCategoryRows.map(({ node, depth }) => {
+                    const count = categoryCountMap.get(node.id) ?? 0;
+
+                    return (
+                      <button
+                        key={node.id}
+                        className={`w-full flex items-center justify-between rounded-xl px-3 py-2 text-sm font-semibold transition-colors ${
+                          selectedCategoryId === node.id
+                            ? "bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900"
+                            : "text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-900"
+                        }`}
+                        onClick={() => applyCategoryFilter(node.id)}
+                        style={{ paddingLeft: `${12 + depth * 16}px` }}
+                      >
+                        <span className="flex items-center gap-2 min-w-0">
+                          <svg
+                            className="w-4 h-4 opacity-80 shrink-0"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            stroke="currentColor"
+                            aria-hidden
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth={1.8}
+                              d="M3 7a2 2 0 012-2h4l2 2h8a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2V7z"
+                            />
+                          </svg>
+                          <span className="truncate">{node.name}</span>
+                        </span>
+                        <span className="text-xs opacity-80">{count}</span>
+                      </button>
+                    );
+                  })}
                 </div>
               </div>
             </div>
           </aside>
 
           <div className="space-y-4 min-w-0">
-            {filteredPosts.length === 0 ? (
+            {categoryFilteredPosts.length === 0 ? (
               <div className="text-center py-16">
                 <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-zinc-100 dark:bg-zinc-800 mb-4">
-                  <svg className="w-8 h-8 text-zinc-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z" />
+                  <svg
+                    className="w-8 h-8 text-zinc-400"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={1.5}
+                      d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z"
+                    />
                   </svg>
                 </div>
-                <p className="text-zinc-500 dark:text-zinc-400 font-medium">아직 작성된 글이 없습니다</p>
+                <p className="text-zinc-500 dark:text-zinc-400 font-medium">
+                  아직 작성된 글이 없습니다
+                </p>
               </div>
             ) : (
-              filteredPosts.map((post, index) => {
+              paginatedPosts.map((post, index) => {
                 const { id, date, title, contentHtml, excerpt } = post;
                 const categoryId = getPostCategoryId(post);
-                const categoryName = categoryById.get(categoryId)?.name ?? post.category;
+                const categoryName =
+                  categoryById.get(categoryId)?.name ?? post.category;
 
                 return (
                   <motion.article
@@ -1198,12 +1439,24 @@ function PostsList({
                               <span className="px-2.5 py-1 text-xs font-bold rounded-full bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400">
                                 {categoryName}
                               </span>
-                              <span className="text-xs text-zinc-400 dark:text-zinc-500 font-medium">{date}</span>
+                              <span className="text-xs text-zinc-400 dark:text-zinc-500 font-medium">
+                                {date}
+                              </span>
                             </div>
                           </div>
                           <div className="hidden sm:flex items-center justify-center w-10 h-10 rounded-full bg-zinc-50 dark:bg-zinc-800 group-hover:bg-indigo-50 dark:group-hover:bg-indigo-900/30 transition-colors">
-                            <svg className="w-5 h-5 text-zinc-400 group-hover:text-indigo-500 transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                            <svg
+                              className="w-5 h-5 text-zinc-400 group-hover:text-indigo-500 transition-colors"
+                              fill="none"
+                              viewBox="0 0 24 24"
+                              stroke="currentColor"
+                            >
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth={2}
+                                d="M9 5l7 7-7 7"
+                              />
                             </svg>
                           </div>
                         </div>
@@ -1213,9 +1466,69 @@ function PostsList({
                 );
               })
             )}
+
+            {categoryFilteredPosts.length > 0 && (
+              <div className="pt-2 flex items-center justify-between gap-2">
+                <p className="text-xs text-zinc-500 dark:text-zinc-400">
+                  {currentPage} / {totalPages} 페이지
+                </p>
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={() => goToPage(currentPage - 1)}
+                    disabled={currentPage <= 1}
+                    className="px-3 py-1.5 rounded-lg text-xs font-semibold border border-zinc-200 dark:border-zinc-800 text-zinc-700 dark:text-zinc-300 disabled:opacity-40"
+                  >
+                    이전
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => goToPage(currentPage + 1)}
+                    disabled={currentPage >= totalPages}
+                    className="px-3 py-1.5 rounded-lg text-xs font-semibold border border-zinc-200 dark:border-zinc-800 text-zinc-700 dark:text-zinc-300 disabled:opacity-40"
+                  >
+                    다음
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
         </div>
       </div>
+
+      <button
+        type="button"
+        onClick={moveListViewport}
+        className="fixed right-6 bottom-10 z-40 inline-flex items-center justify-center gap-2 rounded-full border border-zinc-200 dark:border-zinc-700 bg-white/95 dark:bg-zinc-900/95 p-3 sm:px-4 sm:py-2.5 text-sm font-semibold text-zinc-700 dark:text-zinc-200 shadow-lg backdrop-blur transition-colors hover:bg-zinc-100 dark:hover:bg-zinc-800"
+        aria-label={isAtBottom ? "맨 위로 이동" : "맨 아래로 이동"}
+      >
+        <svg
+          className="w-4 h-4"
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke="currentColor"
+          aria-hidden
+        >
+          {isAtBottom ? (
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M5 15l7-7 7 7"
+            />
+          ) : (
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M19 9l-7 7-7-7"
+            />
+          )}
+        </svg>
+        <span className="hidden sm:inline">
+          {isAtBottom ? "맨 위로 가기" : "맨 아래로 가기"}
+        </span>
+      </button>
     </>
   );
 }

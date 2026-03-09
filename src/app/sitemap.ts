@@ -2,7 +2,7 @@ import { MetadataRoute } from "next";
 import { getSortedPostsData } from "@/lib/posts";
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://jackblog.com";
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://blog.jackihyun.com";
   const posts = await getSortedPostsData();
 
   const postUrls: MetadataRoute.Sitemap = posts.map((post) => ({

@@ -3,4 +3,4 @@ User-agent: *
 Allow: /
 
 # Sitemaps
-Sitemap: https://jackblog.com/sitemap.xml
+Sitemap: https://blog.jackihyun.com/sitemap.xml

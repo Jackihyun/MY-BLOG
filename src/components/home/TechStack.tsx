@@ -5,12 +5,24 @@ import Image from "next/image";
 
 const technologies = [
   { name: "React", icon: "https://api.iconify.design/logos:react.svg" },
-  { name: "TypeScript", icon: "https://api.iconify.design/logos:typescript-icon.svg" },
-  { name: "Tanstack-Query", icon: "https://api.iconify.design/logos:react-query-icon.svg" },
+  {
+    name: "TypeScript",
+    icon: "https://api.iconify.design/logos:typescript-icon.svg",
+  },
+  {
+    name: "Tanstack-Query",
+    icon: "https://api.iconify.design/logos:react-query-icon.svg",
+  },
   { name: "Next.js", icon: "https://api.iconify.design/logos:nextjs-icon.svg" },
   { name: "Svelte", icon: "https://api.iconify.design/logos:svelte-icon.svg" },
-  { name: "JavaScript", icon: "https://api.iconify.design/logos:javascript.svg" },
-  { name: "TailwindCSS", icon: "https://api.iconify.design/logos:tailwindcss-icon.svg" },
+  {
+    name: "JavaScript",
+    icon: "https://api.iconify.design/logos:javascript.svg",
+  },
+  {
+    name: "TailwindCSS",
+    icon: "https://api.iconify.design/logos:tailwindcss-icon.svg",
+  },
   { name: "Vite", icon: "https://api.iconify.design/logos:vitejs.svg" },
   { name: "HTML", icon: "https://api.iconify.design/logos:html-5.svg" },
   { name: "CSS", icon: "https://api.iconify.design/logos:css-3.svg" },
@@ -25,7 +37,7 @@ export default function TechStack() {
 
   return (
     <section className="py-24 overflow-hidden w-full">
-      <div className="max-w-5xl mx-auto px-4 mb-12">
+      <div className="mx-auto px-4 mb-12">
         <h2 className="text-2xl font-black text-zinc-900 dark:text-zinc-50 tracking-tight uppercase flex items-center gap-3">
           Tech Stack
         </h2>

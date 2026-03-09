@@ -13,7 +13,7 @@ interface PostProps {
 
 export async function generateMetadata({ params }: PostProps): Promise<Metadata> {
   const postData = await getPostData(params.id);
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://blog.jackihyun.me";
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://blog.jackihyun.com";
   const ogUrl = `/api/og?title=${encodeURIComponent(postData.title)}&category=${encodeURIComponent(postData.category)}`;
 
   return {
@@ -75,7 +75,7 @@ export default async function PostPage({ params }: PostProps) {
     description: postData.excerpt || postData.title,
     mainEntityOfPage: {
       "@type": "WebPage",
-      "@id": `${process.env.NEXT_PUBLIC_SITE_URL || "https://jackblog.com"}/posts/${params.id}`,
+      "@id": `${process.env.NEXT_PUBLIC_SITE_URL || "https://blog.jackihyun.com"}/posts/${params.id}`,
     },
   };
 

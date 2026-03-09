@@ -2,7 +2,7 @@ import { getSortedPostsData } from "@/lib/posts";
 
 export async function GET() {
   const posts = await getSortedPostsData();
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://jackblog.com";
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://blog.jackihyun.com";
   const siteName = process.env.NEXT_PUBLIC_SITE_NAME || "Jack's Blog";
 
   const rssItems = posts

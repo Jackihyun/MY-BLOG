@@ -12,7 +12,8 @@ interface RootLayoutProps {
 
 const inter = Inter({ subsets: ["latin"] });
 
-const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://jackblog.com";
+const siteUrl =
+  process.env.NEXT_PUBLIC_SITE_URL || "https://blog.jackihyun.com";
 const siteName = process.env.NEXT_PUBLIC_SITE_NAME || "Jack's Blog";
 
 export const metadata: Metadata = {
@@ -21,8 +22,18 @@ export const metadata: Metadata = {
     default: siteName,
     template: `%s | ${siteName}`,
   },
-  description: "개발 블로그 by Jackihyun - 프론트엔드, 백엔드, 그리고 더 많은 것들",
-  keywords: ["개발", "프로그래밍", "프론트엔드", "백엔드", "JavaScript", "TypeScript", "React", "Next.js"],
+  description:
+    "개발 블로그 by Jackihyun - 프론트엔드, 백엔드, 그리고 더 많은 것들",
+  keywords: [
+    "개발",
+    "프로그래밍",
+    "프론트엔드",
+    "백엔드",
+    "JavaScript",
+    "TypeScript",
+    "React",
+    "Next.js",
+  ],
   authors: [{ name: "Jackihyun" }],
   creator: "Jackihyun",
   openGraph: {
@@ -100,7 +111,7 @@ export default function RootLayout({
           <div className="flex flex-col min-h-screen">
             <Header />
 
-            <main className="flex-grow w-full pt-32 pb-20 px-4 max-w-5xl mx-auto">
+            <main className="flex-grow w-full pt-32 pb-20 md:px-10 px-4 max-w-7xl mx-auto">
               {children}
             </main>
             <Footer />

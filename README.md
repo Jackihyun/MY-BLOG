@@ -164,5 +164,5 @@ npm run lighthouse:all
 ## 레거시 포스트 마이그레이션
 
 ```bash
-API_URL=https://blog.jackihyun.me/api ADMIN_PASSWORD=<admin-password> npm run migrate:posts
+API_URL=https://blog.jackihyun.com/api ADMIN_PASSWORD=<admin-password> npm run migrate:posts
 ```
