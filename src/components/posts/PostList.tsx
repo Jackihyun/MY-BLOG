@@ -1311,7 +1311,7 @@ function PostsList({ allPostsData }: { allPostsData: PostData[] }) {
           </div>
         </div>
 
-        <div className="grid grid-cols-1 gap-6 lg:grid-cols-[264px_minmax(0,1fr)]">
+        <div className="grid grid-cols-1 gap-6 lg:grid-cols-[274px_minmax(0,1fr)]">
           <aside className="hidden lg:block min-w-0">
             <div className="sticky top-24 space-y-4">
               <div className="rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-[#0a0a0a] p-4">
