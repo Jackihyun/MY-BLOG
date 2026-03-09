@@ -25,6 +25,7 @@ export interface PostResponse {
   readingTime: number;
   viewCount: number;
   isPublished: boolean;
+  thumbnail?: string;
   createdAt: string;
   updatedAt: string;
   publishedAt: string;
@@ -43,6 +44,7 @@ export interface PostCreateRequest {
   content: string;
   excerpt?: string;
   category: string;
+  thumbnail?: string;
   publish?: boolean;
   publishedAt?: string;
 }
@@ -52,6 +54,7 @@ export interface PostUpdateRequest {
   content?: string;
   excerpt?: string;
   category?: string;
+  thumbnail?: string;
   publish?: boolean;
   publishedAt?: string;
 }
@@ -136,4 +139,5 @@ export interface PostData {
   viewCount?: number;
   isPublished?: boolean;
   publishedAt?: string;
+  thumbnail?: string;
 }

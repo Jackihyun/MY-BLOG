@@ -90,6 +90,7 @@ function apiPostToPostData(apiPost: {
   readingTime?: number;
   viewCount?: number;
   isPublished?: boolean;
+  thumbnail?: string;
 }): PostData {
   let dateStr = new Date().toISOString().split("T")[0];
   if (apiPost.publishedAt) {
@@ -118,6 +119,7 @@ function apiPostToPostData(apiPost: {
     viewCount: apiPost.viewCount,
     isPublished: apiPost.isPublished ?? true,
     publishedAt: apiPost.publishedAt,
+    thumbnail: apiPost.thumbnail,
   };
 }
 
@@ -142,6 +144,7 @@ async function getPostDataFromFile(id: string): Promise<PostData> {
     slug: id,
     contentHtml,
     isPublished: true,
+    thumbnail: matterResult.data.thumbnail,
     ...(matterResult.data as { title: string; date: string; category: string }),
   };
 }
@@ -191,6 +194,7 @@ interface ApiPostResponse {
   readingTime?: number;
   viewCount?: number;
   isPublished?: boolean;
+  thumbnail?: string;
 }
 
 export async function getSortedPostsData(): Promise<PostData[]> {

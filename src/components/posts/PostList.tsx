@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState, memo } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { motion } from "framer-motion";
 import { PostData } from "@/lib/posts";
@@ -621,6 +622,7 @@ function PostsList({ allPostsData }: { allPostsData: PostData[] }) {
     Record<string, string>
   >({});
   const [isManagerOpen, setIsManagerOpen] = useState(false);
+  const [isPageSizeOpen, setIsPageSizeOpen] = useState(false);
   const [isMobileCategoryPopupOpen, setIsMobileCategoryPopupOpen] =
     useState(false);
   const [isAtBottom, setIsAtBottom] = useState(false);
@@ -913,8 +915,10 @@ function PostsList({ allPostsData }: { allPostsData: PostData[] }) {
   }, [allPostsData, getPostCategoryId, selectedCategoryIds]);
 
   const pageSize = useMemo(() => {
-    const sizeParam = Number(searchParams.get("size") ?? "10");
-    return sizeParam === 20 ? 20 : 10;
+    const sizeParam = Number(searchParams.get("size") ?? "5");
+    if (sizeParam === 10) return 10;
+    if (sizeParam === 20) return 20;
+    return 5;
   }, [searchParams]);
 
   const totalPages = useMemo(
@@ -1036,7 +1040,7 @@ function PostsList({ allPostsData }: { allPostsData: PostData[] }) {
     window.scrollTo({ top: document.documentElement.scrollHeight, behavior });
   };
 
-  const changePageSize = (size: 10 | 20) => {
+  const changePageSize = (size: 5 | 10 | 20) => {
     const nextParams = new URLSearchParams(searchParams.toString());
     nextParams.set("size", String(size));
     nextParams.delete("page");
@@ -1061,6 +1065,32 @@ function PostsList({ allPostsData }: { allPostsData: PostData[] }) {
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
+  const paginationRange = useMemo(() => {
+    const delta = 2;
+    const range = [];
+    for (
+      let i = Math.max(2, currentPage - delta);
+      i <= Math.min(totalPages - 1, currentPage + delta);
+      i++
+    ) {
+      range.push(i);
+    }
+
+    if (currentPage - delta > 2) {
+      range.unshift("...");
+    }
+    range.unshift(1);
+
+    if (currentPage + delta < totalPages - 1) {
+      range.push("...");
+    }
+    if (totalPages > 1) {
+      range.push(totalPages);
+    }
+
+    return range;
+  }, [currentPage, totalPages]);
+
   return (
     <>
       <CategoryManagerModal
@@ -1084,29 +1114,48 @@ function PostsList({ allPostsData }: { allPostsData: PostData[] }) {
           </div>
 
           <div className="flex items-center gap-2 flex-wrap justify-end">
-            <div className="hidden sm:flex items-center rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 p-1">
+            <div className="relative page-size-dropdown">
               <button
                 type="button"
-                onClick={() => changePageSize(10)}
-                className={`px-2.5 py-1 text-xs font-semibold rounded-lg transition-colors ${
-                  pageSize === 10
-                    ? "bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900"
-                    : "text-zinc-600 dark:text-zinc-400"
-                }`}
+                onClick={() => setIsPageSizeOpen((prev) => !prev)}
+                className="inline-flex items-center gap-1.5 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 px-3 py-2 text-sm font-semibold text-zinc-700 dark:text-zinc-300 hover:bg-zinc-50 dark:hover:bg-zinc-800 transition-colors"
               >
-                10개
+                {pageSize}개씩 보기
+                <svg
+                  className={`w-4 h-4 transition-transform ${isPageSizeOpen ? "rotate-180" : "rotate-0"}`}
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M19 9l-7 7-7-7"
+                  />
+                </svg>
               </button>
-              <button
-                type="button"
-                onClick={() => changePageSize(20)}
-                className={`px-2.5 py-1 text-xs font-semibold rounded-lg transition-colors ${
-                  pageSize === 20
-                    ? "bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900"
-                    : "text-zinc-600 dark:text-zinc-400"
-                }`}
-              >
-                20개
-              </button>
+              {isPageSizeOpen && (
+                <div className="absolute right-0 top-full mt-2 z-30 w-32 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950 p-1 shadow-xl">
+                  {[5, 10, 20].map((size) => (
+                    <button
+                      key={size}
+                      type="button"
+                      onClick={() => {
+                        changePageSize(size as 5 | 10 | 20);
+                        setIsPageSizeOpen(false);
+                      }}
+                      className={`w-full text-left px-3 py-2 text-sm font-semibold rounded-lg transition-colors ${
+                        pageSize === size
+                          ? "bg-zinc-100 dark:bg-zinc-900 text-indigo-600 dark:text-indigo-400"
+                          : "text-zinc-600 dark:text-zinc-400 hover:bg-zinc-50 dark:hover:bg-zinc-900"
+                      }`}
+                    >
+                      {size}개씩
+                    </button>
+                  ))}
+                </div>
+              )}
             </div>
 
             <div className="relative lg:hidden" ref={mobileCategoryPopupRef}>
@@ -1407,7 +1456,8 @@ function PostsList({ allPostsData }: { allPostsData: PostData[] }) {
               </div>
             ) : (
               paginatedPosts.map((post, index) => {
-                const { id, date, title, contentHtml, excerpt } = post;
+                const { id, date, title, contentHtml, excerpt, thumbnail } =
+                  post;
                 const categoryId = getPostCategoryId(post);
                 const categoryName =
                   categoryById.get(categoryId)?.name ?? post.category;
@@ -1427,15 +1477,25 @@ function PostsList({ allPostsData }: { allPostsData: PostData[] }) {
                                    hover:border-indigo-200 dark:hover:border-indigo-800/50
                                    hover:-translate-y-1"
                       >
-                        <div className="flex items-start justify-between gap-4">
-                          <div className="flex-1 min-w-0">
-                            <h2 className="text-lg font-bold text-zinc-900 dark:text-zinc-50 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors line-clamp-2">
+                        <div className="flex flex-col md:flex-row items-start gap-6">
+                          {thumbnail && (
+                            <div className="relative w-full md:w-48 aspect-video md:aspect-square rounded-xl overflow-hidden shrink-0 border border-zinc-100 dark:border-zinc-800">
+                              <Image
+                                src={thumbnail}
+                                alt={title}
+                                fill
+                                className="object-cover transition-transform duration-500 group-hover:scale-110"
+                              />
+                            </div>
+                          )}
+                          <div className="flex-1 min-w-0 py-1">
+                            <h2 className="text-xl font-bold text-zinc-900 dark:text-zinc-50 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors line-clamp-2">
                               {title}
                             </h2>
-                            <p className="mt-2 text-sm text-zinc-600 dark:text-zinc-400 line-clamp-2 leading-relaxed font-medium">
+                            <p className="mt-3 text-sm text-zinc-600 dark:text-zinc-400 line-clamp-2 leading-relaxed font-medium">
                               {getPostPreview(excerpt, contentHtml, 160)}
                             </p>
-                            <div className="flex items-center gap-3 mt-4">
+                            <div className="flex items-center gap-3 mt-5">
                               <span className="px-2.5 py-1 text-xs font-bold rounded-full bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400">
                                 {categoryName}
                               </span>
@@ -1444,7 +1504,7 @@ function PostsList({ allPostsData }: { allPostsData: PostData[] }) {
                               </span>
                             </div>
                           </div>
-                          <div className="hidden sm:flex items-center justify-center w-10 h-10 rounded-full bg-zinc-50 dark:bg-zinc-800 group-hover:bg-indigo-50 dark:group-hover:bg-indigo-900/30 transition-colors">
+                          <div className="hidden lg:flex items-center justify-center w-10 h-10 rounded-full bg-zinc-50 dark:bg-zinc-800 group-hover:bg-indigo-50 dark:group-hover:bg-indigo-900/30 transition-colors self-center">
                             <svg
                               className="w-5 h-5 text-zinc-400 group-hover:text-indigo-500 transition-colors"
                               fill="none"
@@ -1468,26 +1528,72 @@ function PostsList({ allPostsData }: { allPostsData: PostData[] }) {
             )}
 
             {categoryFilteredPosts.length > 0 && (
-              <div className="pt-2 flex items-center justify-between gap-2">
-                <p className="text-xs text-zinc-500 dark:text-zinc-400">
-                  {currentPage} / {totalPages} 페이지
-                </p>
-                <div className="flex items-center gap-2">
+              <div className="pt-8 flex flex-col items-center gap-4">
+                <div className="flex items-center gap-1">
                   <button
                     type="button"
                     onClick={() => goToPage(currentPage - 1)}
                     disabled={currentPage <= 1}
-                    className="px-3 py-1.5 rounded-lg text-xs font-semibold border border-zinc-200 dark:border-zinc-800 text-zinc-700 dark:text-zinc-300 disabled:opacity-40"
+                    className="inline-flex items-center gap-1 px-3 py-2 rounded-xl text-sm font-bold text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800 disabled:opacity-30 transition-colors"
                   >
-                    이전
+                    <svg
+                      className="w-4 h-4"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M15 19l-7-7 7-7"
+                      />
+                    </svg>
+                    Prev
                   </button>
+
+                  <div className="flex items-center gap-1">
+                    {paginationRange.map((page, idx) => (
+                      <button
+                        key={idx}
+                        type="button"
+                        onClick={() =>
+                          typeof page === "number" && goToPage(page)
+                        }
+                        disabled={typeof page !== "number"}
+                        className={`min-w-[40px] h-10 flex items-center justify-center rounded-xl text-sm font-bold transition-all ${
+                          page === currentPage
+                            ? "bg-indigo-600 text-white shadow-lg shadow-indigo-500/30 scale-110"
+                            : page === "..."
+                              ? "text-zinc-400 cursor-default"
+                              : "text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800"
+                        }`}
+                      >
+                        {page}
+                      </button>
+                    ))}
+                  </div>
+
                   <button
                     type="button"
                     onClick={() => goToPage(currentPage + 1)}
                     disabled={currentPage >= totalPages}
-                    className="px-3 py-1.5 rounded-lg text-xs font-semibold border border-zinc-200 dark:border-zinc-800 text-zinc-700 dark:text-zinc-300 disabled:opacity-40"
+                    className="inline-flex items-center gap-1 px-3 py-2 rounded-xl text-sm font-bold text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800 disabled:opacity-30 transition-colors"
                   >
-                    다음
+                    Next
+                    <svg
+                      className="w-4 h-4"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M9 5l7 7-7 7"
+                      />
+                    </svg>
                   </button>
                 </div>
               </div>
