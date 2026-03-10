@@ -54,12 +54,12 @@ export default function RecentPosts({ posts }: RecentPostsProps) {
         <div className="grid gap-4 md:grid-cols-2">
           {posts.map((post, index) => (
             <motion.div
-              key={post.id}
+              key={post.slug}
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.3, delay: index * 0.1 }}
             >
-              <Link href={`/posts/${post.id}`}>
+              <Link href={`/posts/${post.slug}`}>
                 <Card className="h-full group hover:shadow-lg hover:border-indigo-200 dark:hover:border-indigo-800/50 transition-all duration-300 cursor-pointer overflow-hidden border-zinc-100 dark:border-zinc-800 dark:bg-[#0a0a0a]">
                   <CardHeader className="pb-3">
                     <div className="flex items-start justify-between gap-2">

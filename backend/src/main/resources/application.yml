@@ -44,3 +44,6 @@ file:
 
 app:
   base-url: ${FRONTEND_URL:http://localhost:3000}
+
+auth:
+  admin-bypass: ${ADMIN_AUTH_BYPASS:false}

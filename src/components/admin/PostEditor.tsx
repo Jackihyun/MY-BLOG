@@ -54,6 +54,14 @@ export default function PostEditor({ slug, mode }: PostEditorProps) {
   const [existingCategories, setExistingCategories] = useState<string[]>([]);
   const [categoryTreeNodes, setCategoryTreeNodes] = useState<{ id: string; name: string }[]>([]);
   const defaultCategories = ["TIL", "개발", "회고", "트러블슈팅", "일상"];
+  const normalizeSlug = (value: string) =>
+    value
+      .trim()
+      .toLowerCase()
+      .replace(/\s+/g, "-")
+      .replace(/[^a-z0-9-_]/g, "")
+      .replace(/-+/g, "-")
+      .replace(/^-|-$/g, "");
   const normalizeThumbnailUrl = (url: string) => {
     const trimmed = url.trim();
     if (!trimmed) return "";
@@ -364,7 +372,8 @@ export default function PostEditor({ slug, mode }: PostEditorProps) {
                 <input
                   type="text"
                   value={customSlug}
-                  onChange={(e) => setCustomSlug(e.target.value)}
+                  onChange={(e) => setCustomSlug(normalizeSlug(e.target.value))}
+                  onBlur={() => setCustomSlug((prev) => normalizeSlug(prev))}
                   className="w-full px-3 py-2.5 text-sm border border-gray-200 dark:border-gray-700 rounded-xl
                              bg-white dark:bg-[#1e1e1e] text-gray-900 dark:text-gray-100
                              focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent

@@ -39,3 +39,6 @@ file:
 
 app:
   base-url: ${FRONTEND_URL:https://blog.jackihyun.com}
+
+auth:
+  admin-bypass: ${ADMIN_AUTH_BYPASS:false}

@@ -13,8 +13,8 @@ export async function GET() {
       return `
     <item>
       <title><![CDATA[${post.title}]]></title>
-      <link>${siteUrl}/posts/${post.id}</link>
-      <guid isPermaLink="true">${siteUrl}/posts/${post.id}</guid>
+      <link>${siteUrl}/posts/${post.slug}</link>
+      <guid isPermaLink="true">${siteUrl}/posts/${post.slug}</guid>
       <pubDate>${pubDate}</pubDate>
       <description><![CDATA[${description}]]></description>
       <category><![CDATA[${post.category}]]></category>

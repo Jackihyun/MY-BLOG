@@ -34,12 +34,12 @@ export default function PopularPosts({ posts }: PopularPostsProps) {
       <div className="grid gap-6 md:grid-cols-3">
         {posts.map((post, index) => (
           <motion.div
-            key={post.id}
+            key={post.slug}
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 0.3, delay: index * 0.1 }}
           >
-            <Link href={`/posts/${post.id}`}>
+            <Link href={`/posts/${post.slug}`}>
               <Card className="h-full group hover:shadow-2xl hover:border-amber-200 dark:hover:border-amber-800/50 transition-all duration-500 cursor-pointer overflow-hidden border-zinc-100 dark:border-zinc-800 dark:bg-[#0a0a0a] flex flex-col">
                 {post.thumbnail ? (
                   <div className="relative aspect-video overflow-hidden">

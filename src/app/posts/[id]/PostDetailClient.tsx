@@ -71,7 +71,7 @@ export default function PostDetailClient({
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
       >
-        <AdminButtons slug={postData.id} />
+        <AdminButtons slug={postData.slug} />
 
         <header className="py-12 border-b border-zinc-100 dark:border-zinc-800/50 mb-12">
           <motion.div
@@ -129,7 +129,7 @@ export default function PostDetailClient({
         />
 
         <div className="space-y-12">
-          <ReactionBar slug={postData.id} />
+          <ReactionBar slug={postData.slug} />
 
           {(previousPost || nextPost) && (
             <nav
@@ -176,7 +176,7 @@ export default function PostDetailClient({
             </nav>
           )}
 
-          <CommentList slug={postData.id} />
+          <CommentList slug={postData.slug} />
         </div>
       </motion.div>
     </>

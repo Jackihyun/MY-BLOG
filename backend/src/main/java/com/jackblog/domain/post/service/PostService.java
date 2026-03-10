@@ -87,8 +87,11 @@ public class PostService {
 
     @Transactional
     public PostResponse createPost(PostCreateRequest request) {
-        String slug = StringUtils.hasText(request.getSlug())
-            ? request.getSlug()
+        String normalizedRequestedSlug = StringUtils.hasText(request.getSlug())
+            ? normalizeSlug(request.getSlug())
+            : "";
+        String slug = StringUtils.hasText(normalizedRequestedSlug)
+            ? normalizedRequestedSlug
             : generateSlug(request.getTitle());
 
         if (postRepository.existsBySlug(slug)) {
@@ -192,17 +195,22 @@ public class PostService {
     }
 
     private String generateSlug(String title) {
-        String nowhitespace = WHITESPACE.matcher(title).replaceAll("-");
-        String normalized = Normalizer.normalize(nowhitespace, Normalizer.Form.NFD);
-        String slug = NONLATIN.matcher(normalized).replaceAll("");
-        slug = slug.toLowerCase(Locale.ENGLISH);
-        slug = slug.replaceAll("-+", "-");
-        slug = slug.replaceAll("^-|-$", "");
+        String slug = normalizeSlug(title);
 
         if (slug.isEmpty()) {
             slug = "post-" + System.currentTimeMillis();
         }
 
+        return slug;
+    }
+
+    private String normalizeSlug(String value) {
+        String nowhitespace = WHITESPACE.matcher(value.trim()).replaceAll("-");
+        String normalized = Normalizer.normalize(nowhitespace, Normalizer.Form.NFD);
+        String slug = NONLATIN.matcher(normalized).replaceAll("");
+        slug = slug.toLowerCase(Locale.ENGLISH);
+        slug = slug.replaceAll("-+", "-");
+        slug = slug.replaceAll("^-|-$", "");
         return slug;
     }
 
