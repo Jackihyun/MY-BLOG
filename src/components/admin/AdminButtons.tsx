@@ -42,6 +42,12 @@ export default function AdminButtons({ slug }: AdminButtonsProps) {
     router.push("/admin/posts/new");
   };
 
+  const handleLogout = () => {
+    logout();
+    router.refresh();
+    window.location.reload();
+  };
+
   return (
     <div className="flex gap-2 mb-4">
       <button
@@ -65,7 +71,7 @@ export default function AdminButtons({ slug }: AdminButtonsProps) {
         {isDeleting ? "삭제 중..." : "삭제"}
       </button>
       <button
-        onClick={logout}
+        onClick={handleLogout}
         className="px-3 py-1.5 text-sm bg-gray-500 text-white rounded hover:bg-gray-600 transition-colors ml-auto"
       >
         로그아웃

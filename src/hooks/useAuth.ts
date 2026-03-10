@@ -8,6 +8,16 @@ import { useCallback, useEffect } from "react";
 export function useAuth() {
   const [auth, setAuth] = useRecoilState(authState);
 
+  const clearAuth = useCallback(() => {
+    setAuth({
+      token: null,
+      isAuthenticated: false,
+      expiresAt: null,
+      isHydrated: true,
+    });
+    localStorage.removeItem("auth");
+  }, [setAuth]);
+
   // Hydrate from localStorage on mount
   useEffect(() => {
     if (auth.isHydrated) return;
@@ -16,18 +26,23 @@ export function useAuth() {
     if (savedAuth) {
       try {
         const parsed = JSON.parse(savedAuth);
-        if (parsed.expiresAt && Date.now() < parsed.expiresAt) {
+        const isValidPayload =
+          typeof parsed?.token === "string" &&
+          parsed?.isAuthenticated === true &&
+          typeof parsed?.expiresAt === "number";
+
+        if (isValidPayload && Date.now() < parsed.expiresAt) {
           setAuth({ ...parsed, isHydrated: true });
           return;
         } else {
-          localStorage.removeItem("auth");
+          clearAuth();
         }
       } catch {
-        localStorage.removeItem("auth");
+        clearAuth();
       }
     }
     setAuth((prev) => ({ ...prev, isHydrated: true }));
-  }, [auth.isHydrated, setAuth]);
+  }, [auth.isHydrated, setAuth, clearAuth]);
 
   const isAuthenticated = auth.isAuthenticated;
   const token = auth.token;
@@ -57,14 +72,8 @@ export function useAuth() {
   );
 
   const logout = useCallback(() => {
-    setAuth({
-      token: null,
-      isAuthenticated: false,
-      expiresAt: null,
-      isHydrated: true,
-    });
-    localStorage.removeItem("auth");
-  }, [setAuth]);
+    clearAuth();
+  }, [clearAuth]);
 
   const checkAuth = useCallback(async (): Promise<boolean> => {
     if (!auth.token) return false;

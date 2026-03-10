@@ -9,7 +9,7 @@ import { getClientId } from "@/lib/api";
 export default function Footer() {
   const [clickCount, setClickCount] = useState(0);
   const [showLoginModal, setShowLoginModal] = useState(false);
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, logout } = useAuth();
   const { mutate: trackVisitor } = useTrackVisitorMutation();
 
   useEffect(() => {
@@ -31,6 +31,11 @@ export default function Footer() {
     }
   };
 
+  const handleAdminLogout = () => {
+    logout();
+    window.location.reload();
+  };
+
   return (
     <>
       <footer className="flex justify-center items-center w-full py-6 text-sm text-gray-500 dark:text-gray-400 border-t border-gray-200 dark:border-gray-800 bg-white/50 dark:bg-gray-900/50">
@@ -49,6 +54,15 @@ export default function Footer() {
               <span className="ml-2 text-green-500 text-xs">(Admin)</span>
             )}
           </p>
+          {isAuthenticated && (
+            <button
+              type="button"
+              onClick={handleAdminLogout}
+              className="text-xs px-2.5 py-1 rounded-md border border-zinc-300 dark:border-zinc-700 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors"
+            >
+              관리자 로그아웃
+            </button>
+          )}
         </div>
       </footer>
 
