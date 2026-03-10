@@ -18,6 +18,7 @@ public class PostResponse {
     private String slug;
     private String title;
     private String excerpt;
+    private String thumbnail;
     private String category;
     private Integer readingTime;
     private Integer viewCount;
@@ -57,6 +58,7 @@ public class PostResponse {
             .slug(post.getSlug())
             .title(post.getTitle())
             .excerpt(buildExcerpt(post))
+            .thumbnail(post.getThumbnail())
             .category(post.getCategory())
             .readingTime(post.getReadingTime())
             .viewCount(post.getViewCount())

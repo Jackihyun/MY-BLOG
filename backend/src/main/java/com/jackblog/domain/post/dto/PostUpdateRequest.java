@@ -21,6 +21,9 @@ public class PostUpdateRequest {
     @Size(max = 500, message = "Excerpt must be less than 500 characters")
     private String excerpt;
 
+    @Size(max = 1000, message = "Thumbnail URL must be less than 1000 characters")
+    private String thumbnail;
+
     @Size(max = 100, message = "Category must be less than 100 characters")
     private String category;
 

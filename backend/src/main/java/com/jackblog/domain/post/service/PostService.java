@@ -100,6 +100,9 @@ public class PostService {
         String excerpt = StringUtils.hasText(request.getExcerpt())
             ? request.getExcerpt()
             : generateExcerpt(request.getContent());
+        String thumbnail = StringUtils.hasText(request.getThumbnail())
+            ? request.getThumbnail().trim()
+            : null;
 
         Post post = Post.builder()
             .slug(slug)
@@ -107,6 +110,7 @@ public class PostService {
             .content(request.getContent())
             .contentHtml(contentHtml)
             .excerpt(excerpt)
+            .thumbnail(thumbnail)
             .category(request.getCategory())
             .readingTime(readingTime)
             .build();
@@ -134,12 +138,15 @@ public class PostService {
         String excerpt = StringUtils.hasText(request.getExcerpt())
             ? request.getExcerpt()
             : (StringUtils.hasText(request.getContent()) ? generateExcerpt(request.getContent()) : post.getExcerpt());
+        String thumbnail = request.getThumbnail() != null
+            ? request.getThumbnail().trim()
+            : post.getThumbnail();
         String category = StringUtils.hasText(request.getCategory()) ? request.getCategory() : post.getCategory();
         int readingTime = StringUtils.hasText(request.getContent())
             ? calculateReadingTime(request.getContent())
             : post.getReadingTime();
 
-        post.updateContent(title, content, contentHtml, excerpt, category, readingTime);
+        post.updateContent(title, content, contentHtml, excerpt, thumbnail, category, readingTime);
 
         if (request.getPublish() != null) {
             if (request.getPublish()) {

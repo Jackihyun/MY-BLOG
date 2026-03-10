@@ -19,6 +19,7 @@ public class PostDetailResponse {
     private String content;
     private String contentHtml;
     private String excerpt;
+    private String thumbnail;
     private String category;
     private Integer readingTime;
     private Integer viewCount;
@@ -37,6 +38,7 @@ public class PostDetailResponse {
             .content(post.getContent())
             .contentHtml(post.getContentHtml())
             .excerpt(post.getExcerpt())
+            .thumbnail(post.getThumbnail())
             .category(post.getCategory())
             .readingTime(post.getReadingTime())
             .viewCount(post.getViewCount())

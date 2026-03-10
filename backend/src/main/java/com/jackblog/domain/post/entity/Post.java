@@ -38,6 +38,9 @@ public class Post {
     @Column(length = 500)
     private String excerpt;
 
+    @Column(length = 1000)
+    private String thumbnail;
+
     @Column(nullable = false, length = 100)
     private String category;
 
@@ -99,11 +102,12 @@ public class Post {
     }
 
     public void updateContent(String title, String content, String contentHtml, String excerpt,
-                              String category, Integer readingTime) {
+                              String thumbnail, String category, Integer readingTime) {
         this.title = title;
         this.content = content;
         this.contentHtml = contentHtml;
         this.excerpt = excerpt;
+        this.thumbnail = thumbnail;
         this.category = category;
         this.readingTime = readingTime;
     }
