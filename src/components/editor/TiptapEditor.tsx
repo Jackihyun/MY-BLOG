@@ -58,7 +58,7 @@ export default function TiptapEditor({
       }),
       EditorImage.configure({
         HTMLAttributes: {
-          class: "rounded-lg max-w-full h-auto",
+          class: "rounded-lg max-w-full h-auto cursor-ew-resize",
         },
       }),
       CodeBlockLowlight.configure({
@@ -83,6 +83,100 @@ export default function TiptapEditor({
       editor.commands.setContent(content);
     }
   }, [content, editor]);
+
+  useEffect(() => {
+    if (!editor) return;
+
+    const dom = editor.view.dom;
+    let isResizing = false;
+    let startX = 0;
+    let startWidthPercent = 100;
+    let targetImage: HTMLImageElement | null = null;
+
+    const getImageWidthPercent = (img: HTMLImageElement, editorWidth: number) => {
+      const width = img.style.width || img.getAttribute("width") || "";
+      if (width.endsWith("%")) {
+        const parsed = Number.parseFloat(width);
+        return Number.isFinite(parsed) ? parsed : 100;
+      }
+      if (width.endsWith("px")) {
+        const parsed = Number.parseFloat(width);
+        return Number.isFinite(parsed) && editorWidth > 0
+          ? (parsed / editorWidth) * 100
+          : 100;
+      }
+      return editorWidth > 0
+        ? (img.getBoundingClientRect().width / editorWidth) * 100
+        : 100;
+    };
+
+    const onMouseMove = (event: MouseEvent) => {
+      if (!isResizing || !targetImage) return;
+
+      const editorRect = dom.getBoundingClientRect();
+      const editorWidth = editorRect.width;
+      if (editorWidth <= 0) return;
+
+      const deltaX = event.clientX - startX;
+      const deltaPercent = (deltaX / editorWidth) * 100;
+      const nextPercent = Math.min(
+        100,
+        Math.max(20, startWidthPercent + deltaPercent)
+      );
+
+      const pos = editor.view.posAtDOM(targetImage, 0);
+      editor
+        .chain()
+        .focus()
+        .setNodeSelection(pos)
+        .updateAttributes("image", {
+          width: `${nextPercent.toFixed(2)}%`,
+        })
+        .run();
+    };
+
+    const onMouseUp = () => {
+      isResizing = false;
+      targetImage = null;
+      document.body.style.cursor = "";
+      document.body.style.userSelect = "";
+      window.removeEventListener("mousemove", onMouseMove);
+      window.removeEventListener("mouseup", onMouseUp);
+    };
+
+    const onMouseDown = (event: Event) => {
+      const mouseEvent = event as MouseEvent;
+      const target = mouseEvent.target as HTMLElement | null;
+      if (!target || target.tagName !== "IMG") return;
+
+      const img = target as HTMLImageElement;
+      const rect = img.getBoundingClientRect();
+      const isOnResizeZone = mouseEvent.clientX >= rect.right - 16;
+      if (!isOnResizeZone) return;
+
+      mouseEvent.preventDefault();
+
+      const editorWidth = dom.getBoundingClientRect().width;
+      startX = mouseEvent.clientX;
+      startWidthPercent = getImageWidthPercent(img, editorWidth);
+      targetImage = img;
+      isResizing = true;
+
+      const pos = editor.view.posAtDOM(img, 0);
+      editor.chain().focus().setNodeSelection(pos).run();
+
+      document.body.style.cursor = "ew-resize";
+      document.body.style.userSelect = "none";
+      window.addEventListener("mousemove", onMouseMove);
+      window.addEventListener("mouseup", onMouseUp);
+    };
+
+    dom.addEventListener("mousedown", onMouseDown);
+    return () => {
+      dom.removeEventListener("mousedown", onMouseDown);
+      onMouseUp();
+    };
+  }, [editor]);
 
   const setLink = useCallback(() => {
     if (!editor) return;
