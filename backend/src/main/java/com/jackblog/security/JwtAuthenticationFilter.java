@@ -30,15 +30,6 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                                     FilterChain filterChain) throws ServletException, IOException {
         String token = resolveToken(request);
 
-        // 테스트를 위해 모든 요청에 대해 admin 권한 부여
-        UsernamePasswordAuthenticationToken testAuth =
-            new UsernamePasswordAuthenticationToken(
-                "admin",
-                null,
-                List.of(new SimpleGrantedAuthority("ROLE_ADMIN"))
-            );
-        SecurityContextHolder.getContext().setAuthentication(testAuth);
-
         if (StringUtils.hasText(token) && jwtTokenProvider.validateToken(token)) {
             String subject = jwtTokenProvider.getSubject(token);
 
