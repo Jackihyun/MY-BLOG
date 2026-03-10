@@ -54,6 +54,29 @@ export default function PostEditor({ slug, mode }: PostEditorProps) {
   const [existingCategories, setExistingCategories] = useState<string[]>([]);
   const [categoryTreeNodes, setCategoryTreeNodes] = useState<{ id: string; name: string }[]>([]);
   const defaultCategories = ["TIL", "개발", "회고", "트러블슈팅", "일상"];
+  const normalizeThumbnailUrl = (url: string) => {
+    const trimmed = url.trim();
+    if (!trimmed) return "";
+
+    if (trimmed.startsWith("/api/uploads/")) return trimmed;
+    if (trimmed.startsWith("/uploads/")) return `/api${trimmed}`;
+
+    if (/^https?:\/\//i.test(trimmed)) {
+      try {
+        const parsed = new URL(trimmed);
+        if (parsed.pathname.startsWith("/api/uploads/")) {
+          return `${parsed.pathname}${parsed.search}${parsed.hash}`;
+        }
+        if (parsed.pathname.startsWith("/uploads/")) {
+          return `/api${parsed.pathname}${parsed.search}${parsed.hash}`;
+        }
+      } catch {
+        return trimmed;
+      }
+    }
+
+    return trimmed;
+  };
   
   const categoryOptions = Array.from(
     new Set([
@@ -129,7 +152,7 @@ export default function PostEditor({ slug, mode }: PostEditorProps) {
           setTitle(post.title);
           setContent(post.contentHtml || post.content);
           setCategory(post.category);
-          setThumbnail(post.thumbnail || "");
+          setThumbnail(normalizeThumbnailUrl(post.thumbnail || ""));
           setPublishStatus(post.isPublished ? "published" : "draft");
           setIsLegacySource(false);
         })
@@ -178,7 +201,7 @@ export default function PostEditor({ slug, mode }: PostEditorProps) {
     setIsUploading(true);
     try {
       const imageUrl = await uploadImage(file, token);
-      setThumbnail(imageUrl);
+      setThumbnail(normalizeThumbnailUrl(imageUrl));
       toast.success("이미지가 업로드되었습니다.");
     } catch (error) {
       console.error("Upload failed:", error);
@@ -205,6 +228,7 @@ export default function PostEditor({ slug, mode }: PostEditorProps) {
 
     try {
       const excerpt = createExcerptFromContent(content);
+      const normalizedThumbnail = normalizeThumbnailUrl(thumbnail);
 
       if (mode === "create") {
         await createPost(
@@ -212,7 +236,7 @@ export default function PostEditor({ slug, mode }: PostEditorProps) {
             title,
             content,
             category,
-            thumbnail: thumbnail || undefined,
+            thumbnail: normalizedThumbnail || undefined,
             excerpt: excerpt || undefined,
             slug: customSlug || undefined,
             publish: true,
@@ -228,7 +252,7 @@ export default function PostEditor({ slug, mode }: PostEditorProps) {
           title,
           content,
           category,
-          thumbnail: thumbnail || undefined,
+          thumbnail: normalizedThumbnail || undefined,
           excerpt: excerpt || undefined,
           publish: true,
         };
@@ -437,6 +461,7 @@ export default function PostEditor({ slug, mode }: PostEditorProps) {
                   type="text"
                   value={thumbnail}
                   onChange={(e) => setThumbnail(e.target.value)}
+                  onBlur={() => setThumbnail((prev) => normalizeThumbnailUrl(prev))}
                   className="flex-1 px-3 py-2.5 text-sm border border-gray-200 dark:border-gray-700 rounded-xl
                              bg-white dark:bg-[#1e1e1e] text-gray-900 dark:text-gray-100
                              focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent
@@ -471,10 +496,7 @@ export default function PostEditor({ slug, mode }: PostEditorProps) {
                       alt="Thumbnail preview"
                       fill
                       className="object-cover"
-                      onError={() => {
-                        toast.error("이미지 URL이 유효하지 않습니다.");
-                        setThumbnail("");
-                      }}
+                      onError={() => toast.error("썸네일 URL을 확인해주세요.")}
                     />
                     <button
                       type="button"

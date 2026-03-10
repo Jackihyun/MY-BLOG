@@ -13,6 +13,20 @@ import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
 
 const lowlight = createLowlight(common);
+const EditorImage = Image.extend({
+  addAttributes() {
+    return {
+      ...this.parent?.(),
+      width: {
+        default: "100%",
+        parseHTML: (element) => element.style.width || element.getAttribute("width") || "100%",
+        renderHTML: (attributes) => ({
+          style: `width:${attributes.width || "100%"};height:auto;`,
+        }),
+      },
+    };
+  },
+});
 
 interface TiptapEditorProps {
   content: string;
@@ -42,9 +56,9 @@ export default function TiptapEditor({
           class: "text-blue-500 underline",
         },
       }),
-      Image.configure({
+      EditorImage.configure({
         HTMLAttributes: {
-          class: "rounded-lg max-w-full",
+          class: "rounded-lg max-w-full h-auto",
         },
       }),
       CodeBlockLowlight.configure({
@@ -95,12 +109,20 @@ export default function TiptapEditor({
 
     input.onchange = async () => {
       const file = input.files?.[0];
-      if (!file || !token) return;
+      if (!file) return;
+      if (!token) {
+        toast.error("로그인이 필요합니다.");
+        return;
+      }
 
       setIsUploading(true);
       try {
         const imageUrl = await uploadImage(file, token);
-        editor.chain().focus().setImage({ src: imageUrl }).run();
+        editor
+          .chain()
+          .focus()
+          .setImage({ src: imageUrl, width: "100%" })
+          .run();
         toast.success("이미지가 본문에 삽입되었습니다.");
       } catch (error) {
         console.error("Upload failed:", error);
@@ -112,6 +134,18 @@ export default function TiptapEditor({
 
     input.click();
   }, [editor, token]);
+
+  const setImageWidth = useCallback(
+    (width: string) => {
+      if (!editor) return;
+      if (!editor.isActive("image")) {
+        toast.info("크기를 변경할 이미지를 먼저 클릭하세요.");
+        return;
+      }
+      editor.chain().focus().updateAttributes("image", { width }).run();
+    },
+    [editor]
+  );
 
   if (!editor) return null;
 
@@ -259,6 +293,18 @@ export default function TiptapEditor({
                 <path d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z" />
               </svg>
             )}
+          </ToolbarButton>
+          <ToolbarButton onClick={() => setImageWidth("25%")} title="이미지 25%">
+            25%
+          </ToolbarButton>
+          <ToolbarButton onClick={() => setImageWidth("50%")} title="이미지 50%">
+            50%
+          </ToolbarButton>
+          <ToolbarButton onClick={() => setImageWidth("75%")} title="이미지 75%">
+            75%
+          </ToolbarButton>
+          <ToolbarButton onClick={() => setImageWidth("100%")} title="이미지 100%">
+            100%
           </ToolbarButton>
         </div>
       </div>

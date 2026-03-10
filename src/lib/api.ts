@@ -317,7 +317,35 @@ export async function uploadImage(file: File, token: string): Promise<string> {
   }
 
   const data: ApiResponse<string> = await response.json();
-  return data.data;
+  return normalizeUploadedImageUrl(data.data);
+}
+
+function normalizeUploadedImageUrl(url: string): string {
+  if (!url) return url;
+
+  if (url.startsWith("/api/uploads/")) {
+    return url;
+  }
+
+  if (url.startsWith("/uploads/")) {
+    return `/api${url}`;
+  }
+
+  if (/^https?:\/\//i.test(url)) {
+    try {
+      const parsed = new URL(url);
+      if (parsed.pathname.startsWith("/api/uploads/")) {
+        return `${parsed.pathname}${parsed.search}${parsed.hash}`;
+      }
+      if (parsed.pathname.startsWith("/uploads/")) {
+        return `/api${parsed.pathname}${parsed.search}${parsed.hash}`;
+      }
+    } catch {
+      return url;
+    }
+  }
+
+  return url;
 }
 
 export interface LegacyPostResponse {
