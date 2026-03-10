@@ -7,7 +7,10 @@ import Link from "@tiptap/extension-link";
 import Image from "@tiptap/extension-image";
 import CodeBlockLowlight from "@tiptap/extension-code-block-lowlight";
 import { common, createLowlight } from "lowlight";
-import { useCallback, useEffect } from "react";
+import { useCallback, useEffect, useState } from "react";
+import { uploadImage } from "@/lib/api";
+import { useAuth } from "@/hooks/useAuth";
+import { toast } from "sonner";
 
 const lowlight = createLowlight(common);
 
@@ -22,6 +25,9 @@ export default function TiptapEditor({
   onChange,
   placeholder = "내용을 입력하세요...",
 }: TiptapEditorProps) {
+  const { token } = useAuth();
+  const [isUploading, setIsUploading] = useState(false);
+
   const editor = useEditor({
     extensions: [
       StarterKit.configure({
@@ -83,12 +89,29 @@ export default function TiptapEditor({
   const addImage = useCallback(() => {
     if (!editor) return;
 
-    const url = window.prompt("이미지 URL을 입력하세요:");
+    const input = document.createElement("input");
+    input.type = "file";
+    input.accept = "image/*";
 
-    if (url) {
-      editor.chain().focus().setImage({ src: url }).run();
-    }
-  }, [editor]);
+    input.onchange = async () => {
+      const file = input.files?.[0];
+      if (!file || !token) return;
+
+      setIsUploading(true);
+      try {
+        const imageUrl = await uploadImage(file, token);
+        editor.chain().focus().setImage({ src: imageUrl }).run();
+        toast.success("이미지가 본문에 삽입되었습니다.");
+      } catch (error) {
+        console.error("Upload failed:", error);
+        toast.error("이미지 업로드에 실패했습니다.");
+      } finally {
+        setIsUploading(false);
+      }
+    };
+
+    input.click();
+  }, [editor, token]);
 
   if (!editor) return null;
 
@@ -225,10 +248,17 @@ export default function TiptapEditor({
               <path d="M3.9 12c0-1.71 1.39-3.1 3.1-3.1h4V7H7c-2.76 0-5 2.24-5 5s2.24 5 5 5h4v-1.9H7c-1.71 0-3.1-1.39-3.1-3.1zM8 13h8v-2H8v2zm9-6h-4v1.9h4c1.71 0 3.1 1.39 3.1 3.1s-1.39 3.1-3.1 3.1h-4V17h4c2.76 0 5-2.24 5-5s-2.24-5-5-5z" />
             </svg>
           </ToolbarButton>
-          <ToolbarButton onClick={addImage} title="이미지 추가">
-            <svg className="w-4 h-4" viewBox="0 0 24 24" fill="currentColor">
-              <path d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z" />
-            </svg>
+          <ToolbarButton onClick={addImage} title="이미지 추가" disabled={isUploading}>
+            {isUploading ? (
+              <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24">
+                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
+                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+              </svg>
+            ) : (
+              <svg className="w-4 h-4" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z" />
+              </svg>
+            )}
           </ToolbarButton>
         </div>
       </div>
@@ -249,20 +279,22 @@ interface ToolbarButtonProps {
   onClick: () => void;
   isActive?: boolean;
   title?: string;
+  disabled?: boolean;
   children: React.ReactNode;
 }
 
-function ToolbarButton({ onClick, isActive, title, children }: ToolbarButtonProps) {
+function ToolbarButton({ onClick, isActive, title, disabled, children }: ToolbarButtonProps) {
   return (
     <button
       type="button"
       onClick={onClick}
       title={title}
+      disabled={disabled}
       className={`p-2 rounded-md text-sm font-medium transition-all duration-150 ${
         isActive
           ? "bg-blue-100 dark:bg-blue-900/40 text-blue-600 dark:text-blue-400"
           : "text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700"
-      }`}
+      } ${disabled ? "opacity-50 cursor-not-allowed" : ""}`}
     >
       {children}
     </button>

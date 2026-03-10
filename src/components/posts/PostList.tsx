@@ -1091,6 +1091,38 @@ function PostsList({ allPostsData }: { allPostsData: PostData[] }) {
     return range;
   }, [currentPage, totalPages]);
 
+  useEffect(() => {
+    const savedScrollPos = sessionStorage.getItem("postListScrollPos");
+    if (savedScrollPos) {
+      const targetPos = parseInt(savedScrollPos);
+      let attempts = 0;
+      const maxAttempts = 5;
+
+      const tryScroll = () => {
+        window.scrollTo({
+          top: targetPos,
+          behavior: "instant",
+        });
+        
+        // 스크롤이 실제로 적용되었는지 확인 (페이지 높이가 부족할 수 있음)
+        if (Math.abs(window.scrollY - targetPos) < 2 || attempts >= maxAttempts) {
+          sessionStorage.removeItem("postListScrollPos");
+        } else {
+          attempts++;
+          setTimeout(tryScroll, 100);
+        }
+      };
+
+      // 페이지 전환 애니메이션(200ms) 이후 시작
+      const timer = setTimeout(tryScroll, 300);
+      return () => clearTimeout(timer);
+    }
+  }, []);
+
+  const handlePostClick = () => {
+    sessionStorage.setItem("postListScrollPos", window.scrollY.toString());
+  };
+
   return (
     <>
       <CategoryManagerModal
@@ -1469,7 +1501,7 @@ function PostsList({ allPostsData }: { allPostsData: PostData[] }) {
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.3, delay: index * 0.05 }}
                   >
-                    <Link href={`/posts/${id}`}>
+                    <Link href={`/posts/${id}`} onClick={handlePostClick}>
                       <div
                         className="group p-5 bg-white dark:bg-[#0a0a0a] rounded-2xl border border-zinc-100 dark:border-zinc-800
                                    transition-all duration-300 ease-out

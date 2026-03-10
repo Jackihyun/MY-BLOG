@@ -49,9 +49,8 @@ public class FileUploadController {
             Path filePath = directoryPath.resolve(fileName);
             Files.copy(file.getInputStream(), filePath);
 
-            String fileUrl = baseUrl + "/api/uploads/" + fileName;
-            // Note: If Caddy handles /api/* by proxying to 8080, 
-            // and Spring handles /uploads/**, then /api/uploads/** will work.
+            // 클라이언트에서 접근 가능한 상대 경로 반환
+            String fileUrl = "/api/uploads/" + fileName;
             
             return ResponseEntity.ok(ApiResponse.success("파일 업로드 성공", fileUrl));
         } catch (IOException e) {
