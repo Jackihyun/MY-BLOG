@@ -28,7 +28,7 @@ public class FileUploadController {
     private String baseUrl;
 
     @PostMapping("/upload")
-    public ResponseEntity<ApiResponse<String>> uploadFile(@RequestParam("file") MultipartFile file) {
+    public ResponseEntity<ApiResponse<?>> uploadFile(@RequestParam("file") MultipartFile file) {
         if (file.isEmpty()) {
             return ResponseEntity.badRequest().body(ApiResponse.error("파일이 비어있습니다."));
         }
