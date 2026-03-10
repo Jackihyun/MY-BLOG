@@ -63,6 +63,14 @@ export default function PostEditor({ slug, mode }: PostEditorProps) {
     ])
   );
 
+  const categoryDisplayOptions = Array.from(
+    new Set([
+      ...categoryTreeNodes.map(node => node.name),
+      ...existingCategories,
+      ...defaultCategories,
+    ])
+  );
+
   const createExcerptFromContent = (html: string) => {
     const excerptLimit = 160;
     const container = document.createElement("div");
@@ -368,7 +376,7 @@ export default function PostEditor({ slug, mode }: PostEditorProps) {
                 ))}
               </datalist>
               <div className="mt-2 flex flex-wrap gap-2">
-                {categoryOptions.slice(0, 8).map((cat) => (
+                {categoryDisplayOptions.map((cat) => (
                   <button
                     key={cat}
                     type="button"
