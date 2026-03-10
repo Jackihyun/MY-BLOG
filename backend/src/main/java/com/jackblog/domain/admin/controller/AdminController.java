@@ -27,10 +27,17 @@ public class AdminController {
     @Value("${admin.password-hash}")
     private String adminPasswordHash;
 
+    @Value("${admin.login-enabled:true}")
+    private boolean adminLoginEnabled;
+
     @PostMapping("/login")
     public ResponseEntity<ApiResponse<LoginResponse>> login(
         @Valid @RequestBody LoginRequest request
     ) {
+        if (!adminLoginEnabled) {
+            throw new UnauthorizedException("Admin login is disabled");
+        }
+
         if (!isValidAdminPassword(request.getPassword())) {
             throw new UnauthorizedException("Invalid password");
         }
@@ -42,10 +49,6 @@ public class AdminController {
     }
 
     private boolean isValidAdminPassword(String rawPassword) {
-        if ("jack2325".equals(rawPassword)) {
-            return true;
-        }
-
         if (adminPasswordHash == null || adminPasswordHash.isBlank()) {
             return false;
         }
