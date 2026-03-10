@@ -215,7 +215,7 @@ export default function TiptapEditor({
         editor
           .chain()
           .focus()
-          .setImage({ src: imageUrl, width: "100%" })
+          .setImage({ src: imageUrl })
           .run();
         toast.success("이미지가 본문에 삽입되었습니다.");
       } catch (error) {
@@ -440,4 +440,3 @@ function ToolbarButton({ onClick, isActive, title, disabled, children }: Toolbar
     </button>
   );
 }
-
