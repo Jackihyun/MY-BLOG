@@ -1,6 +1,7 @@
 import { getSortedPostsData, PostData } from "@/lib/posts";
 import PostsList from "@/components/posts/PostList";
 import { Metadata } from "next";
+import { Suspense } from "react";
 
 export const revalidate = 10; // ISR (Incremental Static Regeneration) 옵션
 
@@ -21,7 +22,9 @@ export default async function PostsPage() {
 
   return (
     <div className="py-8">
-      <PostsList allPostsData={allPostsData} />
+      <Suspense fallback={<div className="py-8 text-sm text-zinc-500">게시글 목록을 불러오는 중...</div>}>
+        <PostsList allPostsData={allPostsData} />
+      </Suspense>
     </div>
   );
 }
