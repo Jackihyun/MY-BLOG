@@ -49,6 +49,7 @@ export default function PostEditor({ slug, mode }: PostEditorProps) {
   const [isSaving, setIsSaving] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
   const [isLegacySource, setIsLegacySource] = useState(false);
+  const [isCategoryDropdownOpen, setIsCategoryDropdownOpen] = useState(false);
   const [publishStatus, setPublishStatus] = useState<"published" | "draft">("published");
   const [existingCategories, setExistingCategories] = useState<string[]>([]);
   const [categoryTreeNodes, setCategoryTreeNodes] = useState<{ id: string; name: string }[]>([]);
@@ -348,33 +349,57 @@ export default function PostEditor({ slug, mode }: PostEditorProps) {
                 />
               </div>
             )}
-            <div>
+            <div className="relative">
               <label className="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1.5 uppercase tracking-wider">
                 카테고리 *
               </label>
-              <input
-                type="text"
-                list="category-options"
-                value={category}
-                onChange={(e) => setCategory(e.target.value)}
-                onBlur={(e) => addCategoryOption(e.target.value)}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter") {
-                    e.preventDefault();
+              <div className="relative">
+                <input
+                  type="text"
+                  value={category}
+                  onChange={(e) => {
+                    setCategory(e.target.value);
+                    setIsCategoryDropdownOpen(true);
+                  }}
+                  onFocus={() => setIsCategoryDropdownOpen(true)}
+                  onBlur={() => {
+                    // 드롭다운 클릭을 처리하기 위해 약간의 지연 후 닫기
+                    setTimeout(() => setIsCategoryDropdownOpen(false), 200);
                     addCategoryOption(category);
-                  }
-                }}
-                className="w-full px-3 py-2.5 text-sm border border-gray-200 dark:border-gray-700 rounded-xl
-                            bg-white dark:bg-[#1e1e1e] text-gray-900 dark:text-gray-100
-                            focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent
-                            transition-all"
-                placeholder="카테고리를 선택하거나 새로 입력하세요"
-              />
-              <datalist id="category-options">
-                {categoryOptions.map((cat) => (
-                  <option key={cat} value={cat} />
-                ))}
-              </datalist>
+                  }}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") {
+                      e.preventDefault();
+                      addCategoryOption(category);
+                      setIsCategoryDropdownOpen(false);
+                    }
+                  }}
+                  className="w-full px-3 py-2.5 text-sm border border-gray-200 dark:border-gray-700 rounded-xl
+                              bg-white dark:bg-[#1e1e1e] text-gray-900 dark:text-gray-100
+                              focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent
+                              transition-all"
+                  placeholder="카테고리를 선택하거나 새로 입력하세요"
+                />
+                {isCategoryDropdownOpen && categoryDisplayOptions.length > 0 && (
+                  <div className="absolute left-0 right-0 top-full mt-1 z-50 max-h-60 overflow-y-auto rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-[#1e1e1e] shadow-xl">
+                    {categoryDisplayOptions
+                      .filter(cat => cat.toLowerCase().includes(category.toLowerCase()))
+                      .map((cat) => (
+                        <button
+                          key={cat}
+                          type="button"
+                          onClick={() => {
+                            setCategory(cat);
+                            setIsCategoryDropdownOpen(false);
+                          }}
+                          className="w-full px-4 py-2.5 text-left text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+                        >
+                          {cat}
+                        </button>
+                      ))}
+                  </div>
+                )}
+              </div>
               <div className="mt-2 flex flex-wrap gap-2">
                 {categoryDisplayOptions.map((cat) => (
                   <button
