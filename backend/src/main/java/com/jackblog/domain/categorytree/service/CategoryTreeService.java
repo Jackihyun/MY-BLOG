@@ -21,9 +21,14 @@ public class CategoryTreeService {
     private final ObjectMapper objectMapper;
 
     public CategoryTreePayload getCategoryTree() {
-        return categoryTreeConfigRepository.findById(CATEGORY_TREE_SINGLETON_ID)
-            .map(config -> deserialize(config.getPayloadJson()))
-            .orElseGet(() -> CategoryTreePayload.builder().build());
+        try {
+            return categoryTreeConfigRepository.findById(CATEGORY_TREE_SINGLETON_ID)
+                .map(config -> deserialize(config.getPayloadJson()))
+                .orElseGet(() -> CategoryTreePayload.builder().build());
+        } catch (Exception ex) {
+            // 운영 DB 스키마/데이터 불일치가 있어도 목록 페이지를 살리기 위해 안전 폴백
+            return CategoryTreePayload.builder().build();
+        }
     }
 
     @Transactional
