@@ -12,6 +12,7 @@ import {
   fetchPostAdmin,
   fetchPost,
   fetchCategories,
+  fetchCategoryTree,
   fetchLegacyPost,
   uploadImage,
 } from "@/lib/api";
@@ -50,9 +51,16 @@ export default function PostEditor({ slug, mode }: PostEditorProps) {
   const [isLegacySource, setIsLegacySource] = useState(false);
   const [publishStatus, setPublishStatus] = useState<"published" | "draft">("published");
   const [existingCategories, setExistingCategories] = useState<string[]>([]);
+  const [categoryTreeNodes, setCategoryTreeNodes] = useState<{ id: string; name: string }[]>([]);
   const defaultCategories = ["TIL", "개발", "회고", "트러블슈팅", "일상"];
+  
   const categoryOptions = Array.from(
-    new Set([...existingCategories, ...defaultCategories, ...(category ? [category] : [])])
+    new Set([
+      ...categoryTreeNodes.map(node => node.name),
+      ...existingCategories,
+      ...defaultCategories,
+      ...(category ? [category] : [])
+    ])
   );
 
   const createExcerptFromContent = (html: string) => {
@@ -89,6 +97,15 @@ export default function PostEditor({ slug, mode }: PostEditorProps) {
     fetchCategories()
       .then((categories) => {
         setExistingCategories(Array.from(new Set(categories.map((cat) => cat.trim()).filter(Boolean))));
+      })
+      .catch(console.error);
+
+    // 카테고리 트리 정보 가져오기 (모든 정의된 카테고리 포함)
+    fetchCategoryTree()
+      .then((tree) => {
+        if (tree && tree.nodes) {
+          setCategoryTreeNodes(tree.nodes.map(node => ({ id: node.id, name: node.name })));
+        }
       })
       .catch(console.error);
 
