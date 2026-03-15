@@ -3,9 +3,9 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import dynamic from "next/dynamic";
-import Image from "next/image";
 import { toast } from "sonner";
 import { useAuth } from "@/hooks/useAuth";
+import SmartImage from "@/components/ui/SmartImage";
 import {
   createPost,
   updatePost,
@@ -568,11 +568,12 @@ export default function PostEditor({ slug, mode }: PostEditorProps) {
               <div className="relative aspect-video rounded-xl overflow-hidden border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-[#1e1e1e] flex items-center justify-center group">
                 {previewThumbnail ? (
                   <>
-                    <Image
+                    <SmartImage
                       src={previewThumbnail}
                       alt="Thumbnail preview"
                       fill
                       unoptimized={isUploadedImageUrl(previewThumbnail)}
+                      containerClassName="h-full w-full"
                       className="object-cover"
                       onError={() => toast.error("썸네일 URL을 확인해주세요.")}
                     />

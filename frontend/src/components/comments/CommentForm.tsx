@@ -3,9 +3,9 @@
 import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import { signOut, useSession } from "next-auth/react";
-import Image from "next/image";
 import { CommentCreateRequest } from "@/types";
 import AuthModal from "@/components/modal/AuthModal";
+import SmartImage from "@/components/ui/SmartImage";
 import {
   clearAuthReturnState,
   readAuthReturnState,
@@ -145,10 +145,11 @@ export default function CommentForm({
           <div className="flex min-w-0 flex-wrap items-center gap-2">
             {session?.user?.image && (
               <div className="relative w-7 h-7 flex-shrink-0 overflow-hidden rounded-lg ring-1 ring-zinc-200 dark:ring-zinc-800 shadow-sm">
-                <Image 
+                <SmartImage
                   src={session.user.image} 
                   alt={session.user.name || "사용자 프로필 이미지"} 
                   fill
+                  containerClassName="h-full w-full"
                   className="object-cover"
                 />
               </div>

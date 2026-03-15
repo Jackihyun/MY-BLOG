@@ -2,11 +2,11 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState, memo } from "react";
 import Link from "next/link";
-import Image from "next/image";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { motion } from "framer-motion";
 import { PostData } from "@/lib/posts";
 import { useAuth } from "@/hooks/useAuth";
+import SmartImage from "@/components/ui/SmartImage";
 import { getDisplayImageUrl } from "@/lib/api";
 import { getPostPreview } from "@/lib/utils";
 import { useVisitorStatsQuery } from "@/hooks/queries/useVisitorStatsQuery";
@@ -1518,11 +1518,12 @@ function PostsList({ allPostsData }: { allPostsData: PostData[] }) {
                         <div className="flex flex-col md:flex-row items-start gap-5">
                           {imageSrc && (
                             <div className="relative w-full md:w-40 lg:w-44 aspect-video rounded-xl overflow-hidden shrink-0 border border-zinc-100 dark:border-zinc-800">
-                              <Image
+                              <SmartImage
                                 src={imageSrc}
                                 alt={title}
                                 fill
                                 sizes="(max-width: 768px) 100vw, 176px"
+                                containerClassName="h-full w-full"
                                 className="object-cover transition-transform duration-500 group-hover:scale-110"
                               />
                             </div>

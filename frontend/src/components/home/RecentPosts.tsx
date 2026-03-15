@@ -1,11 +1,11 @@
 "use client";
 
 import Link from "next/link";
-import Image from "next/image";
 import { motion } from "framer-motion";
 import { PostData } from "@/lib/posts";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import SmartImage from "@/components/ui/SmartImage";
 import { getDisplayImageUrl } from "@/lib/api";
 import { getPostPreview } from "@/lib/utils";
 import { useAuth } from "@/hooks/useAuth";
@@ -68,12 +68,13 @@ export default function RecentPosts({ posts }: RecentPostsProps) {
                 <Card className="h-full group hover:shadow-lg hover:border-indigo-200 dark:hover:border-indigo-800/50 transition-all duration-300 cursor-pointer overflow-hidden border-zinc-100 dark:border-zinc-800 dark:bg-[#0a0a0a]">
                   {imageSrc ? (
                     <div className="relative aspect-[16/9] overflow-hidden">
-                      <Image
+                      <SmartImage
                         src={imageSrc}
                         alt={post.title}
                         fill
                         priority={index === 0}
                         sizes="(max-width: 768px) 100vw, 50vw"
+                        containerClassName="h-full w-full"
                         className="object-cover transition-transform duration-500 group-hover:scale-105"
                       />
                     </div>

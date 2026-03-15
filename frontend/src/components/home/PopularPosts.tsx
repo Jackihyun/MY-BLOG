@@ -1,11 +1,11 @@
 "use client";
 
 import Link from "next/link";
-import Image from "next/image";
 import { motion } from "framer-motion";
 import { PostData } from "@/lib/posts";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
+import SmartImage from "@/components/ui/SmartImage";
 import { getDisplayImageUrl } from "@/lib/api";
 import { getPostPreview } from "@/lib/utils";
 
@@ -62,11 +62,12 @@ export default function PopularPosts({ posts }: PopularPostsProps) {
                 <Card className="h-full group hover:shadow-2xl hover:border-amber-200 dark:hover:border-amber-800/50 transition-all duration-500 cursor-pointer overflow-hidden border-zinc-100 dark:border-zinc-800 dark:bg-[#0a0a0a] flex flex-col">
                   {imageSrc ? (
                     <div className="relative aspect-video overflow-hidden">
-                      <Image
+                      <SmartImage
                         src={imageSrc}
                         alt={post.title}
                         fill
                         sizes="(max-width: 768px) 100vw, 33vw"
+                        containerClassName="h-full w-full"
                         className="object-cover transition-transform duration-500 group-hover:scale-110"
                       />
                       <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end p-4">

@@ -10,6 +10,10 @@ const nextConfig = {
     remotePatterns: [
       {
         protocol: "https",
+        hostname: "api.iconify.design",
+      },
+      {
+        protocol: "https",
         hostname: "lh3.googleusercontent.com",
       },
       {

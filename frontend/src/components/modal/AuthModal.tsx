@@ -4,9 +4,9 @@ import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { signIn } from "next-auth/react";
 import { X } from "lucide-react";
-import Image from "next/image";
 import GoogleIcon from "./google.svg";
 import { saveAuthReturnState } from "@/lib/auth-return";
+import SmartImage from "@/components/ui/SmartImage";
 
 interface AuthModalProps {
   isOpen: boolean;
@@ -105,7 +105,13 @@ export default function AuthModal({
                       />
                     </svg>
                   ) : (
-                    <Image src={GoogleIcon} alt="Google" width={20} height={20} />
+                    <SmartImage
+                      src={GoogleIcon}
+                      alt="Google"
+                      width={20}
+                      height={20}
+                      skeletonClassName="rounded-full"
+                    />
                   )}
                   <span className="text-zinc-900 dark:text-zinc-50 font-bold">
                     {isSigningIn ? "로그인 페이지로 이동 중..." : "Google 계정으로 로그인"}
