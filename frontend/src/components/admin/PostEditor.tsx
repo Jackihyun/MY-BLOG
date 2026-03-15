@@ -15,6 +15,7 @@ import {
   fetchCategoryTree,
   fetchLegacyPost,
   uploadImage,
+  isUploadedImageUrl,
 } from "@/lib/api";
 
 const TiptapEditor = dynamic(
@@ -44,6 +45,7 @@ export default function PostEditor({ slug, mode }: PostEditorProps) {
   const [content, setContent] = useState("");
   const [category, setCategory] = useState("");
   const [thumbnail, setThumbnail] = useState("");
+  const [publishedAt, setPublishedAt] = useState("");
   const [customSlug, setCustomSlug] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
@@ -86,6 +88,27 @@ export default function PostEditor({ slug, mode }: PostEditorProps) {
     }
 
     return trimmed;
+  };
+  const toDatetimeLocalValue = (value?: string | null) => {
+    if (!value) return "";
+
+    const normalized = value.trim();
+    if (!normalized) return "";
+    if (/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/.test(normalized)) return normalized;
+
+    const parsed = new Date(normalized);
+    if (Number.isNaN(parsed.getTime())) return "";
+
+    const yyyy = parsed.getFullYear();
+    const mm = String(parsed.getMonth() + 1).padStart(2, "0");
+    const dd = String(parsed.getDate()).padStart(2, "0");
+    const hh = String(parsed.getHours()).padStart(2, "0");
+    const mi = String(parsed.getMinutes()).padStart(2, "0");
+    return `${yyyy}-${mm}-${dd}T${hh}:${mi}`;
+  };
+  const toApiPublishedAt = (value: string) => {
+    const trimmed = value.trim();
+    return trimmed ? `${trimmed}:00` : undefined;
   };
   
   const categoryOptions = Array.from(
@@ -163,6 +186,7 @@ export default function PostEditor({ slug, mode }: PostEditorProps) {
           setContent(post.contentHtml || post.content);
           setCategory(post.category);
           setThumbnail(normalizeThumbnailUrl(post.thumbnail || ""));
+          setPublishedAt(toDatetimeLocalValue(post.publishedAt));
           setPublishStatus(post.isPublished ? "published" : "draft");
           setIsLegacySource(false);
         })
@@ -180,6 +204,7 @@ export default function PostEditor({ slug, mode }: PostEditorProps) {
             setTitle(legacyPost.title);
             setContent(legacyPost.contentHtml);
             setCategory(legacyPost.category);
+            setPublishedAt("");
             setPublishStatus("draft");
             setIsLegacySource(true);
             toast.info("레거시 파일 글을 불러왔습니다. 저장하면 DB로 마이그레이션됩니다.");
@@ -243,6 +268,7 @@ export default function PostEditor({ slug, mode }: PostEditorProps) {
     try {
       const excerpt = createExcerptFromContent(content);
       const normalizedThumbnail = normalizeThumbnailUrl(thumbnail);
+      const nextPublishedAt = toApiPublishedAt(publishedAt);
 
       if (mode === "create") {
         await createPost(
@@ -254,6 +280,7 @@ export default function PostEditor({ slug, mode }: PostEditorProps) {
             excerpt: excerpt || undefined,
             slug: customSlug || undefined,
             publish: true,
+            publishedAt: nextPublishedAt,
           },
           token
         );
@@ -269,6 +296,7 @@ export default function PostEditor({ slug, mode }: PostEditorProps) {
           thumbnail: normalizedThumbnail || undefined,
           excerpt: excerpt || undefined,
           publish: true,
+          publishedAt: nextPublishedAt,
         };
 
         if (isLegacySource) {
@@ -458,6 +486,23 @@ export default function PostEditor({ slug, mode }: PostEditorProps) {
             </div>
             <div>
               <label className="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1.5 uppercase tracking-wider">
+                발행 일시
+              </label>
+              <input
+                type="datetime-local"
+                value={publishedAt}
+                onChange={(e) => setPublishedAt(e.target.value)}
+                className="w-full px-3 py-2.5 text-sm border border-gray-200 dark:border-gray-700 rounded-xl
+                           bg-white dark:bg-[#1e1e1e] text-gray-900 dark:text-gray-100
+                           focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent
+                           transition-all"
+              />
+              <p className="mt-2 text-xs text-gray-400 dark:text-gray-500">
+                비워두면 현재 시각으로 발행됩니다.
+              </p>
+            </div>
+            <div>
+              <label className="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1.5 uppercase tracking-wider">
                 요약
               </label>
               <p className="px-3 py-2.5 text-sm border border-dashed border-gray-200 dark:border-gray-700 rounded-xl text-gray-500 dark:text-gray-400 bg-gray-50 dark:bg-[#1e1e1e]">
@@ -510,6 +555,7 @@ export default function PostEditor({ slug, mode }: PostEditorProps) {
                       src={thumbnail}
                       alt="Thumbnail preview"
                       fill
+                      unoptimized={isUploadedImageUrl(thumbnail)}
                       className="object-cover"
                       onError={() => toast.error("썸네일 URL을 확인해주세요.")}
                     />

@@ -97,8 +97,8 @@ export default function Header() {
   };
 
   return (
-    <header className="fixed top-0 left-0 right-0 z-50 flex justify-center pt-4 px-4 md:px-10">
-      <div className="relative w-full max-w-7xl h-[56px] px-6 flex items-center justify-between bg-white/70 dark:bg-black/70 backdrop-blur-xl border border-zinc-200/50 dark:border-zinc-800/50 rounded-2xl shadow-sm">
+    <header className="fixed top-0 left-0 right-0 z-50 flex justify-center pt-4 px-4 md:px-8">
+      <div className="relative w-full max-w-6xl h-[56px] px-6 flex items-center justify-between bg-white/70 dark:bg-black/70 backdrop-blur-xl border border-zinc-200/50 dark:border-zinc-800/50 rounded-2xl shadow-sm">
         {/* Logo */}
         <Link
           href="/"

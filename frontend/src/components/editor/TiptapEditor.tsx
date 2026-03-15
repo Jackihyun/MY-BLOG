@@ -6,6 +6,7 @@ import Placeholder from "@tiptap/extension-placeholder";
 import Link from "@tiptap/extension-link";
 import Image from "@tiptap/extension-image";
 import CodeBlockLowlight from "@tiptap/extension-code-block-lowlight";
+import { Extension } from "@tiptap/core";
 import { common, createLowlight } from "lowlight";
 import { useCallback, useEffect, useState } from "react";
 import { uploadImage } from "@/lib/api";
@@ -25,6 +26,39 @@ const EditorImage = Image.extend({
         }),
       },
     };
+  },
+});
+
+const TextAlign = Extension.create({
+  name: "textAlign",
+
+  addGlobalAttributes() {
+    return [
+      {
+        types: ["paragraph", "heading"],
+        attributes: {
+          textAlign: {
+            default: "left",
+            parseHTML: (element: HTMLElement) =>
+              element.style.textAlign || "left",
+            renderHTML: (attributes: { textAlign?: string }) =>
+              attributes.textAlign && attributes.textAlign !== "left"
+                ? { style: `text-align: ${attributes.textAlign}` }
+                : {},
+          },
+        },
+      },
+    ];
+  },
+
+  addCommands() {
+    return {
+      setTextAlign:
+        (alignment: "left" | "center" | "right") =>
+        ({ commands }: { commands: { updateAttributes: (type: string, attrs: Record<string, string>) => boolean } }) =>
+          commands.updateAttributes("paragraph", { textAlign: alignment }) ||
+          commands.updateAttributes("heading", { textAlign: alignment }),
+    } as Record<string, unknown>;
   },
 });
 
@@ -61,6 +95,7 @@ export default function TiptapEditor({
           class: "rounded-lg max-w-full h-auto cursor-ew-resize",
         },
       }),
+      TextAlign,
       CodeBlockLowlight.configure({
         lowlight,
       }),
@@ -241,6 +276,19 @@ export default function TiptapEditor({
     [editor]
   );
 
+  const setTextAlign = useCallback(
+    (alignment: "left" | "center" | "right") => {
+      if (!editor) return;
+      (editor.chain() as unknown as {
+        focus: () => { setTextAlign: (value: "left" | "center" | "right") => { run: () => boolean } };
+      })
+        .focus()
+        .setTextAlign(alignment)
+        .run();
+    },
+    [editor]
+  );
+
   if (!editor) return null;
 
   return (
@@ -337,6 +385,44 @@ export default function TiptapEditor({
         {/* 블록 요소 */}
         <div className="flex gap-0.5 px-2 border-r border-gray-300 dark:border-gray-600">
           <ToolbarButton
+            onClick={() => setTextAlign("left")}
+            isActive={editor.isActive({ textAlign: "left" })}
+            title="왼쪽 정렬"
+          >
+            <svg className="w-4 h-4" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M3 5h18v2H3V5zm0 4h12v2H3V9zm0 4h18v2H3v-2zm0 4h12v2H3v-2z" />
+            </svg>
+          </ToolbarButton>
+          <ToolbarButton
+            onClick={() => setTextAlign("center")}
+            isActive={editor.isActive({ textAlign: "center" })}
+            title="가운데 정렬"
+          >
+            <svg className="w-4 h-4" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M3 5h18v2H3V5zm3 4h12v2H6V9zm-3 4h18v2H3v-2zm3 4h12v2H6v-2z" />
+            </svg>
+          </ToolbarButton>
+          <ToolbarButton
+            onClick={() => setTextAlign("right")}
+            isActive={editor.isActive({ textAlign: "right" })}
+            title="오른쪽 정렬"
+          >
+            <svg className="w-4 h-4" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M3 5h18v2H3V5zm6 4h12v2H9V9zm-6 4h18v2H3v-2zm6 4h12v2H9v-2z" />
+            </svg>
+          </ToolbarButton>
+          <ToolbarButton
+            onClick={() => editor.chain().focus().setHorizontalRule().run()}
+            title="구분선"
+          >
+            <svg className="w-4 h-4" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M4 11h16v2H4z" />
+            </svg>
+          </ToolbarButton>
+        </div>
+
+        <div className="flex gap-0.5 px-2 border-r border-gray-300 dark:border-gray-600">
+          <ToolbarButton
             onClick={() => editor.chain().focus().toggleBlockquote().run()}
             isActive={editor.isActive("blockquote")}
             title="인용구"
@@ -353,14 +439,6 @@ export default function TiptapEditor({
             <svg className="w-4 h-4" viewBox="0 0 24 24" fill="currentColor">
               <path d="M20 3H4c-1.103 0-2 .897-2 2v14c0 1.103.897 2 2 2h16c1.103 0 2-.897 2-2V5c0-1.103-.897-2-2-2zM4 19V7h16l.002 12H4z" />
               <path d="M9.293 9.293L5.586 13l3.707 3.707 1.414-1.414L8.414 13l2.293-2.293zm5.414 0l-1.414 1.414L15.586 13l-2.293 2.293 1.414 1.414L18.414 13z" />
-            </svg>
-          </ToolbarButton>
-          <ToolbarButton
-            onClick={() => editor.chain().focus().setHorizontalRule().run()}
-            title="구분선"
-          >
-            <svg className="w-4 h-4" viewBox="0 0 24 24" fill="currentColor">
-              <path d="M4 11h16v2H4z" />
             </svg>
           </ToolbarButton>
         </div>

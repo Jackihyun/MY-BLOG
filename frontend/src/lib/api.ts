@@ -320,6 +320,16 @@ export async function uploadImage(file: File, token: string): Promise<string> {
   return normalizeUploadedImageUrl(data.data);
 }
 
+export function isUploadedImageUrl(url?: string | null): boolean {
+  if (!url) return false;
+
+  return (
+    url.startsWith("/api/uploads/") ||
+    url.startsWith("/uploads/") ||
+    /^https?:\/\/[^/]+\/(?:api\/)?uploads\//i.test(url)
+  );
+}
+
 function normalizeUploadedImageUrl(url: string): string {
   if (!url) return url;
 
