@@ -20,7 +20,7 @@ export default async function HomePage() {
   return (
     <div className="space-y-16 py-8">
       <HeroSection />
-      {popularPosts.length > 0 && <PopularPosts posts={popularPosts} />}
+      <PopularPosts posts={popularPosts} />
       <RecentPosts posts={recentPosts} />
       <TechStack />
     </div>

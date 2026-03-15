@@ -170,10 +170,19 @@ export default function Header() {
 
         {/* Right Side Controls */}
         <div className="flex items-center gap-1">
-          <div className="relative" ref={searchContainerRef}>
+          <div
+            className={`relative ${
+              isSearchExpanded
+                ? "max-[849px]:absolute max-[849px]:left-3 max-[849px]:right-[6.25rem] max-[849px]:top-1/2 max-[849px]:z-20 max-[849px]:-translate-y-1/2"
+                : ""
+            }`}
+            ref={searchContainerRef}
+          >
             <div
               className={`flex items-center rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white/90 dark:bg-zinc-900/90 overflow-hidden transition-all duration-200 ${
-                isSearchExpanded ? "w-[220px] sm:w-[280px]" : "w-10"
+                isSearchExpanded
+                  ? "w-[min(18rem,calc(100vw-7.5rem))] min-[850px]:w-[280px]"
+                  : "w-10"
               }`}
             >
               <button
@@ -213,7 +222,7 @@ export default function Header() {
                   setShowResults(true);
                 }}
                 placeholder="포스트 검색"
-                className="h-10 w-full pr-3 text-sm bg-transparent outline-none text-zinc-700 dark:text-zinc-200 placeholder:text-zinc-400"
+                className="h-10 min-w-0 w-full pr-3 text-sm bg-transparent outline-none text-zinc-700 dark:text-zinc-200 placeholder:text-zinc-400"
               />
             </div>
 
