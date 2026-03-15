@@ -52,13 +52,33 @@ public class PostResponse {
         return plainText.substring(0, 177) + "...";
     }
 
+    private static String resolveThumbnail(Post post) {
+        if (StringUtils.hasText(post.getThumbnail())) {
+            return post.getThumbnail().trim();
+        }
+
+        if (!StringUtils.hasText(post.getContentHtml())) {
+            return null;
+        }
+
+        java.util.regex.Matcher matcher = java.util.regex.Pattern
+            .compile("<img[^>]+src=[\"']([^\"']+)[\"'][^>]*>", java.util.regex.Pattern.CASE_INSENSITIVE)
+            .matcher(post.getContentHtml());
+
+        if (matcher.find()) {
+            return matcher.group(1).trim();
+        }
+
+        return null;
+    }
+
     public static PostResponse from(Post post) {
         return PostResponse.builder()
             .id(post.getId())
             .slug(post.getSlug())
             .title(post.getTitle())
             .excerpt(buildExcerpt(post))
-            .thumbnail(post.getThumbnail())
+            .thumbnail(resolveThumbnail(post))
             .category(post.getCategory())
             .readingTime(post.getReadingTime())
             .viewCount(post.getViewCount())

@@ -103,9 +103,7 @@ public class PostService {
         String excerpt = StringUtils.hasText(request.getExcerpt())
             ? request.getExcerpt()
             : generateExcerpt(request.getContent());
-        String thumbnail = StringUtils.hasText(request.getThumbnail())
-            ? request.getThumbnail().trim()
-            : null;
+        String thumbnail = resolveThumbnail(request.getThumbnail(), contentHtml);
 
         Post post = Post.builder()
             .slug(slug)
@@ -142,8 +140,8 @@ public class PostService {
             ? request.getExcerpt()
             : (StringUtils.hasText(request.getContent()) ? generateExcerpt(request.getContent()) : post.getExcerpt());
         String thumbnail = request.getThumbnail() != null
-            ? request.getThumbnail().trim()
-            : post.getThumbnail();
+            ? resolveThumbnail(request.getThumbnail(), contentHtml)
+            : resolveThumbnail(post.getThumbnail(), contentHtml);
         String category = StringUtils.hasText(request.getCategory()) ? request.getCategory() : post.getCategory();
         int readingTime = StringUtils.hasText(request.getContent())
             ? calculateReadingTime(request.getContent())
@@ -234,6 +232,26 @@ public class PostService {
             return plainText;
         }
         return plainText.substring(0, 197) + "...";
+    }
+
+    private String resolveThumbnail(String requestedThumbnail, String contentHtml) {
+        if (StringUtils.hasText(requestedThumbnail)) {
+            return requestedThumbnail.trim();
+        }
+
+        if (!StringUtils.hasText(contentHtml)) {
+            return null;
+        }
+
+        java.util.regex.Matcher matcher = java.util.regex.Pattern
+            .compile("<img[^>]+src=[\"']([^\"']+)[\"'][^>]*>", java.util.regex.Pattern.CASE_INSENSITIVE)
+            .matcher(contentHtml);
+
+        if (matcher.find()) {
+            return matcher.group(1).trim();
+        }
+
+        return null;
     }
 
     private java.util.Optional<LocalDateTime> resolvePublishedAt(String value) {
