@@ -1,0 +1,15 @@
+[Unit]
+Description=JackBlog Spring API
+After=network.target
+
+[Service]
+Type=simple
+User=www-data
+WorkingDirectory=/opt/jackblog/current/backend
+EnvironmentFile=/opt/jackblog/shared/.env.api
+ExecStart=/usr/bin/java -jar /opt/jackblog/current/backend/build/libs/jackblog-backend-0.0.1-SNAPSHOT.jar
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target

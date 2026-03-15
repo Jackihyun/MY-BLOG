@@ -1,0 +1,52 @@
+name: Deploy Contabo
+
+on:
+  workflow_dispatch:
+  push:
+    branches: ["main"]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Deploy over SSH
+        uses: appleboy/ssh-action@v1.2.0
+        with:
+          host: ${{ secrets.CONTABO_HOST }}
+          username: ${{ secrets.CONTABO_USER }}
+          key: ${{ secrets.CONTABO_SSH_KEY }}
+          script: |
+            set -euo pipefail
+            APP_DIR="${{ secrets.CONTABO_APP_DIR }}"
+            ROOT_DIR="$(dirname "$APP_DIR")"
+            RELEASES_DIR="$ROOT_DIR/releases"
+            CURRENT_DIR="$APP_DIR"
+            TS="$(date +%Y%m%d-%H%M%S)"
+            NEW_RELEASE="$RELEASES_DIR/$TS"
+            PREVIOUS_TARGET="$(readlink "$CURRENT_DIR" || true)"
+            REPO_URL="$(git -C "$CURRENT_DIR" remote get-url origin)"
+
+            mkdir -p "$RELEASES_DIR"
+            git clone --depth 1 --branch main "$REPO_URL" "$NEW_RELEASE"
+
+            cd "$NEW_RELEASE/frontend"
+            npm ci
+            npm run build
+
+            cd "$NEW_RELEASE/backend"
+            chmod +x gradlew
+            ./gradlew clean bootJar
+
+            ln -sfn "$NEW_RELEASE" "$CURRENT_DIR"
+            sudo systemctl restart jackblog-api
+            sudo systemctl restart jackblog-frontend
+
+            cd "$CURRENT_DIR"
+            chmod +x scripts/deploy-check.sh
+            ./scripts/deploy-check.sh blog.jackihyun.com
+
+            ls -1dt "$RELEASES_DIR"/* | tail -n +6 | xargs -r rm -rf
+
+            echo "Deployment complete: $NEW_RELEASE"
+            echo "Previous release: ${PREVIOUS_TARGET:-none}"

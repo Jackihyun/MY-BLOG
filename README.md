@@ -143,9 +143,22 @@ flowchart LR
 
 ---
 
+## 레포 구조
+
+```text
+MY-BLOG/
+├── frontend/   # Next.js frontend
+├── backend/    # Spring Boot backend
+├── deploy/     # systemd, Caddy, infra examples
+├── docs/       # deployment/operation docs
+├── scripts/    # migration and maintenance scripts
+└── .github/    # CI/CD workflows
+```
+
 ## 로컬 실행
 
 ```bash
+cd frontend
 npm install
 npm run dev
 ```
@@ -155,6 +168,7 @@ npm run dev
 ## Lighthouse 측정
 
 ```bash
+cd frontend
 npm run lighthouse:mobile
 npm run lighthouse:desktop
 # or
@@ -164,5 +178,32 @@ npm run lighthouse:all
 ## 레거시 포스트 마이그레이션
 
 ```bash
+cd frontend
 API_URL=https://blog.jackihyun.com/api ADMIN_PASSWORD=<admin-password> npm run migrate:posts
 ```
+
+## 마이그레이션 글 정리(DB에서 삭제)
+
+마크다운(`frontend/src/posts/*.md`)에서 이관된 글만 DB에서 제거할 때 사용합니다.
+
+```bash
+cd frontend
+# 1) 삭제 대상 확인 (기본: dry-run)
+API_URL=https://blog.jackihyun.com/api ADMIN_PASSWORD=<admin-password> npm run cleanup:migrated:dry-run
+
+# 2) 실제 삭제
+API_URL=https://blog.jackihyun.com/api ADMIN_PASSWORD=<admin-password> npm run cleanup:migrated
+```
+
+## 레거시 파일 fallback 끄기
+
+API/DB 글만 사용하려면 아래 값을 유지하세요.
+
+```bash
+# frontend/.env.local
+NEXT_PUBLIC_ENABLE_LEGACY_FILE_POSTS=false
+```
+
+## Contabo 클린 재배포 가이드
+
+`docs/contabo-clean-redeploy.md`

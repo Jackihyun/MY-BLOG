@@ -1,6 +1,6 @@
 spring:
   datasource:
-    url: jdbc:sqlite:./jackblog.db
+    url: ${DB_URL:jdbc:sqlite:/opt/jackblog/shared/jackblog.db}
     driver-class-name: org.sqlite.JDBC
 
   jpa:
@@ -35,7 +35,7 @@ logging:
     com.jackblog: INFO
 
 file:
-  upload-dir: /app/data/uploads
+  upload-dir: ${FILE_UPLOAD_DIR:/opt/jackblog/shared/uploads}
 
 app:
   base-url: ${FRONTEND_URL:https://blog.jackihyun.com}

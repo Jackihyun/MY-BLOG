@@ -1,0 +1,15 @@
+[Unit]
+Description=JackBlog Next.js Frontend
+After=network.target
+
+[Service]
+Type=simple
+User=www-data
+WorkingDirectory=/opt/jackblog/current/frontend
+EnvironmentFile=/opt/jackblog/shared/.env.web
+ExecStart=/usr/bin/npm run start
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target

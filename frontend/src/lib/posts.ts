@@ -18,6 +18,8 @@ const CLIENT_API_BASE =
 const API_BASE =
   typeof window === "undefined" ? SERVER_API_BASE : CLIENT_API_BASE;
 const USE_API = true;
+const ENABLE_LEGACY_FILE_POSTS =
+  process.env.NEXT_PUBLIC_ENABLE_LEGACY_FILE_POSTS === "true";
 
 // ============ Utility functions ============
 
@@ -210,18 +212,20 @@ export async function getSortedPostsData(): Promise<PostData[]> {
     }
   }
 
-  // 2. 파일 시스템에서 게시글 가져오기 (API 데이터가 없거나 보조용)
-  try {
-    const filePosts = await getSortedPostsDataFromFile();
-    // 중복 제거 (slug 기준)
-    const existingSlugs = new Set(allPosts.map((p) => p.slug));
-    for (const post of filePosts) {
-      if (!existingSlugs.has(post.slug)) {
-        allPosts.push(post);
+  // 2. 필요할 때만 파일 시스템의 레거시 글 병합
+  if (ENABLE_LEGACY_FILE_POSTS) {
+    try {
+      const filePosts = await getSortedPostsDataFromFile();
+      // 중복 제거 (slug 기준)
+      const existingSlugs = new Set(allPosts.map((p) => p.slug));
+      for (const post of filePosts) {
+        if (!existingSlugs.has(post.slug)) {
+          allPosts.push(post);
+        }
       }
+    } catch (error) {
+      console.error("Failed to read posts from file system:", error);
     }
-  } catch (error) {
-    console.error("Failed to read posts from file system:", error);
   }
 
   // 3. 날짜 기준 정렬 및 특수 페이지(방명록 등) 제외
@@ -231,6 +235,9 @@ export async function getSortedPostsData(): Promise<PostData[]> {
 }
 
 export function getAllPostIds(): { id: string }[] {
+  if (!ENABLE_LEGACY_FILE_POSTS) {
+    return [];
+  }
   return getAllPostIdsFromFile();
 }
 
@@ -249,24 +256,27 @@ export async function getPostData(id: string): Promise<PostData> {
     }
   }
 
-  // 2. 파일 시스템에서 시도
-  try {
-    return await getPostDataFromFile(id);
-  } catch (error) {
-    console.warn(
-      `Post ${id} not found in API or file system, returning dummy data`
-    );
-    return {
-      id,
-      slug: id,
-      title: "글을 찾을 수 없습니다",
-      date: new Date().toISOString().split("T")[0],
-      category: "None",
-      contentHtml:
-        "<p>요청하신 글이 존재하지 않거나 불러오는데 실패했습니다.</p>",
-      isPublished: false,
-    };
+  // 2. 파일 시스템에서 시도 (레거시 모드에서만)
+  if (ENABLE_LEGACY_FILE_POSTS) {
+    try {
+      return await getPostDataFromFile(id);
+    } catch (error) {
+      console.warn(
+        `Post ${id} not found in API or file system, returning dummy data`
+      );
+    }
   }
+
+  return {
+    id,
+    slug: id,
+    title: "글을 찾을 수 없습니다",
+    date: new Date().toISOString().split("T")[0],
+    category: "None",
+    contentHtml:
+      "<p>요청하신 글이 존재하지 않거나 불러오는데 실패했습니다.</p>",
+    isPublished: false,
+  };
 }
 
 // ============ Search function ============
@@ -279,6 +289,10 @@ export async function searchPosts(query: string): Promise<PostData[]> {
     if (apiPosts) {
       return apiPosts.map(apiPostToPostData);
     }
+  }
+
+  if (!ENABLE_LEGACY_FILE_POSTS) {
+    return [];
   }
 
   const allPosts = await getSortedPostsDataFromFile();
@@ -304,11 +318,13 @@ export async function getCategories(): Promise<string[]> {
     }
   }
 
-  try {
-    const allFilePosts = await getSortedPostsDataFromFile();
-    allFilePosts.forEach((post) => categories.add(post.category));
-  } catch (error) {
-    console.error("Failed to read categories from file system:", error);
+  if (ENABLE_LEGACY_FILE_POSTS) {
+    try {
+      const allFilePosts = await getSortedPostsDataFromFile();
+      allFilePosts.forEach((post) => categories.add(post.category));
+    } catch (error) {
+      console.error("Failed to read categories from file system:", error);
+    }
   }
 
   return Array.from(categories).sort();
@@ -330,15 +346,17 @@ export async function getPostsByCategory(
     }
   }
 
-  try {
-    const filePosts = await getSortedPostsDataFromFile();
-    const existingSlugs = new Set(posts.map((p) => p.slug));
-    const filteredFilePosts = filePosts.filter(
-      (post) => post.category === category && !existingSlugs.has(post.slug)
-    );
-    posts = [...posts, ...filteredFilePosts];
-  } catch (error) {
-    console.error("Failed to read posts by category from file system:", error);
+  if (ENABLE_LEGACY_FILE_POSTS) {
+    try {
+      const filePosts = await getSortedPostsDataFromFile();
+      const existingSlugs = new Set(posts.map((p) => p.slug));
+      const filteredFilePosts = filePosts.filter(
+        (post) => post.category === category && !existingSlugs.has(post.slug)
+      );
+      posts = [...posts, ...filteredFilePosts];
+    } catch (error) {
+      console.error("Failed to read posts by category from file system:", error);
+    }
   }
 
   return posts.sort((a, b) => (a.date < b.date ? 1 : -1));

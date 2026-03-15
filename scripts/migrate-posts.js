@@ -1,10 +1,13 @@
 const fs = require("fs");
 const path = require("path");
-const matter = require("gray-matter");
+const { createRequire } = require("module");
 
 const API_URL = (process.env.API_URL || "http://localhost:8080/api").replace(/\/$/, "");
 const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD;
-const postsDirectory = path.join(process.cwd(), "src/posts");
+const frontendDir = path.join(__dirname, "..", "frontend");
+const requireFromFrontend = createRequire(path.join(frontendDir, "package.json"));
+const matter = requireFromFrontend("gray-matter");
+const postsDirectory = path.join(frontendDir, "src/posts");
 
 if (!ADMIN_PASSWORD) {
   console.error("Missing ADMIN_PASSWORD environment variable.");

@@ -54,6 +54,8 @@ export default function PostEditor({ slug, mode }: PostEditorProps) {
   const [existingCategories, setExistingCategories] = useState<string[]>([]);
   const [categoryTreeNodes, setCategoryTreeNodes] = useState<{ id: string; name: string }[]>([]);
   const defaultCategories = ["TIL", "개발", "회고", "트러블슈팅", "일상"];
+  const enableLegacyFilePosts =
+    process.env.NEXT_PUBLIC_ENABLE_LEGACY_FILE_POSTS === "true";
   const normalizeSlug = (value: string) =>
     value
       .trim()
@@ -169,6 +171,10 @@ export default function PostEditor({ slug, mode }: PostEditorProps) {
             throw error;
           }
 
+          if (!enableLegacyFilePosts) {
+            throw error;
+          }
+
           try {
             const legacyPost = await fetchLegacyPost(slug);
             setTitle(legacyPost.title);
@@ -185,7 +191,7 @@ export default function PostEditor({ slug, mode }: PostEditorProps) {
         })
         .finally(() => setIsLoading(false));
     }
-  }, [isAuthenticated, mode, slug, token, router]);
+  }, [isAuthenticated, mode, slug, token, router, enableLegacyFilePosts]);
 
   const addCategoryOption = (nextCategory: string) => {
     const normalized = nextCategory.trim();

@@ -7,8 +7,10 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "migrate:posts": "node scripts/migrate-posts.js",
-    "spread:post-dates": "node scripts/spread-post-dates.js",
+    "migrate:posts": "node ../scripts/migrate-posts.js",
+    "cleanup:migrated:dry-run": "node ../scripts/delete-migrated-posts.js",
+    "cleanup:migrated": "DRY_RUN=false node ../scripts/delete-migrated-posts.js",
+    "spread:post-dates": "node ../scripts/spread-post-dates.js",
     "lighthouse:mobile": "npx lighthouse http://localhost:3000 --preset=perf --form-factor=mobile --only-categories=performance,accessibility,best-practices,seo --output=html --output-path=./lighthouse-mobile-report.html",
     "lighthouse:desktop": "npx lighthouse http://localhost:3000 --preset=desktop --only-categories=performance,accessibility,best-practices,seo --output=html --output-path=./lighthouse-desktop-report.html",
     "lighthouse:all": "npm run lighthouse:mobile && npm run lighthouse:desktop"
