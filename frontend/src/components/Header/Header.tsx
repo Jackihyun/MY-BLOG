@@ -8,6 +8,7 @@ import { sidebarState } from "@/store/sidebarState";
 import DarkModeToggle from "@/components/DarkModeToogle";
 import HamburgerMenu from "@/components/button/HamburgerMenu";
 import SidebarMenu from "@/components/menu/SidebarMenu";
+import SearchModal from "@/components/search/SearchModal";
 import { searchPosts } from "@/lib/api";
 import { PostResponse } from "@/types";
 
@@ -15,6 +16,7 @@ export default function Header() {
   const pathname = usePathname();
   const router = useRouter();
   const [isSidebarOpen, setIsSidebarOpen] = useRecoilState(sidebarState);
+  const [isMobileSearchOpen, setIsMobileSearchOpen] = useState(false);
   const [isSearchExpanded, setIsSearchExpanded] = useState(false);
   const [query, setQuery] = useState("");
   const [results, setResults] = useState<PostResponse[]>([]);
@@ -30,6 +32,7 @@ export default function Header() {
   useEffect(() => {
     setIsSidebarOpen(false);
     setShowResults(false);
+    setIsMobileSearchOpen(false);
   }, [pathname, setIsSidebarOpen]);
 
   const shouldSearch = useMemo(() => query.trim().length >= 2, [query]);
@@ -103,7 +106,7 @@ export default function Header() {
         <Link
           href="/"
           className="group flex items-center gap-2"
-          aria-label="Home"
+          aria-label="Jack's Blog 홈"
         >
           <span className="text-lg md:text-xl font-black tracking-tighter text-zinc-900 dark:text-zinc-50 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">
             JACK&#39;S
@@ -171,18 +174,12 @@ export default function Header() {
         {/* Right Side Controls */}
         <div className="flex items-center gap-1">
           <div
-            className={`relative ${
-              isSearchExpanded
-                ? "max-[849px]:absolute max-[849px]:left-3 max-[849px]:right-[6.25rem] max-[849px]:top-1/2 max-[849px]:z-20 max-[849px]:-translate-y-1/2"
-                : ""
-            }`}
+            className="relative hidden min-[850px]:block"
             ref={searchContainerRef}
           >
             <div
               className={`flex items-center rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white/90 dark:bg-zinc-900/90 overflow-hidden transition-all duration-200 ${
-                isSearchExpanded
-                  ? "w-[min(18rem,calc(100vw-7.5rem))] min-[850px]:w-[280px]"
-                  : "w-10"
+                isSearchExpanded ? "w-[280px]" : "w-10"
               }`}
             >
               <button
@@ -255,6 +252,26 @@ export default function Header() {
               </div>
             )}
           </div>
+          <button
+            type="button"
+            onClick={() => setIsMobileSearchOpen(true)}
+            aria-label="모바일 검색 열기"
+            className="flex h-10 w-10 items-center justify-center rounded-xl border border-zinc-200 bg-white/90 text-zinc-600 transition-colors hover:bg-zinc-100 hover:text-zinc-900 dark:border-zinc-800 dark:bg-zinc-900/90 dark:text-zinc-400 dark:hover:bg-zinc-800 dark:hover:text-zinc-50 min-[850px]:hidden"
+          >
+            <svg
+              className="w-5 h-5"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+              />
+            </svg>
+          </button>
           <DarkModeToggle />
           <div className="min-[850px]:hidden">
             <HamburgerMenu isChecked={isSidebarOpen} onToggle={toggleSidebar} />
@@ -264,6 +281,10 @@ export default function Header() {
 
       {/* Mobile Sidebar Menu - outside the header container */}
       <SidebarMenu isOpen={isSidebarOpen} onClose={toggleSidebar} />
+      <SearchModal
+        isOpen={isMobileSearchOpen}
+        onClose={() => setIsMobileSearchOpen(false)}
+      />
     </header>
   );
 }

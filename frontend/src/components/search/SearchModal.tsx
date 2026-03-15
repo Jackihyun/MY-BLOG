@@ -34,7 +34,7 @@ export default function SearchModal({ isOpen, onClose }: SearchModalProps) {
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-start justify-center pt-[20vh]"
+      className="fixed inset-0 z-[60] flex items-start justify-center px-4 pt-20 sm:pt-[18vh]"
       role="dialog"
       aria-modal="true"
       aria-label="게시글 검색"
@@ -44,8 +44,10 @@ export default function SearchModal({ isOpen, onClose }: SearchModalProps) {
         onClick={onClose}
         aria-hidden="true"
       />
-      <div className="relative w-full max-w-xl mx-4">
-        <SearchBar onClose={onClose} />
+      <div className="relative w-full max-w-xl">
+        <div className="rounded-3xl border border-white/10 bg-white/95 p-3 shadow-2xl backdrop-blur dark:border-zinc-800 dark:bg-[#111111]/95">
+          <SearchBar onClose={onClose} />
+        </div>
       </div>
     </div>
   );

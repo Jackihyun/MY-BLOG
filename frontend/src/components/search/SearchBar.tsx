@@ -110,12 +110,12 @@ export default function SearchBar({ onClose }: SearchBarProps) {
           }}
           onFocus={() => setShowResults(true)}
           placeholder="검색어를 입력하세요... (2글자 이상)"
-          className="w-full px-4 py-2 pl-10 border border-gray-300 dark:border-gray-600 rounded-lg
-                     bg-white dark:bg-[#2d2d2d] text-gray-900 dark:text-gray-100
-                     focus:outline-none focus:ring-2 focus:ring-blue-500"
+          className="w-full rounded-2xl border border-zinc-200 bg-white px-4 py-3 pl-10 text-zinc-900
+                     focus:outline-none focus:ring-2 focus:ring-indigo-200 focus:border-indigo-300
+                     dark:border-zinc-700 dark:bg-[#181818] dark:text-zinc-100 dark:focus:border-indigo-700 dark:focus:ring-indigo-950"
         />
         <svg
-          className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400"
+          className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-zinc-400"
           fill="none"
           stroke="currentColor"
           viewBox="0 0 24 24"
@@ -135,9 +135,9 @@ export default function SearchBar({ onClose }: SearchBarProps) {
       </div>
 
       {showResults && query.length >= 2 && (
-        <div className="absolute top-full left-0 right-0 mt-2 bg-white dark:bg-[#2d2d2d] border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg max-h-[400px] overflow-y-auto z-50">
+        <div className="absolute top-full left-0 right-0 mt-3 bg-white dark:bg-[#181818] border border-zinc-200 dark:border-zinc-700 rounded-2xl shadow-lg max-h-[400px] overflow-y-auto z-50">
           {results.length === 0 ? (
-            <div className="p-4 text-center text-gray-500 dark:text-gray-400">
+            <div className="p-4 text-center text-zinc-500 dark:text-zinc-400">
               {isLoading ? "검색 중..." : "검색 결과가 없습니다."}
             </div>
           ) : (
@@ -146,18 +146,18 @@ export default function SearchBar({ onClose }: SearchBarProps) {
                 <li key={post.slug}>
                   <button
                     onClick={() => handleSelect(post.slug)}
-                    className="w-full px-4 py-3 text-left hover:bg-gray-100 dark:hover:bg-gray-700
-                               border-b border-gray-100 dark:border-gray-700 last:border-0"
+                    className="w-full px-4 py-3 text-left hover:bg-zinc-50 dark:hover:bg-zinc-900
+                               border-b border-zinc-100 dark:border-zinc-800 last:border-0"
                   >
-                    <p className="font-medium text-gray-900 dark:text-gray-100">
+                    <p className="font-medium text-zinc-900 dark:text-zinc-100">
                       {highlightMatch(post.title, query)}
                     </p>
                     <div className="flex gap-2 mt-1">
-                      <span className="text-xs text-blue-500">
+                      <span className="text-xs text-indigo-500">
                         {post.category}
                       </span>
                       {post.excerpt && (
-                        <span className="text-xs text-gray-500 dark:text-gray-400 truncate">
+                        <span className="text-xs text-zinc-500 dark:text-zinc-400 truncate">
                           {post.excerpt.substring(0, 50)}...
                         </span>
                       )}

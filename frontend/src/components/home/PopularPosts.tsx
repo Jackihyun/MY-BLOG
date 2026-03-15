@@ -7,7 +7,6 @@ import { PostData } from "@/lib/posts";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { getPostPreview } from "@/lib/utils";
-import { isUploadedImageUrl } from "@/lib/api";
 
 interface PopularPostsProps {
   posts: PostData[];
@@ -63,7 +62,7 @@ export default function PopularPosts({ posts }: PopularPostsProps) {
                         src={post.thumbnail}
                         alt={post.title}
                         fill
-                        unoptimized={isUploadedImageUrl(post.thumbnail)}
+                        sizes="(max-width: 768px) 100vw, 33vw"
                         className="object-cover transition-transform duration-500 group-hover:scale-110"
                       />
                       <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end p-4">

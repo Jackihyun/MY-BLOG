@@ -1,34 +1,21 @@
 "use client";
 
 import { motion } from "framer-motion";
-import Image from "next/image";
 
 const technologies = [
-  { name: "React", icon: "https://api.iconify.design/logos:react.svg" },
-  {
-    name: "TypeScript",
-    icon: "https://api.iconify.design/logos:typescript-icon.svg",
-  },
-  {
-    name: "Tanstack-Query",
-    icon: "https://api.iconify.design/logos:react-query-icon.svg",
-  },
-  { name: "Next.js", icon: "https://api.iconify.design/logos:nextjs-icon.svg" },
-  { name: "Svelte", icon: "https://api.iconify.design/logos:svelte-icon.svg" },
-  {
-    name: "JavaScript",
-    icon: "https://api.iconify.design/logos:javascript.svg",
-  },
-  {
-    name: "TailwindCSS",
-    icon: "https://api.iconify.design/logos:tailwindcss-icon.svg",
-  },
-  { name: "Vite", icon: "https://api.iconify.design/logos:vitejs.svg" },
-  { name: "HTML", icon: "https://api.iconify.design/logos:html-5.svg" },
-  { name: "CSS", icon: "https://api.iconify.design/logos:css-3.svg" },
-  { name: "Java", icon: "https://api.iconify.design/logos:java.svg" },
-  { name: "Spring", icon: "https://api.iconify.design/logos:spring-icon.svg" },
-  { name: "MySQL", icon: "https://api.iconify.design/logos:mysql-icon.svg" },
+  { name: "React", accent: "from-cyan-400 to-sky-500", short: "Re" },
+  { name: "TypeScript", accent: "from-blue-500 to-indigo-600", short: "TS" },
+  { name: "TanStack Query", accent: "from-rose-500 to-orange-500", short: "TQ" },
+  { name: "Next.js", accent: "from-zinc-700 to-zinc-950", short: "Nx" },
+  { name: "Svelte", accent: "from-orange-500 to-red-500", short: "Sv" },
+  { name: "JavaScript", accent: "from-amber-300 to-yellow-500", short: "JS" },
+  { name: "TailwindCSS", accent: "from-cyan-400 to-teal-500", short: "Tw" },
+  { name: "Vite", accent: "from-violet-500 to-indigo-500", short: "Vi" },
+  { name: "HTML", accent: "from-orange-500 to-pink-500", short: "Ht" },
+  { name: "CSS", accent: "from-sky-500 to-blue-600", short: "Cs" },
+  { name: "Java", accent: "from-red-500 to-amber-500", short: "Ja" },
+  { name: "Spring", accent: "from-emerald-500 to-lime-500", short: "Sp" },
+  { name: "MySQL", accent: "from-blue-400 to-cyan-600", short: "My" },
 ];
 
 export default function TechStack() {
@@ -64,13 +51,11 @@ export default function TechStack() {
               key={`${tech.name}-${index}`}
               className="flex-shrink-0 inline-flex items-center gap-3 px-6 py-3 rounded-2xl bg-white dark:bg-[#0a0a0a] border border-zinc-100 dark:border-zinc-800 shadow-sm hover:shadow-md hover:border-indigo-200 dark:hover:border-indigo-800/50 transition-all duration-300 group"
             >
-              <div className="w-6 h-6 flex items-center justify-center flex-shrink-0 relative">
-                <Image
-                  src={tech.icon}
-                  alt={tech.name}
-                  fill
-                  className="object-contain grayscale group-hover:grayscale-0 transition-all duration-300"
-                />
+              <div
+                className={`flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-full bg-gradient-to-br ${tech.accent} text-[11px] font-black text-white shadow-sm`}
+                aria-hidden="true"
+              >
+                {tech.short}
               </div>
               <span className="text-sm font-bold text-zinc-600 dark:text-zinc-400 group-hover:text-zinc-900 dark:group-hover:text-zinc-100 transition-colors whitespace-nowrap">
                 {tech.name}

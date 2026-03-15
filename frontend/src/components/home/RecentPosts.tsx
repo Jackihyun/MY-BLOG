@@ -6,7 +6,6 @@ import { motion } from "framer-motion";
 import { PostData } from "@/lib/posts";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { isUploadedImageUrl } from "@/lib/api";
 import { getPostPreview } from "@/lib/utils";
 import { useAuth } from "@/hooks/useAuth";
 
@@ -32,7 +31,7 @@ export default function RecentPosts({ posts }: RecentPostsProps) {
           href="/posts"
           className="inline-flex items-center gap-1 text-sm font-medium text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300 transition-colors"
         >
-          전체 보기
+          최근 글 전체 보기
           <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
           </svg>
@@ -69,7 +68,8 @@ export default function RecentPosts({ posts }: RecentPostsProps) {
                         src={post.thumbnail}
                         alt={post.title}
                         fill
-                        unoptimized={isUploadedImageUrl(post.thumbnail)}
+                        priority={index === 0}
+                        sizes="(max-width: 768px) 100vw, 50vw"
                         className="object-cover transition-transform duration-500 group-hover:scale-105"
                       />
                     </div>
@@ -99,7 +99,7 @@ export default function RecentPosts({ posts }: RecentPostsProps) {
                           </span>
                         )}
                       </div>
-                      <span className="text-xs text-zinc-400 dark:text-zinc-500 font-medium">
+                      <span className="text-xs text-zinc-500 dark:text-zinc-400 font-medium">
                         {post.date}
                       </span>
                     </div>

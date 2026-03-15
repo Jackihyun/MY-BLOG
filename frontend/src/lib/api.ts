@@ -296,9 +296,90 @@ export async function verifyToken(
 
 // ============ File Upload API ============
 
+async function optimizeImageForUpload(file: File): Promise<File> {
+  if (typeof window === "undefined") {
+    return file;
+  }
+
+  if (
+    !file.type.startsWith("image/") ||
+    file.type === "image/svg+xml" ||
+    file.type === "image/gif"
+  ) {
+    return file;
+  }
+
+  const objectUrl = URL.createObjectURL(file);
+
+  try {
+    const image = await new Promise<HTMLImageElement>((resolve, reject) => {
+      const img = new window.Image();
+      img.onload = () => resolve(img);
+      img.onerror = () => reject(new Error("이미지를 불러올 수 없습니다."));
+      img.src = objectUrl;
+    });
+
+    const maxDimension = 1600;
+    const needsResize =
+      image.width > maxDimension || image.height > maxDimension;
+    const shouldCompress = file.size > 700 * 1024 || needsResize;
+
+    if (!shouldCompress) {
+      return file;
+    }
+
+    const scale = Math.min(
+      maxDimension / image.width,
+      maxDimension / image.height,
+      1
+    );
+    const width = Math.max(1, Math.round(image.width * scale));
+    const height = Math.max(1, Math.round(image.height * scale));
+
+    const canvas = document.createElement("canvas");
+    canvas.width = width;
+    canvas.height = height;
+
+    const context = canvas.getContext("2d");
+    if (!context) {
+      return file;
+    }
+
+    context.drawImage(image, 0, 0, width, height);
+
+    const outputType =
+      file.type === "image/png" ? "image/png" : "image/jpeg";
+    const quality = outputType === "image/jpeg" ? 0.82 : undefined;
+
+    const blob = await new Promise<Blob | null>((resolve) => {
+      canvas.toBlob(resolve, outputType, quality);
+    });
+
+    if (!blob) {
+      return file;
+    }
+
+    const baseName = file.name.replace(/\.[^.]+$/, "");
+    const extension = outputType === "image/png" ? "png" : "jpg";
+    const optimized = new File([blob], `${baseName}.${extension}`, {
+      type: outputType,
+      lastModified: file.lastModified,
+    });
+
+    if (optimized.size >= file.size * 0.95 && !needsResize) {
+      return file;
+    }
+
+    return optimized;
+  } finally {
+    URL.revokeObjectURL(objectUrl);
+  }
+}
+
 export async function uploadImage(file: File, token: string): Promise<string> {
+  const optimizedFile = await optimizeImageForUpload(file);
   const formData = new FormData();
-  formData.append("file", file);
+  formData.append("file", optimizedFile);
 
   const response = await fetch(`${API_BASE}/admin/upload`, {
     method: "POST",

@@ -7,7 +7,6 @@ import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { motion } from "framer-motion";
 import { PostData } from "@/lib/posts";
 import { useAuth } from "@/hooks/useAuth";
-import { isUploadedImageUrl } from "@/lib/api";
 import { getPostPreview } from "@/lib/utils";
 import { useVisitorStatsQuery } from "@/hooks/queries/useVisitorStatsQuery";
 import {
@@ -1521,7 +1520,7 @@ function PostsList({ allPostsData }: { allPostsData: PostData[] }) {
                                 src={thumbnail}
                                 alt={title}
                                 fill
-                                unoptimized={isUploadedImageUrl(thumbnail)}
+                                sizes="(max-width: 768px) 100vw, 176px"
                                 className="object-cover transition-transform duration-500 group-hover:scale-110"
                               />
                             </div>
