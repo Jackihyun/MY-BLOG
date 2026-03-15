@@ -17,6 +17,10 @@ import {
   uploadImage,
   isUploadedImageUrl,
 } from "@/lib/api";
+import {
+  extractFirstImageSrc,
+  resolveThumbnail,
+} from "@/lib/post-thumbnail";
 
 const TiptapEditor = dynamic(
   () => import("@/components/editor/TiptapEditor"),
@@ -268,6 +272,11 @@ export default function PostEditor({ slug, mode }: PostEditorProps) {
     try {
       const excerpt = createExcerptFromContent(content);
       const normalizedThumbnail = normalizeThumbnailUrl(thumbnail);
+      const derivedContentThumbnail = normalizeThumbnailUrl(
+        extractFirstImageSrc(content)
+      );
+      const effectiveThumbnail =
+        normalizedThumbnail || derivedContentThumbnail || undefined;
       const nextPublishedAt = toApiPublishedAt(publishedAt);
 
       if (mode === "create") {
@@ -276,7 +285,7 @@ export default function PostEditor({ slug, mode }: PostEditorProps) {
             title,
             content,
             category,
-            thumbnail: normalizedThumbnail || undefined,
+            thumbnail: effectiveThumbnail,
             excerpt: excerpt || undefined,
             slug: customSlug || undefined,
             publish: true,
@@ -293,7 +302,7 @@ export default function PostEditor({ slug, mode }: PostEditorProps) {
           title,
           content,
           category,
-          thumbnail: normalizedThumbnail || undefined,
+          thumbnail: effectiveThumbnail,
           excerpt: excerpt || undefined,
           publish: true,
           publishedAt: nextPublishedAt,
@@ -355,6 +364,14 @@ export default function PostEditor({ slug, mode }: PostEditorProps) {
       </div>
     );
   }
+
+  const previewThumbnail = resolveThumbnail({
+    thumbnail,
+    contentHtml: content,
+    title: title || "새 글",
+    category: category || "미분류",
+    excerpt: createExcerptFromContent(content),
+  });
 
   return (
     <div className="max-w-4xl mx-auto pb-20">
@@ -549,13 +566,13 @@ export default function PostEditor({ slug, mode }: PostEditorProps) {
                 </label>
               </div>
               <div className="relative aspect-video rounded-xl overflow-hidden border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-[#1e1e1e] flex items-center justify-center group">
-                {thumbnail ? (
+                {previewThumbnail ? (
                   <>
                     <Image
-                      src={thumbnail}
+                      src={previewThumbnail}
                       alt="Thumbnail preview"
                       fill
-                      unoptimized={isUploadedImageUrl(thumbnail)}
+                      unoptimized={isUploadedImageUrl(previewThumbnail)}
                       className="object-cover"
                       onError={() => toast.error("썸네일 URL을 확인해주세요.")}
                     />

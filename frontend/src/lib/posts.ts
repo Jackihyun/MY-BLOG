@@ -4,6 +4,7 @@ import matter from "gray-matter";
 import { remark } from "remark";
 import html from "remark-html";
 import { PostData } from "@/types";
+import { resolveThumbnail } from "@/lib/post-thumbnail";
 
 export type { PostData };
 
@@ -123,7 +124,13 @@ function apiPostToPostData(apiPost: {
     viewCount: apiPost.viewCount,
     isPublished: apiPost.isPublished ?? true,
     publishedAt: apiPost.publishedAt,
-    thumbnail: apiPost.thumbnail,
+    thumbnail: resolveThumbnail({
+      thumbnail: apiPost.thumbnail,
+      contentHtml: apiPost.contentHtml,
+      title: apiPost.title,
+      category: apiPost.category,
+      excerpt: normalizedExcerpt,
+    }),
   };
 }
 
@@ -143,12 +150,20 @@ async function getPostDataFromFile(id: string): Promise<PostData> {
     .process(matterResult.content);
   const contentHtml = processedContent.toString();
 
+  const normalizedExcerpt = sanitizeExcerpt(contentHtml);
+
   return {
     id,
     slug: id,
     contentHtml,
     isPublished: true,
-    thumbnail: matterResult.data.thumbnail,
+    thumbnail: resolveThumbnail({
+      thumbnail: matterResult.data.thumbnail as string | undefined,
+      contentHtml,
+      title: matterResult.data.title as string,
+      category: matterResult.data.category as string,
+      excerpt: normalizedExcerpt,
+    }),
     ...(matterResult.data as { title: string; date: string; category: string }),
   };
 }

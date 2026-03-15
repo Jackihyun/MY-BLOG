@@ -1,6 +1,7 @@
 import { getPostData, getSortedPostsData } from "@/lib/posts";
 import { Metadata } from "next";
 import PostDetailClient from "./PostDetailClient";
+import { toAbsoluteThumbnailUrl } from "@/lib/post-thumbnail";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
@@ -15,6 +16,9 @@ export async function generateMetadata({ params }: PostProps): Promise<Metadata>
   const postData = await getPostData(params.id);
   const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://blog.jackihyun.com";
   const ogUrl = `${siteUrl}/api/og?title=${encodeURIComponent(postData.title)}&category=${encodeURIComponent(postData.category)}`;
+  const shareImage = postData.thumbnail
+    ? toAbsoluteThumbnailUrl(postData.thumbnail, siteUrl)
+    : ogUrl;
 
   return {
     title: `${postData.title} | Jack's Blog`,
@@ -32,7 +36,7 @@ export async function generateMetadata({ params }: PostProps): Promise<Metadata>
       authors: ["Jackihyun"],
       images: [
         {
-          url: ogUrl,
+          url: shareImage,
           width: 1200,
           height: 630,
           alt: postData.title,
@@ -43,7 +47,7 @@ export async function generateMetadata({ params }: PostProps): Promise<Metadata>
       card: "summary_large_image",
       title: postData.title,
       description: postData.excerpt || postData.title,
-      images: [ogUrl],
+      images: [shareImage],
     },
   };
 }
@@ -74,6 +78,12 @@ export default async function PostPage({ params }: PostProps) {
       name: "Jackihyun",
     },
     description: postData.excerpt || postData.title,
+    image: postData.thumbnail
+      ? toAbsoluteThumbnailUrl(
+          postData.thumbnail,
+          process.env.NEXT_PUBLIC_SITE_URL || "https://blog.jackihyun.com",
+        )
+      : undefined,
     mainEntityOfPage: {
       "@type": "WebPage",
       "@id": `${process.env.NEXT_PUBLIC_SITE_URL || "https://blog.jackihyun.com"}/posts/${params.id}`,

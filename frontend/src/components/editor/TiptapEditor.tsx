@@ -22,8 +22,31 @@ const EditorImage = Image.extend({
         default: "100%",
         parseHTML: (element) => element.style.width || element.getAttribute("width") || "100%",
         renderHTML: (attributes) => ({
-          style: `width:${attributes.width || "100%"};height:auto;`,
+          style: [
+            `width:${attributes.width || "100%"}`,
+            "height:auto",
+            attributes.align === "left"
+              ? "display:block;margin:0 auto 0 0"
+              : attributes.align === "right"
+                ? "display:block;margin:0 0 0 auto"
+                : "display:block;margin:0 auto",
+          ].join(";"),
         }),
+      },
+      align: {
+        default: "center",
+        parseHTML: (element) => {
+          const marginLeft = element.style.marginLeft;
+          const marginRight = element.style.marginRight;
+
+          if (marginLeft === "auto" && marginRight !== "auto") {
+            return "right";
+          }
+          if (marginRight === "auto" && marginLeft !== "auto") {
+            return "left";
+          }
+          return "center";
+        },
       },
     };
   },
@@ -276,6 +299,18 @@ export default function TiptapEditor({
     [editor]
   );
 
+  const setImageAlign = useCallback(
+    (align: "left" | "center" | "right") => {
+      if (!editor) return;
+      if (!editor.isActive("image")) {
+        toast.info("정렬할 이미지를 먼저 클릭하세요.");
+        return;
+      }
+      editor.chain().focus().updateAttributes("image", { align }).run();
+    },
+    [editor]
+  );
+
   const setTextAlign = useCallback(
     (alignment: "left" | "center" | "right") => {
       if (!editor) return;
@@ -477,6 +512,33 @@ export default function TiptapEditor({
           </ToolbarButton>
           <ToolbarButton onClick={() => setImageWidth("100%")} title="이미지 100%">
             100%
+          </ToolbarButton>
+          <ToolbarButton
+            onClick={() => setImageAlign("left")}
+            isActive={editor.isActive("image", { align: "left" })}
+            title="이미지 왼쪽 정렬"
+          >
+            <svg className="w-4 h-4" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M4 5h16v2H4V5zm0 4h10v2H4V9zm0 4h16v2H4v-2zm0 4h10v2H4v-2z" />
+            </svg>
+          </ToolbarButton>
+          <ToolbarButton
+            onClick={() => setImageAlign("center")}
+            isActive={editor.isActive("image", { align: "center" })}
+            title="이미지 가운데 정렬"
+          >
+            <svg className="w-4 h-4" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M4 5h16v2H4V5zm3 4h10v2H7V9zm-3 4h16v2H4v-2zm3 4h10v2H7v-2z" />
+            </svg>
+          </ToolbarButton>
+          <ToolbarButton
+            onClick={() => setImageAlign("right")}
+            isActive={editor.isActive("image", { align: "right" })}
+            title="이미지 오른쪽 정렬"
+          >
+            <svg className="w-4 h-4" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M4 5h16v2H4V5zm10 4h6v2h-6V9zM4 13h16v2H4v-2zm10 4h6v2h-6v-2z" />
+            </svg>
           </ToolbarButton>
         </div>
       </div>
