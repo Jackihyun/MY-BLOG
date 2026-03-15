@@ -73,7 +73,7 @@ export default function PostDetailClient({
       >
         <AdminButtons slug={postData.slug} />
 
-        <header className="max-w-3xl mx-auto py-12 border-b border-zinc-100 dark:border-zinc-800/50 mb-12">
+        <header className="max-w-4xl mx-auto py-12 border-b border-zinc-100 dark:border-zinc-800/50 mb-12">
           <motion.div
             initial={{ opacity: 0, x: -20 }}
             animate={{ opacity: 1, x: 0 }}
@@ -117,7 +117,7 @@ export default function PostDetailClient({
 
         <article
           data-post-content
-          className="prose dark:prose-invert max-w-3xl mx-auto w-full overflow-hidden
+          className="prose dark:prose-invert max-w-4xl mx-auto w-full overflow-hidden
                      prose-headings:font-bold prose-headings:text-zinc-900 dark:prose-headings:text-zinc-50
                      prose-p:text-zinc-700 dark:prose-p:text-zinc-300 prose-p:leading-[1.8]
                      prose-a:text-indigo-600 dark:prose-a:text-indigo-400 prose-a:no-underline hover:prose-a:underline prose-a:font-semibold
