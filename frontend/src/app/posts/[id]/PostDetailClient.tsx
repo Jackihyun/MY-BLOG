@@ -84,11 +84,11 @@ export default function PostDetailClient({
             </span>
           </motion.div>
           
-          <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold text-zinc-900 dark:text-zinc-50 mb-6 leading-tight">
+          <h1 className="text-2xl md:text-4xl lg:text-[2.8rem] font-bold text-zinc-900 dark:text-zinc-50 mb-5 md:mb-6 leading-tight">
             {postData.title}
           </h1>
 
-          <div className="flex flex-wrap items-center gap-4 text-sm text-zinc-500 dark:text-zinc-400">
+          <div className="flex flex-wrap items-center gap-3 md:gap-4 text-xs md:text-sm text-zinc-500 dark:text-zinc-400">
             <div className="flex items-center gap-1.5">
               <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
@@ -117,7 +117,7 @@ export default function PostDetailClient({
 
         <article
           data-post-content
-          className="prose dark:prose-invert max-w-4xl mx-auto w-full overflow-hidden
+          className="prose prose-base md:prose-lg dark:prose-invert max-w-4xl mx-auto w-full overflow-hidden
                      prose-headings:font-bold prose-headings:text-zinc-900 dark:prose-headings:text-zinc-50
                      prose-p:text-zinc-700 dark:prose-p:text-zinc-300 prose-p:leading-[1.8]
                      prose-a:text-indigo-600 dark:prose-a:text-indigo-400 prose-a:no-underline hover:prose-a:underline prose-a:font-semibold

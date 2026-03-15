@@ -902,8 +902,10 @@ function PostsList({ allPostsData }: { allPostsData: PostData[] }) {
   }, [allPostsData, categoryNodes, getPostCategoryId]);
 
   const visibleCategoryRows = useMemo(() => {
-    return flattenTree(categoryNodes);
-  }, [categoryNodes]);
+    return flattenTree(categoryNodes).filter(
+      ({ node }) => (categoryCountMap.get(node.id) ?? 0) > 0,
+    );
+  }, [categoryCountMap, categoryNodes]);
 
   const categoryFilteredPosts = useMemo(() => {
     if (!selectedCategoryIds) {
@@ -1484,7 +1486,9 @@ function PostsList({ allPostsData }: { allPostsData: PostData[] }) {
                   </svg>
                 </div>
                 <p className="text-zinc-500 dark:text-zinc-400 font-medium">
-                  아직 작성된 글이 없습니다
+                  {selectedCategoryId === "all"
+                    ? "아직 작성된 글이 없습니다"
+                    : "이 카테고리에는 아직 글이 없습니다"}
                 </p>
               </div>
             ) : (
@@ -1510,9 +1514,9 @@ function PostsList({ allPostsData }: { allPostsData: PostData[] }) {
                                    hover:border-indigo-200 dark:hover:border-indigo-800/50
                                    hover:-translate-y-1"
                       >
-                        <div className="flex flex-col md:flex-row items-start gap-6">
+                        <div className="flex flex-col md:flex-row items-start gap-5">
                           {thumbnail && (
-                            <div className="relative w-full md:w-48 aspect-video md:aspect-square rounded-xl overflow-hidden shrink-0 border border-zinc-100 dark:border-zinc-800">
+                            <div className="relative w-full md:w-40 lg:w-44 aspect-video rounded-xl overflow-hidden shrink-0 border border-zinc-100 dark:border-zinc-800">
                               <Image
                                 src={thumbnail}
                                 alt={title}
@@ -1523,10 +1527,10 @@ function PostsList({ allPostsData }: { allPostsData: PostData[] }) {
                             </div>
                           )}
                           <div className="flex-1 min-w-0 py-1">
-                            <h2 className="text-xl font-bold text-zinc-900 dark:text-zinc-50 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors line-clamp-2">
+                            <h2 className="text-lg md:text-xl font-bold text-zinc-900 dark:text-zinc-50 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors line-clamp-2 leading-snug">
                               {title}
                             </h2>
-                            <p className="mt-3 text-sm text-zinc-600 dark:text-zinc-400 line-clamp-2 leading-relaxed font-medium">
+                            <p className="mt-2.5 text-[13px] md:text-sm text-zinc-600 dark:text-zinc-400 line-clamp-2 leading-relaxed font-medium">
                               {getPostPreview(excerpt, contentHtml, 160)}
                             </p>
                             <div className="flex items-center gap-3 mt-5">

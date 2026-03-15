@@ -14,7 +14,7 @@ interface PostProps {
 export async function generateMetadata({ params }: PostProps): Promise<Metadata> {
   const postData = await getPostData(params.id);
   const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://blog.jackihyun.com";
-  const ogUrl = `/api/og?title=${encodeURIComponent(postData.title)}&category=${encodeURIComponent(postData.category)}`;
+  const ogUrl = `${siteUrl}/api/og?title=${encodeURIComponent(postData.title)}&category=${encodeURIComponent(postData.category)}`;
 
   return {
     title: `${postData.title} | Jack's Blog`,

@@ -17,6 +17,7 @@ const siteUrl =
 const siteName = process.env.NEXT_PUBLIC_SITE_NAME || "Jack's Blog";
 const siteDescription =
   "개발 블로그 by Jackihyun - 프론트엔드, 백엔드, 그리고 더 많은 것들";
+const defaultOgImageUrl = `${siteUrl}/api/og?title=${encodeURIComponent(siteName)}`;
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
@@ -47,7 +48,7 @@ export const metadata: Metadata = {
     description: siteDescription,
     images: [
       {
-        url: `/api/og?title=${encodeURIComponent(siteName)}`,
+        url: defaultOgImageUrl,
         width: 1200,
         height: 630,
         alt: siteName,
@@ -58,7 +59,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: siteName,
     description: siteDescription,
-    images: [`/api/og?title=${encodeURIComponent(siteName)}`],
+    images: [defaultOgImageUrl],
   },
   robots: {
     index: true,

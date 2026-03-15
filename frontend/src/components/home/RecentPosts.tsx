@@ -84,13 +84,13 @@ export default function RecentPosts({ posts }: RecentPostsProps) {
                         {post.date}
                       </span>
                     </div>
-                    <CardTitle className="text-xl mt-3 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors line-clamp-2 leading-snug">
+                    <CardTitle className="text-lg md:text-xl mt-3 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors line-clamp-2 leading-snug">
                       {post.title}
                     </CardTitle>
                   </CardHeader>
                   <CardContent className="pt-0">
                     <CardDescription
-                      className="line-clamp-2 text-sm text-zinc-600 dark:text-zinc-400 leading-relaxed font-medium"
+                      className="line-clamp-2 text-[13px] md:text-sm text-zinc-600 dark:text-zinc-400 leading-relaxed font-medium"
                     >
                       {getPostPreview(post.excerpt, post.contentHtml, 120)}
                     </CardDescription>

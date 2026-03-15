@@ -116,7 +116,7 @@ export default function CommentForm({
             : "shadow-sm"
         }`}
       >
-        <div className="p-4">
+        <div className="p-4 md:p-5">
           {/* 텍스트 영역 */}
           <textarea
             ref={textareaRef}
@@ -133,7 +133,7 @@ export default function CommentForm({
             onClick={handleTextAreaClick}
             placeholder={session ? placeholder : "로그인 후 댓글을 남겨보세요..."}
             rows={isReply ? 2 : 3}
-            className="w-full text-sm bg-transparent text-zinc-900 dark:text-zinc-100
+            className="min-h-[96px] w-full text-sm md:text-[15px] leading-7 bg-transparent text-zinc-900 dark:text-zinc-100
                        placeholder-zinc-400 dark:placeholder-zinc-500
                        focus:outline-none resize-none"
             disabled={isSubmitting}
@@ -141,8 +141,8 @@ export default function CommentForm({
         </div>
 
         {/* 하단 버튼 영역 */}
-        <div className="flex justify-between items-center px-4 py-3 bg-zinc-50 dark:bg-zinc-900/50 rounded-b-xl border-t border-zinc-100 dark:border-zinc-800">
-          <div className="flex items-center gap-2">
+        <div className="flex flex-col gap-3 px-4 py-3 bg-zinc-50 dark:bg-zinc-900/50 rounded-b-xl border-t border-zinc-100 dark:border-zinc-800 sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex min-w-0 flex-wrap items-center gap-2">
             {session?.user?.image && (
               <div className="relative w-7 h-7 flex-shrink-0 overflow-hidden rounded-lg ring-1 ring-zinc-200 dark:ring-zinc-800 shadow-sm">
                 <Image 
@@ -153,28 +153,28 @@ export default function CommentForm({
                 />
               </div>
             )}
-            <span className="text-xs text-zinc-500 font-bold">
+            <span className="min-w-0 text-xs leading-5 text-zinc-500 font-bold break-all sm:break-words">
               {session ? `${session.user?.name}님으로 작성 중` : "로그인이 필요합니다"}
             </span>
             {session && (
               <button
                 type="button"
                 onClick={() => signOut({ callbackUrl: window.location.pathname })}
-                className="text-xs text-zinc-500 hover:text-zinc-800 dark:text-zinc-400 dark:hover:text-zinc-200 underline underline-offset-2"
+                className="shrink-0 text-xs text-zinc-500 hover:text-zinc-800 dark:text-zinc-400 dark:hover:text-zinc-200 underline underline-offset-2"
               >
                 로그아웃
               </button>
             )}
           </div>
           
-          <div className="flex gap-2">
+          <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row sm:items-center">
             {onCancel && (
               <button
                 type="button"
                 onClick={onCancel}
-                className="px-4 py-2 text-sm text-zinc-500 hover:text-zinc-700 dark:text-zinc-400 dark:hover:text-zinc-200
+                className="w-full px-4 py-2 text-sm text-zinc-500 hover:text-zinc-700 dark:text-zinc-400 dark:hover:text-zinc-200
                            rounded-lg hover:bg-zinc-200 dark:hover:bg-zinc-800
-                           transition-all duration-200"
+                           transition-all duration-200 sm:w-auto"
                 disabled={isSubmitting}
               >
                 취소
@@ -183,13 +183,13 @@ export default function CommentForm({
             <button
               type="submit"
               disabled={isSubmitting || !content.trim()}
-              className="px-5 py-2 text-sm font-bold text-white rounded-lg
+              className="w-full px-5 py-2 text-sm font-bold text-white rounded-lg
                          bg-zinc-900 dark:bg-zinc-50 dark:text-zinc-900
                          hover:opacity-90
                          disabled:bg-zinc-300 disabled:text-zinc-500 dark:disabled:bg-zinc-800 dark:disabled:text-zinc-600
                          disabled:cursor-not-allowed
                          transform active:scale-95
-                         transition-all duration-200 shadow-sm hover:shadow-md"
+                         transition-all duration-200 shadow-sm hover:shadow-md sm:w-auto"
             >
               {isSubmitting ? "작성 중..." : buttonText}
             </button>

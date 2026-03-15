@@ -114,26 +114,26 @@ export default function CommentItem({
       <motion.div
         initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}
-        className="bg-white dark:bg-[#0a0a0a] p-6 rounded-3xl border border-zinc-100 dark:border-zinc-800 shadow-sm hover:shadow-md transition-all group"
+        className="bg-white dark:bg-[#0a0a0a] p-5 md:p-6 rounded-3xl border border-zinc-100 dark:border-zinc-800 shadow-sm hover:shadow-md transition-all group"
       >
-        <div className="flex items-start gap-4">
-          <div className={`flex-shrink-0 w-12 h-12 rounded-2xl bg-gradient-to-br ${getAvatarColor(comment.authorName)} flex items-center justify-center text-white font-black text-lg shadow-sm`}>
+        <div className="flex items-start gap-3 md:gap-4">
+          <div className={`flex-shrink-0 w-11 h-11 md:w-12 md:h-12 rounded-2xl bg-gradient-to-br ${getAvatarColor(comment.authorName)} flex items-center justify-center text-white font-black text-base md:text-lg shadow-sm`}>
             {comment.authorName.charAt(0).toUpperCase()}
           </div>
           <div className="flex-1 min-w-0">
-            <div className="flex items-center justify-between">
-              <span className="font-black text-zinc-900 dark:text-zinc-50 truncate">
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <span className="font-black text-sm md:text-base text-zinc-900 dark:text-zinc-50 truncate">
                 {comment.authorName}
               </span>
               <span className="text-[10px] font-bold text-zinc-400 uppercase tracking-tight">
                 {formatRelativeTime(comment.createdAt)}
               </span>
             </div>
-            <p className="mt-2 text-zinc-600 dark:text-zinc-400 text-sm leading-relaxed">
+            <p className="mt-2 text-zinc-600 dark:text-zinc-400 text-sm leading-relaxed break-words">
               {comment.content}
             </p>
             {!comment.isDeleted && (
-              <div className="mt-4 flex items-center gap-3 opacity-0 group-hover:opacity-100 transition-opacity">
+              <div className="mt-4 flex flex-wrap items-center gap-3 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity">
                 <button 
                   onClick={() => setShowReplyForm(!showReplyForm)}
                   className="text-[10px] font-black text-zinc-400 hover:text-indigo-500 uppercase tracking-widest"
@@ -174,12 +174,12 @@ export default function CommentItem({
         {comment.replies && comment.replies.length > 0 && (
           <div className="mt-4 space-y-3">
             {comment.replies.map((reply) => (
-              <div key={reply.id} className="pl-6 border-l-2 border-zinc-50 dark:border-zinc-900">
-                <div className="flex items-center gap-2 mb-1">
+              <div key={reply.id} className="pl-4 md:pl-6 border-l-2 border-zinc-50 dark:border-zinc-900">
+                <div className="flex flex-wrap items-center gap-2 mb-1">
                   <span className="font-bold text-xs text-zinc-900 dark:text-zinc-50">{reply.authorName}</span>
                   <span className="text-[9px] text-zinc-400 uppercase">{formatRelativeTime(reply.createdAt)}</span>
                 </div>
-                <p className="text-xs text-zinc-500 dark:text-zinc-400">{reply.content}</p>
+                <p className="text-xs leading-6 text-zinc-500 dark:text-zinc-400 break-all sm:break-words">{reply.content}</p>
               </div>
             ))}
           </div>
@@ -194,7 +194,7 @@ export default function CommentItem({
             >
               <h3 className="text-xl font-black text-zinc-900 dark:text-zinc-50 mb-2 uppercase tracking-tight">Delete Message</h3>
               <p className="text-sm text-zinc-500 dark:text-zinc-400 mb-6">정말로 이 메시지를 삭제하시겠습니까?</p>
-              <div className="flex gap-3">
+              <div className="flex flex-col gap-3 sm:flex-row">
                 <button onClick={() => setShowDeleteModal(false)} className="flex-1 py-3 text-sm font-bold text-zinc-500 bg-zinc-100 dark:bg-zinc-900 rounded-2xl">취소</button>
                 <button onClick={handleDelete} className="flex-1 py-3 text-sm font-bold text-white bg-rose-500 rounded-2xl">삭제하기</button>
               </div>
@@ -210,7 +210,7 @@ export default function CommentItem({
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.3 }}
-      className={`${depth > 0 ? "ml-6 md:ml-10 pl-4 border-l-2 border-zinc-100 dark:border-zinc-800" : ""}`}
+      className={`${depth > 0 ? "ml-3 md:ml-10 pl-3 md:pl-4 border-l-2 border-zinc-100 dark:border-zinc-800" : ""}`}
     >
       <div
         className={`group relative p-4 rounded-xl transition-all duration-200 ${
@@ -250,7 +250,7 @@ export default function CommentItem({
             </div>
 
             <p
-              className={`mt-2 text-sm leading-relaxed whitespace-pre-wrap ${
+              className={`mt-2 text-sm leading-7 whitespace-pre-wrap break-all sm:break-words ${
                 comment.isDeleted
                   ? "text-zinc-400 dark:text-zinc-500 italic"
                   : "text-zinc-700 dark:text-zinc-300"
@@ -260,7 +260,7 @@ export default function CommentItem({
             </p>
 
             {!comment.isDeleted && (
-              <div className="flex items-center gap-4 mt-3">
+              <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-2">
                 {canReply && (
                   <button
                     onClick={() => setShowReplyForm(!showReplyForm)}
@@ -275,7 +275,7 @@ export default function CommentItem({
                 {isAuthor && (
                   <button
                     onClick={() => setShowDeleteModal(true)}
-                    className="flex items-center gap-1.5 text-xs text-zinc-500 hover:text-red-500 dark:text-gray-400 dark:hover:text-red-400 transition-colors opacity-0 group-hover:opacity-100"
+                    className="flex items-center gap-1.5 text-xs text-zinc-500 hover:text-red-500 dark:text-gray-400 dark:hover:text-red-400 transition-colors opacity-100 md:opacity-0 md:group-hover:opacity-100"
                   >
                     <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
@@ -296,7 +296,7 @@ export default function CommentItem({
             animate={{ opacity: 1, height: "auto" }}
             exit={{ opacity: 0, height: 0 }}
             transition={{ duration: 0.2 }}
-            className="mt-3 ml-13"
+            className="mt-3 ml-0 md:ml-8"
           >
             <CommentForm
               onSubmit={handleReply}
@@ -333,7 +333,7 @@ export default function CommentItem({
           >
             <h3 className="text-xl font-black text-zinc-900 dark:text-zinc-50 mb-2 uppercase tracking-tight">Delete Comment</h3>
             <p className="text-sm text-zinc-500 dark:text-zinc-400 mb-6">정말로 이 댓글을 삭제하시겠습니까?</p>
-            <div className="flex gap-3">
+            <div className="flex flex-col gap-3 sm:flex-row">
               <button onClick={() => setShowDeleteModal(false)} className="flex-1 py-3 text-sm font-bold text-zinc-500 bg-zinc-100 dark:bg-zinc-900 rounded-2xl">취소</button>
               <button onClick={handleDelete} className="flex-1 py-3 text-sm font-bold text-white bg-rose-500 rounded-2xl">삭제하기</button>
             </div>
