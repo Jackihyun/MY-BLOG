@@ -104,6 +104,7 @@ export default function CommentList({ slug }: CommentListProps) {
           onSubmit={addComment}
           placeholder={isGuestbook ? "따뜻한 한마디를 남겨주세요..." : "이 글에 대한 생각을 공유해주세요..."}
           buttonText={isGuestbook ? "방명록 남기기" : "댓글 작성"}
+          formId={isGuestbook ? "guestbook-comment-form" : `comment-form-${slug}`}
         />
       </div>
     </section>

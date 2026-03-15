@@ -1,17 +1,40 @@
 "use client";
 
+import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { signIn } from "next-auth/react";
 import { X } from "lucide-react";
 import Image from "next/image";
 import GoogleIcon from "./google.svg";
+import { saveAuthReturnState } from "@/lib/auth-return";
 
 interface AuthModalProps {
   isOpen: boolean;
   onClose: () => void;
+  returnTargetId?: string;
 }
 
-export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
+export default function AuthModal({
+  isOpen,
+  onClose,
+  returnTargetId,
+}: AuthModalProps) {
+  const [isSigningIn, setIsSigningIn] = useState(false);
+
+  const handleGoogleSignIn = async () => {
+    if (typeof window === "undefined") return;
+
+    setIsSigningIn(true);
+    saveAuthReturnState({
+      path: `${window.location.pathname}${window.location.search}${window.location.hash}`,
+      targetId: returnTargetId,
+    });
+
+    await signIn("google", {
+      callbackUrl: `${window.location.pathname}${window.location.search}${window.location.hash}`,
+    });
+  };
+
   return (
     <AnimatePresence>
       {isOpen && (
@@ -39,6 +62,7 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
             <button
               onClick={onClose}
               aria-label="로그인 모달 닫기"
+              disabled={isSigningIn}
               className="absolute top-4 right-4 p-2 text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-50 transition-colors"
             >
               <X size={20} />
@@ -56,15 +80,35 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
 
               <div className="space-y-3 pt-2">
                 <button
-                  onClick={() => signIn("google")}
+                  onClick={handleGoogleSignIn}
+                  disabled={isSigningIn}
                   className="w-full flex items-center justify-center gap-3 px-6 py-3.5 
                              bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 
                              rounded-2xl hover:bg-zinc-50 dark:hover:bg-zinc-800/50 
-                             transition-all active:scale-[0.98] group"
+                             transition-all active:scale-[0.98] group disabled:opacity-70 disabled:cursor-wait"
                 >
-                  <Image src={GoogleIcon} alt="Google" width={20} height={20} />
+                  {isSigningIn ? (
+                    <svg className="h-5 w-5 animate-spin" viewBox="0 0 24 24">
+                      <circle
+                        className="opacity-25"
+                        cx="12"
+                        cy="12"
+                        r="10"
+                        stroke="currentColor"
+                        strokeWidth="4"
+                        fill="none"
+                      />
+                      <path
+                        className="opacity-75"
+                        fill="currentColor"
+                        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"
+                      />
+                    </svg>
+                  ) : (
+                    <Image src={GoogleIcon} alt="Google" width={20} height={20} />
+                  )}
                   <span className="text-zinc-900 dark:text-zinc-50 font-bold">
-                    Google 계정으로 로그인
+                    {isSigningIn ? "로그인 페이지로 이동 중..." : "Google 계정으로 로그인"}
                   </span>
                 </button>
               </div>

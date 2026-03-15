@@ -165,6 +165,7 @@ export default function CommentItem({
                 onSubmit={handleReply}
                 isReply
                 buttonText="답글 남기기"
+                formId={`comment-reply-form-${comment.id}`}
               />
             </motion.div>
           )}
@@ -303,6 +304,7 @@ export default function CommentItem({
               buttonText="답글 작성"
               onCancel={() => setShowReplyForm(false)}
               isReply
+              formId={`comment-reply-form-${comment.id}`}
             />
           </motion.div>
         )}

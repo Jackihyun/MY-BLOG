@@ -19,6 +19,7 @@ export async function generateMetadata({ params }: PostProps): Promise<Metadata>
   return {
     title: `${postData.title} | Jack's Blog`,
     description: postData.excerpt || postData.title,
+    keywords: [postData.category, postData.title, "Jack's Blog", "개발 블로그"],
     alternates: {
       canonical: `${siteUrl}/posts/${params.id}`,
     },

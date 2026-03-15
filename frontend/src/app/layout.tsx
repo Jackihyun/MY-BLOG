@@ -15,6 +15,8 @@ const inter = Inter({ subsets: ["latin"] });
 const siteUrl =
   process.env.NEXT_PUBLIC_SITE_URL || "https://blog.jackihyun.com";
 const siteName = process.env.NEXT_PUBLIC_SITE_NAME || "Jack's Blog";
+const siteDescription =
+  "개발 블로그 by Jackihyun - 프론트엔드, 백엔드, 그리고 더 많은 것들";
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
@@ -23,7 +25,7 @@ export const metadata: Metadata = {
     template: `%s | ${siteName}`,
   },
   description:
-    "개발 블로그 by Jackihyun - 프론트엔드, 백엔드, 그리고 더 많은 것들",
+    siteDescription,
   keywords: [
     "개발",
     "프로그래밍",
@@ -42,7 +44,7 @@ export const metadata: Metadata = {
     url: siteUrl,
     siteName: siteName,
     title: siteName,
-    description: "개발 블로그 by Jackihyun",
+    description: siteDescription,
     images: [
       {
         url: `/api/og?title=${encodeURIComponent(siteName)}`,
@@ -55,7 +57,7 @@ export const metadata: Metadata = {
   twitter: {
     card: "summary_large_image",
     title: siteName,
-    description: "개발 블로그 by Jackihyun",
+    description: siteDescription,
     images: [`/api/og?title=${encodeURIComponent(siteName)}`],
   },
   robots: {
@@ -76,7 +78,7 @@ export const metadata: Metadata = {
     },
   },
   verification: {
-    // google: "your-google-verification-code",
+    google: process.env.NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION,
   },
   icons: {
     icon: [
@@ -102,6 +104,23 @@ export default function RootLayout({
           type="application/rss+xml"
           title="RSS Feed"
           href="/feed.xml"
+        />
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              "@context": "https://schema.org",
+              "@type": "WebSite",
+              name: siteName,
+              url: siteUrl,
+              description: siteDescription,
+              potentialAction: {
+                "@type": "SearchAction",
+                target: `${siteUrl}/posts?query={search_term_string}`,
+                "query-input": "required name=search_term_string",
+              },
+            }),
+          }}
         />
       </head>
       <body

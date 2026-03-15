@@ -62,7 +62,9 @@ async function fetchFromApi<T>(
       signal: controller.signal,
     };
 
-    if (!options?.next && options?.cache !== "no-store") {
+    if (options?.cache === "no-store") {
+      delete requestOptions.next;
+    } else if (!options?.next) {
       requestOptions.next = { revalidate: 60 };
     }
 

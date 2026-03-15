@@ -1,11 +1,15 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import { signOut, useSession } from "next-auth/react";
 import Image from "next/image";
 import { CommentCreateRequest } from "@/types";
 import AuthModal from "@/components/modal/AuthModal";
+import {
+  clearAuthReturnState,
+  readAuthReturnState,
+} from "@/lib/auth-return";
 
 interface CommentFormProps {
   onSubmit: (data: CommentCreateRequest) => Promise<boolean>;
@@ -13,6 +17,7 @@ interface CommentFormProps {
   buttonText?: string;
   onCancel?: () => void;
   isReply?: boolean;
+  formId?: string;
 }
 
 export default function CommentForm({
@@ -21,12 +26,41 @@ export default function CommentForm({
   buttonText = "댓글 작성",
   onCancel,
   isReply = false,
+  formId,
 }: CommentFormProps) {
   const { data: session } = useSession();
   const [content, setContent] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isFocused, setIsFocused] = useState(false);
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
+  const textareaRef = useRef<HTMLTextAreaElement | null>(null);
+
+  useEffect(() => {
+    if (!session || !formId || typeof window === "undefined") {
+      return;
+    }
+
+    const returnState = readAuthReturnState();
+    const currentPath = `${window.location.pathname}${window.location.search}${window.location.hash}`;
+
+    if (!returnState || returnState.path !== currentPath) {
+      return;
+    }
+
+    if (returnState.targetId && returnState.targetId !== formId) {
+      return;
+    }
+
+    const target = document.getElementById(formId);
+    if (target) {
+      requestAnimationFrame(() => {
+        target.scrollIntoView({ behavior: "smooth", block: "center" });
+        textareaRef.current?.focus();
+      });
+    }
+
+    clearAuthReturnState();
+  }, [formId, session]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -67,8 +101,10 @@ export default function CommentForm({
       <AuthModal 
         isOpen={isAuthModalOpen} 
         onClose={() => setIsAuthModalOpen(false)} 
+        returnTargetId={formId}
       />
       <form
+        id={formId}
         onSubmit={handleSubmit}
         className={`rounded-xl border transition-all duration-300 ${
           isReply
@@ -83,6 +119,7 @@ export default function CommentForm({
         <div className="p-4">
           {/* 텍스트 영역 */}
           <textarea
+            ref={textareaRef}
             value={content}
             onChange={(e) => setContent(e.target.value)}
             onFocus={() => {

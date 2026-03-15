@@ -3,7 +3,8 @@ import PostsList from "@/components/posts/PostList";
 import { Metadata } from "next";
 import { Suspense } from "react";
 
-export const revalidate = 10; // ISR (Incremental Static Regeneration) 옵션
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
 
 export const metadata: Metadata = {
   title: "Posts",

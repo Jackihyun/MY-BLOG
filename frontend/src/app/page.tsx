@@ -6,7 +6,8 @@ import RecentPosts from "@/components/home/RecentPosts";
 import PopularPosts from "@/components/home/PopularPosts";
 import TechStack from "@/components/home/TechStack";
 
-export const revalidate = 10;
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
 
 export default async function HomePage() {
   const allPosts: PostData[] = await getSortedPostsData();
