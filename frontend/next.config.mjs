@@ -1,3 +1,6 @@
+const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://blog.jackihyun.com";
+const siteHostname = new URL(siteUrl).hostname;
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   images: {
@@ -16,6 +19,14 @@ const nextConfig = {
       {
         protocol: "https",
         hostname: "avatars.githubusercontent.com",
+      },
+      {
+        protocol: "https",
+        hostname: siteHostname,
+      },
+      {
+        protocol: "http",
+        hostname: "localhost",
       },
     ],
   },

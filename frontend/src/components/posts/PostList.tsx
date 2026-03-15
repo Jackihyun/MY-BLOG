@@ -7,6 +7,7 @@ import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { motion } from "framer-motion";
 import { PostData } from "@/lib/posts";
 import { useAuth } from "@/hooks/useAuth";
+import { getDisplayImageUrl } from "@/lib/api";
 import { getPostPreview } from "@/lib/utils";
 import { useVisitorStatsQuery } from "@/hooks/queries/useVisitorStatsQuery";
 import {
@@ -1494,6 +1495,7 @@ function PostsList({ allPostsData }: { allPostsData: PostData[] }) {
               paginatedPosts.map((post, index) => {
                 const { id, date, title, contentHtml, excerpt, thumbnail } =
                   post;
+                const imageSrc = getDisplayImageUrl(thumbnail);
                 const categoryId = getPostCategoryId(post);
                 const categoryName =
                   categoryById.get(categoryId)?.name ?? post.category;
@@ -1514,10 +1516,10 @@ function PostsList({ allPostsData }: { allPostsData: PostData[] }) {
                                    hover:-translate-y-1"
                       >
                         <div className="flex flex-col md:flex-row items-start gap-5">
-                          {thumbnail && (
+                          {imageSrc && (
                             <div className="relative w-full md:w-40 lg:w-44 aspect-video rounded-xl overflow-hidden shrink-0 border border-zinc-100 dark:border-zinc-800">
                               <Image
-                                src={thumbnail}
+                                src={imageSrc}
                                 alt={title}
                                 fill
                                 sizes="(max-width: 768px) 100vw, 176px"

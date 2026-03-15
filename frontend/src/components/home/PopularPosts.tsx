@@ -6,6 +6,7 @@ import { motion } from "framer-motion";
 import { PostData } from "@/lib/posts";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
+import { getDisplayImageUrl } from "@/lib/api";
 import { getPostPreview } from "@/lib/utils";
 
 interface PopularPostsProps {
@@ -47,19 +48,22 @@ export default function PopularPosts({ posts }: PopularPostsProps) {
         </Card>
       ) : (
         <div className="grid gap-6 md:grid-cols-3">
-          {posts.map((post, index) => (
-            <motion.div
-              key={post.slug}
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ duration: 0.3, delay: index * 0.1 }}
-            >
-              <Link href={`/posts/${post.slug}`}>
+          {posts.map((post, index) => {
+            const imageSrc = getDisplayImageUrl(post.thumbnail);
+
+            return (
+              <motion.div
+                key={post.slug}
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ duration: 0.3, delay: index * 0.1 }}
+              >
+                <Link href={`/posts/${post.slug}`}>
                 <Card className="h-full group hover:shadow-2xl hover:border-amber-200 dark:hover:border-amber-800/50 transition-all duration-500 cursor-pointer overflow-hidden border-zinc-100 dark:border-zinc-800 dark:bg-[#0a0a0a] flex flex-col">
-                  {post.thumbnail ? (
+                  {imageSrc ? (
                     <div className="relative aspect-video overflow-hidden">
                       <Image
-                        src={post.thumbnail}
+                        src={imageSrc}
                         alt={post.title}
                         fill
                         sizes="(max-width: 768px) 100vw, 33vw"
@@ -105,9 +109,10 @@ export default function PopularPosts({ posts }: PopularPostsProps) {
                     </div>
                   </CardContent>
                 </Card>
-              </Link>
-            </motion.div>
-          ))}
+                </Link>
+              </motion.div>
+            );
+          })}
         </div>
       )}
     </section>

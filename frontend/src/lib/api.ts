@@ -411,6 +411,24 @@ export function isUploadedImageUrl(url?: string | null): boolean {
   );
 }
 
+export function getDisplayImageUrl(url?: string | null): string {
+  if (!url) return "";
+
+  if (!isUploadedImageUrl(url) || !url.startsWith("/")) {
+    return url;
+  }
+
+  const siteUrl =
+    process.env.NEXT_PUBLIC_SITE_URL ||
+    (typeof window !== "undefined" ? window.location.origin : "");
+
+  if (!siteUrl) {
+    return url;
+  }
+
+  return `${siteUrl.replace(/\/$/, "")}${url}`;
+}
+
 function normalizeUploadedImageUrl(url: string): string {
   if (!url) return url;
 
