@@ -251,6 +251,23 @@ export async function getSortedPostsData(): Promise<PostData[]> {
     .sort((a, b) => (a.date < b.date ? 1 : -1));
 }
 
+export async function getPopularPostsData(limit = 3): Promise<PostData[]> {
+  if (USE_API) {
+    const apiPosts = await fetchFromApi<ApiPostResponse[]>(
+      `/posts/popular?limit=${limit}`
+    );
+    if (apiPosts && apiPosts.length > 0) {
+      return apiPosts.map(apiPostToPostData);
+    }
+  }
+
+  const allPosts = await getSortedPostsData();
+  return allPosts
+    .filter((post) => post.slug !== "guestbook" && (post.viewCount || 0) > 0)
+    .sort((a, b) => (b.viewCount || 0) - (a.viewCount || 0))
+    .slice(0, limit);
+}
+
 export function getAllPostIds(): { id: string }[] {
   if (!ENABLE_LEGACY_FILE_POSTS) {
     return [];

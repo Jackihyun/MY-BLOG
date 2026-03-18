@@ -135,6 +135,12 @@ input:checked + svg .line-top-bottom {
   .prose img {
     @apply max-w-full h-auto rounded-2xl;
   }
+  .ProseMirror img {
+    @apply max-w-full rounded-2xl;
+  }
+  .ProseMirror img.ProseMirror-selectednode {
+    @apply ring-2 ring-blue-400 shadow-lg;
+  }
   .prose {
     @apply max-w-full overflow-hidden;
   }

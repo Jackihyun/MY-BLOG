@@ -5,9 +5,33 @@ import { useComments } from "@/hooks/useComments";
 import CommentForm from "./CommentForm";
 import CommentItem from "./CommentItem";
 import { CommentSkeletonList } from "../skeletons/CommentSkeleton";
+import { CommentResponse } from "@/types";
 
 interface CommentListProps {
   slug: string;
+}
+
+function getVisibleComments(comments: CommentResponse[]): CommentResponse[] {
+  return comments.flatMap((comment) => {
+    const visibleReplies = getVisibleComments(comment.replies || []);
+
+    if (comment.isDeleted) {
+      return visibleReplies;
+    }
+
+    return [
+      {
+        ...comment,
+        replies: visibleReplies,
+      },
+    ];
+  });
+}
+
+function countVisibleComments(comments: CommentResponse[]): number {
+  return comments.reduce((total, comment) => {
+    return total + 1 + countVisibleComments(comment.replies || []);
+  }, 0);
 }
 
 export default function CommentList({ slug }: CommentListProps) {
@@ -19,14 +43,14 @@ export default function CommentList({ slug }: CommentListProps) {
     addComment,
     addReply,
     removeComment,
-    getTotalCount,
   } = useComments(slug);
 
   useEffect(() => {
     loadComments();
   }, [loadComments]);
 
-  const totalCount = getTotalCount();
+  const visibleComments = getVisibleComments(comments);
+  const totalCount = countVisibleComments(visibleComments);
   const isGuestbook = slug === "guestbook";
 
   if (isLoading) {
@@ -69,7 +93,7 @@ export default function CommentList({ slug }: CommentListProps) {
 
       {/* 댓글/방명록 목록 */}
       <div className={isGuestbook ? "mb-12" : "mb-12"}>
-        {comments.length === 0 ? (
+        {visibleComments.length === 0 ? (
           <div className="py-12 md:py-16 px-5 md:px-6 text-center border-2 border-dashed border-zinc-100 dark:border-zinc-800 rounded-3xl mb-8">
             <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-zinc-50 dark:bg-zinc-900 mb-4">
               <svg className="w-6 h-6 text-zinc-300 dark:text-zinc-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -82,13 +106,14 @@ export default function CommentList({ slug }: CommentListProps) {
           </div>
         ) : (
           <div className={isGuestbook ? "grid gap-4 md:grid-cols-2 mb-12" : "space-y-4 mb-12"}>
-            {comments.map((comment) => (
+            {visibleComments.map((comment) => (
               <CommentItem
                 key={comment.id}
                 comment={comment}
                 onReply={addReply}
                 onDelete={removeComment}
                 isGuestbookStyle={isGuestbook}
+                depth={comment.depth}
               />
             ))}
           </div>

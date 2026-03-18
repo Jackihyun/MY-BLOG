@@ -10,6 +10,7 @@ import HamburgerMenu from "@/components/button/HamburgerMenu";
 import SidebarMenu from "@/components/menu/SidebarMenu";
 import SearchModal from "@/components/search/SearchModal";
 import { searchPosts } from "@/lib/api";
+import { canRunSearch, normalizeSearchQuery } from "@/lib/search";
 import { PostResponse } from "@/types";
 
 export default function Header() {
@@ -35,7 +36,11 @@ export default function Header() {
     setIsMobileSearchOpen(false);
   }, [pathname, setIsSidebarOpen]);
 
-  const shouldSearch = useMemo(() => query.trim().length >= 2, [query]);
+  const normalizedQuery = useMemo(() => normalizeSearchQuery(query), [query]);
+  const shouldSearch = useMemo(
+    () => canRunSearch(normalizedQuery),
+    [normalizedQuery]
+  );
 
   useEffect(() => {
     if (!shouldSearch) {
@@ -47,7 +52,7 @@ export default function Header() {
     const timer = setTimeout(async () => {
       setIsLoading(true);
       try {
-        const posts = await searchPosts(query.trim());
+        const posts = await searchPosts(normalizedQuery);
         setResults(posts);
       } catch (error) {
         console.error("Header search failed:", error);
@@ -58,7 +63,7 @@ export default function Header() {
     }, 250);
 
     return () => clearTimeout(timer);
-  }, [query, shouldSearch]);
+  }, [normalizedQuery, shouldSearch]);
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {

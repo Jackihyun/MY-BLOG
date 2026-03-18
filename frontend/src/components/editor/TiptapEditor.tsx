@@ -14,6 +14,15 @@ import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
 
 const lowlight = createLowlight(common);
+const IMAGE_CROP_PRESETS = [
+  { label: "원본", value: "original" },
+  { label: "16:9", value: "16 / 9" },
+  { label: "4:3", value: "4 / 3" },
+  { label: "1:1", value: "1 / 1" },
+] as const;
+
+type ImageCropPreset = (typeof IMAGE_CROP_PRESETS)[number]["value"];
+
 const EditorImage = Image.extend({
   addAttributes() {
     return {
@@ -21,17 +30,6 @@ const EditorImage = Image.extend({
       width: {
         default: "100%",
         parseHTML: (element) => element.style.width || element.getAttribute("width") || "100%",
-        renderHTML: (attributes) => ({
-          style: [
-            `width:${attributes.width || "100%"}`,
-            "height:auto",
-            attributes.align === "left"
-              ? "display:block;margin:0 auto 0 0"
-              : attributes.align === "right"
-                ? "display:block;margin:0 0 0 auto"
-                : "display:block;margin:0 auto",
-          ].join(";"),
-        }),
       },
       align: {
         default: "center",
@@ -48,7 +46,59 @@ const EditorImage = Image.extend({
           return "center";
         },
       },
+      cropAspect: {
+        default: "original",
+        parseHTML: (element) =>
+          element.getAttribute("data-crop-aspect") || "original",
+        renderHTML: (attributes) => ({
+          "data-crop-aspect": attributes.cropAspect || "original",
+        }),
+      },
+      cropX: {
+        default: "50",
+        parseHTML: (element) => element.getAttribute("data-crop-x") || "50",
+        renderHTML: (attributes) => ({
+          "data-crop-x": attributes.cropX || "50",
+        }),
+      },
+      cropY: {
+        default: "50",
+        parseHTML: (element) => element.getAttribute("data-crop-y") || "50",
+        renderHTML: (attributes) => ({
+          "data-crop-y": attributes.cropY || "50",
+        }),
+      },
     };
+  },
+  renderHTML({ HTMLAttributes }) {
+    const cropAspect = HTMLAttributes.cropAspect || "original";
+    const cropX = HTMLAttributes.cropX || "50";
+    const cropY = HTMLAttributes.cropY || "50";
+    const width = HTMLAttributes.width || "100%";
+    const align = HTMLAttributes.align || "center";
+
+    const marginStyle =
+      align === "left"
+        ? "display:block;margin:0 auto 0 0"
+        : align === "right"
+          ? "display:block;margin:0 0 0 auto"
+          : "display:block;margin:0 auto";
+
+    const styleParts = [
+      `width:${width}`,
+      marginStyle,
+      cropAspect === "original"
+        ? "height:auto"
+        : `aspect-ratio:${cropAspect};object-fit:cover;object-position:${cropX}% ${cropY}%`,
+    ];
+
+    return [
+      "img",
+      {
+        ...HTMLAttributes,
+        style: styleParts.join(";"),
+      },
+    ];
   },
 });
 
@@ -98,6 +148,11 @@ export default function TiptapEditor({
 }: TiptapEditorProps) {
   const { token } = useAuth();
   const [isUploading, setIsUploading] = useState(false);
+  const [selectedImageAttrs, setSelectedImageAttrs] = useState<{
+    cropAspect: ImageCropPreset;
+    cropX: string;
+    cropY: string;
+  } | null>(null);
 
   const editor = useEditor({
     extensions: [
@@ -115,7 +170,7 @@ export default function TiptapEditor({
       }),
       EditorImage.configure({
         HTMLAttributes: {
-          class: "rounded-lg max-w-full h-auto cursor-ew-resize",
+          class: "rounded-lg max-w-full h-auto transition-shadow",
         },
       }),
       TextAlign,
@@ -141,6 +196,38 @@ export default function TiptapEditor({
       editor.commands.setContent(content);
     }
   }, [content, editor]);
+
+  useEffect(() => {
+    if (!editor) return;
+
+    const updateSelectedImageAttrs = () => {
+      if (!editor.isActive("image")) {
+        setSelectedImageAttrs(null);
+        return;
+      }
+
+      const attrs = editor.getAttributes("image") as {
+        cropAspect?: ImageCropPreset;
+        cropX?: string;
+        cropY?: string;
+      };
+
+      setSelectedImageAttrs({
+        cropAspect: attrs.cropAspect || "original",
+        cropX: attrs.cropX || "50",
+        cropY: attrs.cropY || "50",
+      });
+    };
+
+    updateSelectedImageAttrs();
+    editor.on("selectionUpdate", updateSelectedImageAttrs);
+    editor.on("transaction", updateSelectedImageAttrs);
+
+    return () => {
+      editor.off("selectionUpdate", updateSelectedImageAttrs);
+      editor.off("transaction", updateSelectedImageAttrs);
+    };
+  }, [editor]);
 
   useEffect(() => {
     if (!editor) return;
@@ -229,9 +316,29 @@ export default function TiptapEditor({
       window.addEventListener("mouseup", onMouseUp);
     };
 
+    const onPointerMove = (event: Event) => {
+      if (isResizing) return;
+
+      const mouseEvent = event as MouseEvent;
+      const target = mouseEvent.target as HTMLElement | null;
+      if (!target || target.tagName !== "IMG") {
+        dom.style.cursor = "";
+        return;
+      }
+
+      const rect = target.getBoundingClientRect();
+      const isOnResizeZone = mouseEvent.clientX >= rect.right - 16;
+      dom.style.cursor = isOnResizeZone ? "ew-resize" : "";
+    };
+
     dom.addEventListener("mousedown", onMouseDown);
+    dom.addEventListener("mousemove", onPointerMove);
+    dom.addEventListener("mouseleave", onMouseUp);
     return () => {
       dom.removeEventListener("mousedown", onMouseDown);
+      dom.removeEventListener("mousemove", onPointerMove);
+      dom.removeEventListener("mouseleave", onMouseUp);
+      dom.style.cursor = "";
       onMouseUp();
     };
   }, [editor]);
@@ -311,6 +418,30 @@ export default function TiptapEditor({
     [editor]
   );
 
+  const setImageCropAspect = useCallback(
+    (cropAspect: ImageCropPreset) => {
+      if (!editor) return;
+      if (!editor.isActive("image")) {
+        toast.info("크롭할 이미지를 먼저 클릭하세요.");
+        return;
+      }
+      editor.chain().focus().updateAttributes("image", { cropAspect }).run();
+    },
+    [editor]
+  );
+
+  const setImageCropPosition = useCallback(
+    (axis: "cropX" | "cropY", value: string) => {
+      if (!editor) return;
+      if (!editor.isActive("image")) {
+        toast.info("크롭 위치를 조절할 이미지를 먼저 클릭하세요.");
+        return;
+      }
+      editor.chain().focus().updateAttributes("image", { [axis]: value }).run();
+    },
+    [editor]
+  );
+
   const setTextAlign = useCallback(
     (alignment: "left" | "center" | "right") => {
       if (!editor) return;
@@ -327,9 +458,10 @@ export default function TiptapEditor({
   if (!editor) return null;
 
   return (
-    <div className="border border-gray-300 dark:border-gray-600 rounded-xl overflow-hidden bg-white dark:bg-[#1e1e1e]">
+    <div className="border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-[#1e1e1e]">
       {/* 툴바 */}
-      <div className="flex flex-wrap gap-1 p-2 border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-[#252525]">
+      <div className="sticky top-24 z-20 rounded-t-xl border-b border-gray-200 dark:border-gray-700 bg-gray-50/95 dark:bg-[#252525]/95 backdrop-blur supports-[backdrop-filter]:bg-gray-50/85 dark:supports-[backdrop-filter]:bg-[#252525]/85 shadow-sm">
+        <div className="flex max-h-[40vh] flex-wrap gap-1 overflow-y-auto p-2">
         {/* 텍스트 스타일 */}
         <div className="flex gap-0.5 pr-2 border-r border-gray-300 dark:border-gray-600">
           <ToolbarButton
@@ -542,9 +674,65 @@ export default function TiptapEditor({
           </ToolbarButton>
         </div>
       </div>
+      </div>
 
       {/* 에디터 영역 */}
       <EditorContent editor={editor} />
+
+      {selectedImageAttrs && (
+        <div className="border-t border-gray-200 dark:border-gray-700 px-4 py-3 bg-gray-50/90 dark:bg-[#252525] space-y-3">
+          <div className="flex flex-wrap items-center gap-2">
+            <span className="text-xs font-medium text-gray-500 dark:text-gray-400">
+              이미지 크롭
+            </span>
+            {IMAGE_CROP_PRESETS.map((preset) => (
+              <ToolbarButton
+                key={preset.value}
+                onClick={() => setImageCropAspect(preset.value)}
+                isActive={selectedImageAttrs.cropAspect === preset.value}
+                title={`${preset.label} 비율`}
+              >
+                {preset.label}
+              </ToolbarButton>
+            ))}
+          </div>
+
+          {selectedImageAttrs.cropAspect !== "original" && (
+            <div className="grid gap-3 md:grid-cols-2">
+              <label className="flex items-center gap-3 text-xs text-gray-600 dark:text-gray-300">
+                <span className="w-14 shrink-0">가로</span>
+                <input
+                  type="range"
+                  min="0"
+                  max="100"
+                  step="1"
+                  value={selectedImageAttrs.cropX}
+                  onChange={(event) =>
+                    setImageCropPosition("cropX", event.target.value)
+                  }
+                  className="w-full"
+                />
+                <span className="w-10 text-right">{selectedImageAttrs.cropX}%</span>
+              </label>
+              <label className="flex items-center gap-3 text-xs text-gray-600 dark:text-gray-300">
+                <span className="w-14 shrink-0">세로</span>
+                <input
+                  type="range"
+                  min="0"
+                  max="100"
+                  step="1"
+                  value={selectedImageAttrs.cropY}
+                  onChange={(event) =>
+                    setImageCropPosition("cropY", event.target.value)
+                  }
+                  className="w-full"
+                />
+                <span className="w-10 text-right">{selectedImageAttrs.cropY}%</span>
+              </label>
+            </div>
+          )}
+        </div>
+      )}
 
       {/* 하단 정보 */}
       <div className="flex justify-between items-center px-4 py-2 border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-[#252525] text-xs text-gray-500">

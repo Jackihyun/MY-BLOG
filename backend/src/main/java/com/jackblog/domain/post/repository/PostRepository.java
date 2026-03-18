@@ -27,10 +27,12 @@ public interface PostRepository extends JpaRepository<Post, Long> {
     @Query("SELECT DISTINCT p.category FROM Post p WHERE p.isPublished = true ORDER BY p.category")
     List<String> findAllCategories();
 
-    // SQLite compatible search using LIKE
+    // Escape LIKE wildcards so user input is treated literally.
     @Query("SELECT p FROM Post p WHERE p.isPublished = true AND " +
-           "(LOWER(p.title) LIKE LOWER(CONCAT('%', :query, '%')) OR " +
-           "LOWER(p.content) LIKE LOWER(CONCAT('%', :query, '%'))) " +
+           "(LOWER(p.title) LIKE LOWER(CONCAT('%', :query, '%')) ESCAPE '\\' OR " +
+           "LOWER(p.content) LIKE LOWER(CONCAT('%', :query, '%')) ESCAPE '\\' OR " +
+           "LOWER(COALESCE(p.excerpt, '')) LIKE LOWER(CONCAT('%', :query, '%')) ESCAPE '\\' OR " +
+           "LOWER(p.category) LIKE LOWER(CONCAT('%', :query, '%')) ESCAPE '\\') " +
            "ORDER BY p.publishedAt DESC")
     List<Post> searchPosts(@Param("query") String query);
 

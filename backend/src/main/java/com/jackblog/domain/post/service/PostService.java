@@ -39,6 +39,8 @@ public class PostService {
 
     private static final Pattern NONLATIN = Pattern.compile("[^\\w-]");
     private static final Pattern WHITESPACE = Pattern.compile("[\\s]");
+    private static final Pattern MULTIPLE_WHITESPACE = Pattern.compile("\\s+");
+    private static final Pattern SEARCHABLE_CHARACTER = Pattern.compile("[\\p{L}\\p{N}]");
 
     public Page<PostResponse> getPosts(int page, int size, String category) {
         Pageable pageable = PageRequest.of(page, size);
@@ -170,15 +172,36 @@ public class PostService {
     }
 
     public List<PostResponse> searchPosts(String query) {
-        if (!StringUtils.hasText(query) || query.length() < 2) {
+        String normalizedQuery = normalizeSearchQuery(query);
+
+        if (!StringUtils.hasText(normalizedQuery) || normalizedQuery.length() < 2) {
             throw new BadRequestException("Search query must be at least 2 characters");
         }
 
-        List<Post> posts = postRepository.searchPosts(query);
+        if (!SEARCHABLE_CHARACTER.matcher(normalizedQuery).find()) {
+            return List.of();
+        }
+
+        List<Post> posts = postRepository.searchPosts(escapeLikeWildcards(normalizedQuery));
 
         return posts.stream()
             .map(PostResponse::from)
             .collect(Collectors.toList());
+    }
+
+    private String normalizeSearchQuery(String query) {
+        if (query == null) {
+            return "";
+        }
+
+        return MULTIPLE_WHITESPACE.matcher(query.trim()).replaceAll(" ");
+    }
+
+    private String escapeLikeWildcards(String query) {
+        return query
+            .replace("\\", "\\\\")
+            .replace("%", "\\%")
+            .replace("_", "\\_");
     }
 
     public List<String> getCategories() {

@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { searchPosts } from "@/lib/api";
+import { canRunSearch, escapeRegExp, normalizeSearchQuery } from "@/lib/search";
 import { PostResponse } from "@/types";
 
 interface SearchBarProps {
@@ -19,14 +20,17 @@ export default function SearchBar({ onClose }: SearchBarProps) {
   const router = useRouter();
 
   const debouncedSearch = useCallback(async (searchQuery: string) => {
-    if (searchQuery.length < 2) {
+    const normalizedQuery = normalizeSearchQuery(searchQuery);
+
+    if (!canRunSearch(normalizedQuery)) {
       setResults([]);
+      setIsLoading(false);
       return;
     }
 
     setIsLoading(true);
     try {
-      const posts = await searchPosts(searchQuery);
+      const posts = await searchPosts(normalizedQuery);
       setResults(posts);
     } catch (err) {
       console.error("Search failed:", err);
@@ -82,8 +86,10 @@ export default function SearchBar({ onClose }: SearchBarProps) {
   };
 
   const highlightMatch = (text: string, query: string) => {
-    if (!query) return text;
-    const regex = new RegExp(`(${query})`, "gi");
+    const normalizedQuery = normalizeSearchQuery(query);
+    if (!normalizedQuery) return text;
+
+    const regex = new RegExp(`(${escapeRegExp(normalizedQuery)})`, "gi");
     const parts = text.split(regex);
 
     return parts.map((part, i) =>
@@ -109,7 +115,7 @@ export default function SearchBar({ onClose }: SearchBarProps) {
             setShowResults(true);
           }}
           onFocus={() => setShowResults(true)}
-          placeholder="검색어를 입력하세요... (2글자 이상)"
+          placeholder="검색어를 입력하세요... (문자/숫자 2글자 이상)"
           className="w-full rounded-2xl border border-zinc-200 bg-white px-4 py-3 pl-10 text-zinc-900
                      focus:outline-none focus:ring-2 focus:ring-indigo-200 focus:border-indigo-300
                      dark:border-zinc-700 dark:bg-[#181818] dark:text-zinc-100 dark:focus:border-indigo-700 dark:focus:ring-indigo-950"
@@ -134,7 +140,7 @@ export default function SearchBar({ onClose }: SearchBarProps) {
         )}
       </div>
 
-      {showResults && query.length >= 2 && (
+      {showResults && canRunSearch(query) && (
         <div className="absolute top-full left-0 right-0 mt-3 bg-white dark:bg-[#181818] border border-zinc-200 dark:border-zinc-700 rounded-2xl shadow-lg max-h-[400px] overflow-y-auto z-50">
           {results.length === 0 ? (
             <div className="p-4 text-center text-zinc-500 dark:text-zinc-400">
