@@ -19,7 +19,7 @@ export default function RecentPosts({ posts }: RecentPostsProps) {
 
   return (
     <section className="space-y-6">
-      <div className="flex items-center justify-between">
+      <div className="flex items-end justify-between gap-4">
         <div>
           <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
             최근 글
@@ -30,7 +30,7 @@ export default function RecentPosts({ posts }: RecentPostsProps) {
         </div>
         <Link
           href="/posts"
-          className="inline-flex items-center gap-1 text-sm font-medium text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300 transition-colors"
+          className="hidden sm:inline-flex items-center gap-1 text-sm font-medium text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300 transition-colors"
         >
           최근 글 전체 보기
           <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -118,7 +118,7 @@ export default function RecentPosts({ posts }: RecentPostsProps) {
                     >
                       {getPostPreview(post.excerpt, post.contentHtml, 120)}
                     </CardDescription>
-                    <div className="flex items-center gap-2 mt-6 text-indigo-600 dark:text-indigo-400 text-sm font-bold opacity-0 group-hover:opacity-100 transition-all transform translate-y-2 group-hover:translate-y-0">
+                    <div className="mt-6 flex items-center gap-2 text-sm font-bold text-indigo-600 dark:text-indigo-400 opacity-100 transition-all md:opacity-0 md:translate-y-2 md:group-hover:translate-y-0 md:group-hover:opacity-100">
                       읽어보기
                       <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
@@ -132,6 +132,18 @@ export default function RecentPosts({ posts }: RecentPostsProps) {
           })}
         </div>
       )}
+
+      <div className="sm:hidden">
+        <Link
+          href="/posts"
+          className="inline-flex items-center gap-1 text-sm font-medium text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300 transition-colors"
+        >
+          최근 글 전체 보기
+          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+          </svg>
+        </Link>
+      </div>
     </section>
   );
 }

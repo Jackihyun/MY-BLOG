@@ -47,7 +47,7 @@ const SidebarMenu = ({
     <div className="min-[850px]:hidden">
       {isOpen && (
         <div
-          className="fixed inset-0 bg-black/50 backdrop-blur-sm z-30"
+          className="fixed inset-0 bg-black/50 backdrop-blur-sm z-[70]"
           onClick={closeSidebar}
         ></div>
       )}
@@ -56,7 +56,7 @@ const SidebarMenu = ({
         role="dialog"
         aria-modal="true"
         aria-label="Mobile navigation menu"
-        className={`fixed top-0 right-0 h-full w-64 max-w-[82vw] bg-white dark:bg-[#050505] shadow-2xl z-40 transform ${
+        className={`fixed top-0 right-0 h-full w-64 max-w-[82vw] bg-white dark:bg-[#050505] shadow-2xl z-[80] transform ${
           isOpen ? "translate-x-0" : "translate-x-full"
         } transition-transform duration-200 ease-out border-l border-zinc-100 dark:border-zinc-800`}
       >

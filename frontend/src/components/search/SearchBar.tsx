@@ -8,9 +8,10 @@ import { PostResponse } from "@/types";
 
 interface SearchBarProps {
   onClose?: () => void;
+  isModal?: boolean;
 }
 
-export default function SearchBar({ onClose }: SearchBarProps) {
+export default function SearchBar({ onClose, isModal = false }: SearchBarProps) {
   const [query, setQuery] = useState("");
   const [results, setResults] = useState<PostResponse[]>([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -141,7 +142,13 @@ export default function SearchBar({ onClose }: SearchBarProps) {
       </div>
 
       {showResults && canRunSearch(query) && (
-        <div className="absolute top-full left-0 right-0 mt-3 bg-white dark:bg-[#181818] border border-zinc-200 dark:border-zinc-700 rounded-2xl shadow-lg max-h-[400px] overflow-y-auto z-50">
+        <div
+          className={`mt-3 bg-white dark:bg-[#181818] border border-zinc-200 dark:border-zinc-700 rounded-2xl shadow-lg overflow-y-auto z-50 ${
+            isModal
+              ? "relative max-h-[min(52dvh,24rem)]"
+              : "absolute top-full left-0 right-0 max-h-[400px]"
+          }`}
+        >
           {results.length === 0 ? (
             <div className="p-4 text-center text-zinc-500 dark:text-zinc-400">
               {isLoading ? "검색 중..." : "검색 결과가 없습니다."}
@@ -158,12 +165,12 @@ export default function SearchBar({ onClose }: SearchBarProps) {
                     <p className="font-medium text-zinc-900 dark:text-zinc-100">
                       {highlightMatch(post.title, query)}
                     </p>
-                    <div className="flex gap-2 mt-1">
+                    <div className="mt-1 flex gap-2">
                       <span className="text-xs text-indigo-500">
                         {post.category}
                       </span>
                       {post.excerpt && (
-                        <span className="text-xs text-zinc-500 dark:text-zinc-400 truncate">
+                        <span className="min-w-0 truncate text-xs text-zinc-500 dark:text-zinc-400">
                           {post.excerpt.substring(0, 50)}...
                         </span>
                       )}

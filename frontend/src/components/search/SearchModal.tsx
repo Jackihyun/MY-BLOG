@@ -45,8 +45,8 @@ export default function SearchModal({ isOpen, onClose }: SearchModalProps) {
         aria-hidden="true"
       />
       <div className="relative w-full max-w-xl">
-        <div className="rounded-3xl border border-white/10 bg-white/95 p-3 shadow-2xl backdrop-blur dark:border-zinc-800 dark:bg-[#111111]/95">
-          <SearchBar onClose={onClose} />
+        <div className="max-h-[calc(100dvh-6rem)] overflow-y-auto rounded-3xl border border-white/10 bg-white/95 p-3 shadow-2xl backdrop-blur dark:border-zinc-800 dark:bg-[#111111]/95">
+          <SearchBar onClose={onClose} isModal />
         </div>
       </div>
     </div>
