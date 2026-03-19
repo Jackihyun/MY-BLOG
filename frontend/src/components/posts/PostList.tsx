@@ -1351,20 +1351,20 @@ function PostsList({ allPostsData }: { allPostsData: PostData[] }) {
           <aside className="hidden lg:block min-w-0">
             <div className="sticky top-24 space-y-4">
               {isAuthenticated && (
-                <div className="rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-[#0a0a0a] p-4">
-                  <div className="flex items-start justify-between gap-3">
-                    <div>
-                      <p className="text-xs font-bold tracking-wide text-zinc-500 dark:text-zinc-400 uppercase">
-                        Visitor
-                      </p>
-                      <p className="mt-1 text-xs text-zinc-500 dark:text-zinc-400">
-                        관리자 전용 유입 요약
-                      </p>
+                  <div className="rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-[#0a0a0a] p-4">
+                    <div className="flex items-start justify-between gap-3">
+                      <div>
+                        <p className="text-xs font-bold tracking-wide text-zinc-500 dark:text-zinc-400 uppercase">
+                          Visitor
+                        </p>
+                        <p className="mt-1 text-xs text-zinc-500 dark:text-zinc-400">
+                          누적 방문자 요약
+                        </p>
+                      </div>
+                      <span className="inline-flex items-center rounded-full bg-zinc-100 px-2 py-1 text-[10px] font-bold text-zinc-600 dark:bg-zinc-900 dark:text-zinc-300">
+                        Admin
+                      </span>
                     </div>
-                    <span className="inline-flex items-center rounded-full bg-zinc-100 px-2 py-1 text-[10px] font-bold text-zinc-600 dark:bg-zinc-900 dark:text-zinc-300">
-                      Admin
-                    </span>
-                  </div>
 
                   <div className="mt-3 grid grid-cols-3 gap-2 text-center">
                     <div className="rounded-xl bg-zinc-50 dark:bg-zinc-900 px-2 py-3">
@@ -1390,71 +1390,6 @@ function PostsList({ allPostsData }: { allPostsData: PostData[] }) {
                       <p className="mt-1 text-base font-bold text-zinc-900 dark:text-zinc-100">
                         {visitorStats?.yesterday ?? "-"}
                       </p>
-                    </div>
-                  </div>
-
-                  <div className="mt-4 space-y-4">
-                    <div>
-                      <p className="text-[11px] font-bold uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
-                        Top Sources
-                      </p>
-                      <div className="mt-2 space-y-2">
-                        {(visitorStats?.topSources ?? []).slice(0, 4).map((item) => (
-                          <div
-                            key={`source-${item.label}`}
-                            className="flex items-center justify-between rounded-xl bg-zinc-50 px-3 py-2 text-sm dark:bg-zinc-900"
-                          >
-                            <span className="font-medium capitalize text-zinc-700 dark:text-zinc-200">
-                              {item.label}
-                            </span>
-                            <span className="text-zinc-500 dark:text-zinc-400">
-                              {item.count}
-                            </span>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-
-                    <div>
-                      <p className="text-[11px] font-bold uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
-                        Landing Paths
-                      </p>
-                      <div className="mt-2 space-y-2">
-                        {(visitorStats?.topLandingPaths ?? []).slice(0, 4).map((item) => (
-                          <div
-                            key={`landing-${item.label}`}
-                            className="flex items-center justify-between rounded-xl bg-zinc-50 px-3 py-2 text-sm dark:bg-zinc-900"
-                          >
-                            <span className="truncate pr-3 font-mono text-zinc-700 dark:text-zinc-200">
-                              {item.label}
-                            </span>
-                            <span className="shrink-0 text-zinc-500 dark:text-zinc-400">
-                              {item.count}
-                            </span>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-
-                    <div>
-                      <p className="text-[11px] font-bold uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
-                        Referrers
-                      </p>
-                      <div className="mt-2 space-y-2">
-                        {(visitorStats?.topReferrers ?? []).slice(0, 4).map((item) => (
-                          <div
-                            key={`referrer-${item.label}`}
-                            className="flex items-center justify-between rounded-xl bg-zinc-50 px-3 py-2 text-sm dark:bg-zinc-900"
-                          >
-                            <span className="truncate pr-3 text-zinc-700 dark:text-zinc-200">
-                              {item.label}
-                            </span>
-                            <span className="shrink-0 text-zinc-500 dark:text-zinc-400">
-                              {item.count}
-                            </span>
-                          </div>
-                        ))}
-                      </div>
                     </div>
                   </div>
                 </div>
@@ -1617,7 +1552,7 @@ function PostsList({ allPostsData }: { allPostsData: PostData[] }) {
                               />
                             </div>
                           )}
-                          <div className="flex-1 min-w-0 py-1">
+                          <div className="flex-1 min-w-0 py-1 self-stretch">
                             <h2 className="text-lg md:text-xl font-bold text-zinc-900 dark:text-zinc-50 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors line-clamp-2 leading-snug">
                               {title}
                             </h2>
@@ -1632,14 +1567,14 @@ function PostsList({ allPostsData }: { allPostsData: PostData[] }) {
                                 {date}
                               </span>
                             </div>
+                            <PostEngagementStats
+                              className="mt-5 justify-end"
+                              itemClassName="min-w-[3.75rem] justify-end"
+                              viewCount={viewCount}
+                              likeCount={likeCount}
+                              commentCount={commentCount}
+                            />
                           </div>
-                          <PostEngagementStats
-                            className="w-full border-t border-zinc-100 pt-4 dark:border-zinc-800 md:w-auto md:flex-col md:items-end md:justify-center md:gap-2 md:border-t-0 md:pt-0"
-                            itemClassName="min-w-[3.75rem] md:min-w-0"
-                            viewCount={viewCount}
-                            likeCount={likeCount}
-                            commentCount={commentCount}
-                          />
                           <div className="hidden lg:flex items-center justify-center w-10 h-10 rounded-full bg-zinc-50 dark:bg-zinc-800 group-hover:bg-indigo-50 dark:group-hover:bg-indigo-900/30 transition-colors self-center">
                             <svg
                               className="w-5 h-5 text-zinc-400 group-hover:text-indigo-500 transition-colors"

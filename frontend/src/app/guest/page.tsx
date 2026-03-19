@@ -3,8 +3,13 @@
 import React from "react";
 import { motion } from "framer-motion";
 import CommentList from "@/components/comments/CommentList";
+import { useAuth } from "@/hooks/useAuth";
+import { useVisitorStatsQuery } from "@/hooks/queries/useVisitorStatsQuery";
 
 const Guest: React.FC = () => {
+  const { isAuthenticated, token } = useAuth();
+  const { data: visitorStats } = useVisitorStatsQuery(token, isAuthenticated);
+
   return (
     <div className="py-12 space-y-12">
       {/* Header Section */}
@@ -34,6 +39,97 @@ const Guest: React.FC = () => {
       >
         <CommentList slug="guestbook" />
       </motion.div>
+
+      {isAuthenticated && (
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, delay: 0.2 }}
+          className="rounded-[2rem] border border-zinc-200 bg-white p-6 shadow-sm dark:border-zinc-800 dark:bg-[#0a0a0a]"
+        >
+          <div className="flex items-start justify-between gap-3">
+            <div>
+              <p className="text-xs font-bold uppercase tracking-[0.24em] text-zinc-500 dark:text-zinc-400">
+                Visitor Routes
+              </p>
+              <h2 className="mt-2 text-2xl font-black tracking-tight text-zinc-900 dark:text-zinc-50">
+                관리자 전용 유입 통계
+              </h2>
+              <p className="mt-2 text-sm text-zinc-500 dark:text-zinc-400">
+                어떤 경로와 어디에서 블로그로 들어오는지 한 번에 볼 수 있습니다.
+              </p>
+            </div>
+            <span className="inline-flex items-center rounded-full bg-zinc-100 px-3 py-1 text-[11px] font-bold text-zinc-600 dark:bg-zinc-900 dark:text-zinc-300">
+              Admin Only
+            </span>
+          </div>
+
+          <div className="mt-6 grid gap-4 lg:grid-cols-3">
+            <div className="rounded-2xl bg-zinc-50 p-4 dark:bg-zinc-900">
+              <p className="text-[11px] font-bold uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
+                Top Sources
+              </p>
+              <div className="mt-3 space-y-2">
+                {(visitorStats?.topSources ?? []).slice(0, 5).map((item) => (
+                  <div
+                    key={`source-${item.label}`}
+                    className="flex items-center justify-between rounded-xl bg-white px-3 py-2 text-sm dark:bg-[#0a0a0a]"
+                  >
+                    <span className="font-medium capitalize text-zinc-700 dark:text-zinc-200">
+                      {item.label}
+                    </span>
+                    <span className="text-zinc-500 dark:text-zinc-400">
+                      {item.count}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <div className="rounded-2xl bg-zinc-50 p-4 dark:bg-zinc-900">
+              <p className="text-[11px] font-bold uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
+                Landing Paths
+              </p>
+              <div className="mt-3 space-y-2">
+                {(visitorStats?.topLandingPaths ?? []).slice(0, 5).map((item) => (
+                  <div
+                    key={`landing-${item.label}`}
+                    className="flex items-center justify-between rounded-xl bg-white px-3 py-2 text-sm dark:bg-[#0a0a0a]"
+                  >
+                    <span className="truncate pr-3 font-mono text-zinc-700 dark:text-zinc-200">
+                      {item.label}
+                    </span>
+                    <span className="shrink-0 text-zinc-500 dark:text-zinc-400">
+                      {item.count}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <div className="rounded-2xl bg-zinc-50 p-4 dark:bg-zinc-900">
+              <p className="text-[11px] font-bold uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
+                Referrers
+              </p>
+              <div className="mt-3 space-y-2">
+                {(visitorStats?.topReferrers ?? []).slice(0, 5).map((item) => (
+                  <div
+                    key={`referrer-${item.label}`}
+                    className="flex items-center justify-between rounded-xl bg-white px-3 py-2 text-sm dark:bg-[#0a0a0a]"
+                  >
+                    <span className="truncate pr-3 text-zinc-700 dark:text-zinc-200">
+                      {item.label}
+                    </span>
+                    <span className="shrink-0 text-zinc-500 dark:text-zinc-400">
+                      {item.count}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </motion.div>
+      )}
     </div>
   );
 };
