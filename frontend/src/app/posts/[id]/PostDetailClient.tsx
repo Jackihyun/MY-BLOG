@@ -11,6 +11,7 @@ import TableOfContents from "@/components/post/TableOfContents";
 import { CommentSkeletonList } from "@/components/skeletons/CommentSkeleton";
 import { Skeleton } from "@/components/ui/Skeleton";
 import { incrementViewCount } from "@/lib/api";
+import { enhanceCodeBlocks } from "@/lib/code-blocks";
 import { motion } from "framer-motion";
 import { toast } from "sonner";
 
@@ -168,6 +169,17 @@ export default function PostDetailClient({
   useEffect(() => {
     setViewCount(postData.viewCount ?? 0);
   }, [postData.viewCount, postData.slug]);
+
+  useEffect(() => {
+    const contentElement = document.querySelector("[data-post-content]");
+    if (!contentElement) return;
+
+    enhanceCodeBlocks(
+      contentElement,
+      (message) => toast.success(message),
+      (message) => toast.error(message)
+    );
+  }, [contentHtml]);
 
   useEffect(() => {
     const viewStorageKey = `post:viewed:${postData.slug}`;

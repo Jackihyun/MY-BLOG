@@ -1,6 +1,7 @@
 package com.jackblog.domain.visitor.controller;
 
 import com.jackblog.common.response.ApiResponse;
+import com.jackblog.domain.visitor.dto.VisitTrackRequest;
 import com.jackblog.domain.visitor.dto.VisitTrackResponse;
 import com.jackblog.domain.visitor.dto.VisitorStatsResponse;
 import com.jackblog.domain.visitor.service.VisitorService;
@@ -17,9 +18,9 @@ public class VisitorController {
 
     @PostMapping("/track")
     public ResponseEntity<ApiResponse<VisitTrackResponse>> trackVisit(
-        @RequestParam String clientId
+        @RequestBody VisitTrackRequest request
     ) {
-        boolean counted = visitorService.trackVisit(clientId);
+        boolean counted = visitorService.trackVisit(request);
         return ResponseEntity.ok(ApiResponse.success(
             VisitTrackResponse.builder().counted(counted).build()
         ));

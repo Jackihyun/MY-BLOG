@@ -94,6 +94,8 @@ function apiPostToPostData(apiPost: {
   excerpt?: string;
   readingTime?: number;
   viewCount?: number;
+  commentCount?: number;
+  likeCount?: number;
   isPublished?: boolean;
   thumbnail?: string;
 }): PostData {
@@ -122,6 +124,8 @@ function apiPostToPostData(apiPost: {
     excerpt: normalizedExcerpt || "요약이 아직 등록되지 않았습니다.",
     readingTime: apiPost.readingTime,
     viewCount: apiPost.viewCount,
+    commentCount: apiPost.commentCount,
+    likeCount: apiPost.likeCount,
     isPublished: apiPost.isPublished ?? true,
     publishedAt: apiPost.publishedAt,
     thumbnail: resolveThumbnail({

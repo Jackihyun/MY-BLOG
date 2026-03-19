@@ -10,10 +10,25 @@ import { Extension } from "@tiptap/core";
 import { common, createLowlight } from "lowlight";
 import { useCallback, useEffect, useState } from "react";
 import { uploadImage } from "@/lib/api";
+import { enhanceCodeBlocks } from "@/lib/code-blocks";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
 
 const lowlight = createLowlight(common);
+const CODE_LANGUAGES = [
+  { label: "Plain", value: "plaintext" },
+  { label: "JS", value: "javascript" },
+  { label: "TS", value: "typescript" },
+  { label: "JSX", value: "jsx" },
+  { label: "TSX", value: "tsx" },
+  { label: "HTML", value: "xml" },
+  { label: "CSS", value: "css" },
+  { label: "JSON", value: "json" },
+  { label: "Bash", value: "bash" },
+  { label: "Java", value: "java" },
+  { label: "SQL", value: "sql" },
+  { label: "YAML", value: "yaml" },
+] as const;
 const IMAGE_CROP_PRESETS = [
   { label: "원본", value: "original" },
   { label: "16:9", value: "16 / 9" },
@@ -153,6 +168,7 @@ export default function TiptapEditor({
     cropX: string;
     cropY: string;
   } | null>(null);
+  const [selectedCodeLanguage, setSelectedCodeLanguage] = useState("plaintext");
 
   const editor = useEditor({
     extensions: [
@@ -176,6 +192,7 @@ export default function TiptapEditor({
       TextAlign,
       CodeBlockLowlight.configure({
         lowlight,
+        defaultLanguage: "plaintext",
       }),
     ],
     content,
@@ -226,6 +243,29 @@ export default function TiptapEditor({
     return () => {
       editor.off("selectionUpdate", updateSelectedImageAttrs);
       editor.off("transaction", updateSelectedImageAttrs);
+    };
+  }, [editor]);
+
+  useEffect(() => {
+    if (!editor) return;
+
+    const updateSelectedCodeLanguage = () => {
+      if (!editor.isActive("codeBlock")) {
+        setSelectedCodeLanguage("plaintext");
+        return;
+      }
+
+      const attrs = editor.getAttributes("codeBlock") as { language?: string };
+      setSelectedCodeLanguage(attrs.language || "plaintext");
+    };
+
+    updateSelectedCodeLanguage();
+    editor.on("selectionUpdate", updateSelectedCodeLanguage);
+    editor.on("transaction", updateSelectedCodeLanguage);
+
+    return () => {
+      editor.off("selectionUpdate", updateSelectedCodeLanguage);
+      editor.off("transaction", updateSelectedCodeLanguage);
     };
   }, [editor]);
 
@@ -343,6 +383,29 @@ export default function TiptapEditor({
     };
   }, [editor]);
 
+  useEffect(() => {
+    if (!editor) return;
+
+    const decorateCodeBlocks = () => {
+      enhanceCodeBlocks(
+        editor.view.dom,
+        (message) => toast.success(message),
+        (message) => toast.error(message)
+      );
+    };
+
+    decorateCodeBlocks();
+    editor.on("create", decorateCodeBlocks);
+    editor.on("update", decorateCodeBlocks);
+    editor.on("selectionUpdate", decorateCodeBlocks);
+
+    return () => {
+      editor.off("create", decorateCodeBlocks);
+      editor.off("update", decorateCodeBlocks);
+      editor.off("selectionUpdate", decorateCodeBlocks);
+    };
+  }, [editor]);
+
   const setLink = useCallback(() => {
     if (!editor) return;
 
@@ -451,6 +514,22 @@ export default function TiptapEditor({
         .focus()
         .setTextAlign(alignment)
         .run();
+    },
+    [editor]
+  );
+
+  const setCodeBlockLanguage = useCallback(
+    (language: string) => {
+      if (!editor) return;
+
+      if (!editor.isActive("codeBlock")) {
+        editor.chain().focus().toggleCodeBlock().updateAttributes("codeBlock", {
+          language,
+        }).run();
+        return;
+      }
+
+      editor.chain().focus().updateAttributes("codeBlock", { language }).run();
     },
     [editor]
   );
@@ -608,6 +687,21 @@ export default function TiptapEditor({
               <path d="M9.293 9.293L5.586 13l3.707 3.707 1.414-1.414L8.414 13l2.293-2.293zm5.414 0l-1.414 1.414L15.586 13l-2.293 2.293 1.414 1.414L18.414 13z" />
             </svg>
           </ToolbarButton>
+          <label className="ml-2 flex items-center gap-2 text-xs font-medium text-gray-500 dark:text-gray-400">
+            <span>언어</span>
+            <select
+              value={selectedCodeLanguage}
+              onChange={(event) => setCodeBlockLanguage(event.target.value)}
+              className="rounded-md border border-gray-300 bg-white px-2 py-1 text-xs text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-200 dark:border-gray-600 dark:bg-[#1a1a1a] dark:text-gray-200 dark:focus:ring-blue-900"
+              title="코드 블록 언어 선택"
+            >
+              {CODE_LANGUAGES.map((language) => (
+                <option key={language.value} value={language.value}>
+                  {language.label}
+                </option>
+              ))}
+            </select>
+          </label>
         </div>
 
         {/* 링크 & 이미지 */}

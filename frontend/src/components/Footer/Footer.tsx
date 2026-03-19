@@ -5,6 +5,7 @@ import LoginModal from "@/components/admin/LoginModal";
 import { useAuth } from "@/hooks/useAuth";
 import { useTrackVisitorMutation } from "@/hooks/queries/useVisitorStatsQuery";
 import { getClientId } from "@/lib/api";
+import { buildVisitorTrackingPayload } from "@/lib/visitor";
 
 export default function Footer() {
   const [clickCount, setClickCount] = useState(0);
@@ -15,7 +16,7 @@ export default function Footer() {
   useEffect(() => {
     const clientId = getClientId();
     if (!clientId) return;
-    trackVisitor(clientId);
+    trackVisitor(buildVisitorTrackingPayload(clientId));
   }, [trackVisitor]);
 
   const handleNameClick = () => {

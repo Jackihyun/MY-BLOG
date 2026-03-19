@@ -57,6 +57,9 @@ CREATE TABLE IF NOT EXISTS visitor_log (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     client_id VARCHAR(255) NOT NULL,
     visit_date VARCHAR(10) NOT NULL,
+    source VARCHAR(50),
+    referrer_host VARCHAR(255),
+    landing_path VARCHAR(255),
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     UNIQUE(client_id, visit_date)
 );

@@ -26,6 +26,15 @@ public class VisitorLog {
     @Column(name = "visit_date", nullable = false, length = 10)
     private String visitDate;
 
+    @Column(name = "source", length = 50)
+    private String source;
+
+    @Column(name = "referrer_host", length = 255)
+    private String referrerHost;
+
+    @Column(name = "landing_path", length = 255)
+    private String landingPath;
+
     @Column(name = "created_at")
     private LocalDateTime createdAt;
 

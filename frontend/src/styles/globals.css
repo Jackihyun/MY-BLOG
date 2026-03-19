@@ -121,16 +121,125 @@ input:checked + svg .line-top-bottom {
 
 
 @layer components {
+  .prose pre,
+  .ProseMirror pre {
+    @apply relative bg-zinc-950 text-zinc-100 border border-zinc-800 rounded-2xl overflow-x-auto max-w-full p-4 pt-12 shadow-sm;
+  }
   .prose pre {
-    @apply bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl overflow-x-auto max-w-full p-4 shadow-sm;
     /* 인라인 스타일이 있으면 인라인 스타일(마크다운 본래 색상)이 우선 적용됩니다 */
   }
-  .prose pre code {
-    @apply p-0 border-none font-mono text-sm leading-relaxed text-zinc-800 dark:text-zinc-200;
+  .prose pre code,
+  .ProseMirror pre code {
+    @apply p-0 border-none font-mono text-sm leading-relaxed text-zinc-100;
     background-color: transparent !important;
   }
   .prose code {
     @apply break-words whitespace-pre-wrap;
+  }
+  .prose pre .hljs-comment,
+  .prose pre .hljs-quote,
+  .ProseMirror pre .hljs-comment,
+  .ProseMirror pre .hljs-quote {
+    color: #94a3b8;
+  }
+  .prose pre .hljs-keyword,
+  .prose pre .hljs-selector-tag,
+  .prose pre .hljs-literal,
+  .prose pre .hljs-section,
+  .prose pre .hljs-link,
+  .ProseMirror pre .hljs-keyword,
+  .ProseMirror pre .hljs-selector-tag,
+  .ProseMirror pre .hljs-literal,
+  .ProseMirror pre .hljs-section,
+  .ProseMirror pre .hljs-link {
+    color: #f472b6;
+  }
+  .prose pre .hljs-string,
+  .prose pre .hljs-title,
+  .prose pre .hljs-name,
+  .prose pre .hljs-type,
+  .prose pre .hljs-attribute,
+  .prose pre .hljs-symbol,
+  .prose pre .hljs-bullet,
+  .prose pre .hljs-addition,
+  .prose pre .hljs-template-tag,
+  .prose pre .hljs-template-variable,
+  .ProseMirror pre .hljs-string,
+  .ProseMirror pre .hljs-title,
+  .ProseMirror pre .hljs-name,
+  .ProseMirror pre .hljs-type,
+  .ProseMirror pre .hljs-attribute,
+  .ProseMirror pre .hljs-symbol,
+  .ProseMirror pre .hljs-bullet,
+  .ProseMirror pre .hljs-addition,
+  .ProseMirror pre .hljs-template-tag,
+  .ProseMirror pre .hljs-template-variable {
+    color: #86efac;
+  }
+  .prose pre .hljs-number,
+  .prose pre .hljs-meta,
+  .prose pre .hljs-built_in,
+  .prose pre .hljs-builtin-name,
+  .prose pre .hljs-variable,
+  .prose pre .hljs-code,
+  .prose pre .hljs-selector-class,
+  .prose pre .hljs-selector-attr,
+  .prose pre .hljs-selector-pseudo,
+  .ProseMirror pre .hljs-number,
+  .ProseMirror pre .hljs-meta,
+  .ProseMirror pre .hljs-built_in,
+  .ProseMirror pre .hljs-builtin-name,
+  .ProseMirror pre .hljs-variable,
+  .ProseMirror pre .hljs-code,
+  .ProseMirror pre .hljs-selector-class,
+  .ProseMirror pre .hljs-selector-attr,
+  .ProseMirror pre .hljs-selector-pseudo {
+    color: #fbbf24;
+  }
+  .prose pre .hljs-function,
+  .prose pre .hljs-title.function_,
+  .prose pre .hljs-title.class_,
+  .prose pre .hljs-class .hljs-title,
+  .ProseMirror pre .hljs-function,
+  .ProseMirror pre .hljs-title.function_,
+  .ProseMirror pre .hljs-title.class_,
+  .ProseMirror pre .hljs-class .hljs-title {
+    color: #60a5fa;
+  }
+  .prose pre .hljs-regexp,
+  .prose pre .hljs-subst,
+  .prose pre .hljs-operator,
+  .prose pre .hljs-property,
+  .prose pre .hljs-params,
+  .prose pre .hljs-punctuation,
+  .ProseMirror pre .hljs-regexp,
+  .ProseMirror pre .hljs-subst,
+  .ProseMirror pre .hljs-operator,
+  .ProseMirror pre .hljs-property,
+  .ProseMirror pre .hljs-params,
+  .ProseMirror pre .hljs-punctuation {
+    color: #e2e8f0;
+  }
+  .code-block-toolbar {
+    @apply absolute left-3 right-3 top-3 z-10 flex items-center justify-between gap-3;
+  }
+  .code-block-language {
+    @apply inline-flex items-center rounded-full border border-white/10 bg-white/5 px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.16em] text-zinc-300;
+  }
+  .code-block-copy {
+    @apply inline-flex h-8 w-8 items-center justify-center rounded-full border border-white/10 bg-white/5 text-zinc-200 transition-colors hover:bg-white/10;
+  }
+  .code-block-copy-icon {
+    @apply h-4 w-4;
+  }
+  .code-block-copy-icon-success {
+    @apply hidden;
+  }
+  .code-block-copy[data-copied="true"] .code-block-copy-icon-default {
+    @apply hidden;
+  }
+  .code-block-copy[data-copied="true"] .code-block-copy-icon-success {
+    @apply block text-emerald-300;
   }
   .prose img {
     @apply max-w-full h-auto rounded-2xl;

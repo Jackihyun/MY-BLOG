@@ -10,7 +10,7 @@ export function hasMinimumSearchLength(query: string): boolean {
 
 export function hasSearchableCharacters(query: string): boolean {
   const normalized = normalizeSearchQuery(query);
-  return /[\p{L}\p{N}]/u.test(normalized);
+  return /[A-Za-z0-9가-힣]/.test(normalized);
 }
 
 export function canRunSearch(query: string): boolean {

@@ -52,12 +52,12 @@ public class PostService {
             posts = postRepository.findByIsPublishedTrueOrderByPublishedAtDesc(pageable);
         }
 
-        return posts.map(PostResponse::from);
+        return posts.map(this::toPostResponseWithCounts);
     }
 
     public Page<PostResponse> getAllPosts(int page, int size) {
         Pageable pageable = PageRequest.of(page, size);
-        return postRepository.findAllOrderByCreatedAtDesc(pageable).map(PostResponse::from);
+        return postRepository.findAllOrderByCreatedAtDesc(pageable).map(this::toPostResponseWithCounts);
     }
 
     public PostDetailResponse getPost(String slug) {
@@ -125,7 +125,7 @@ public class PostService {
         resolvePublishedAt(request.getPublishedAt()).ifPresent(post::setPublishedAt);
 
         Post savedPost = postRepository.save(post);
-        return PostResponse.from(savedPost);
+        return toPostResponseWithCounts(savedPost);
     }
 
     @Transactional
@@ -161,7 +161,7 @@ public class PostService {
 
         resolvePublishedAt(request.getPublishedAt()).ifPresent(post::setPublishedAt);
 
-        return PostResponse.from(post);
+        return toPostResponseWithCounts(post);
     }
 
     @Transactional
@@ -185,7 +185,7 @@ public class PostService {
         List<Post> posts = postRepository.searchPosts(escapeLikeWildcards(normalizedQuery));
 
         return posts.stream()
-            .map(PostResponse::from)
+            .map(this::toPostResponseWithCounts)
             .collect(Collectors.toList());
     }
 
@@ -211,8 +211,14 @@ public class PostService {
     public List<PostResponse> getPopularPosts(int limit) {
         return postRepository.findPopularPosts(PageRequest.of(0, limit))
             .stream()
-            .map(PostResponse::from)
+            .map(this::toPostResponseWithCounts)
             .collect(Collectors.toList());
+    }
+
+    private PostResponse toPostResponseWithCounts(Post post) {
+        long commentCount = commentRepository.countActiveCommentsByPostId(post.getId());
+        long likeCount = postLikeRepository.countByPostId(post.getId());
+        return PostResponse.from(post, commentCount, likeCount);
     }
 
     private String generateSlug(String title) {

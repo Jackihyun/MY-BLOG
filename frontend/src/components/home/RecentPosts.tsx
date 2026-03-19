@@ -5,6 +5,7 @@ import { motion } from "framer-motion";
 import { PostData } from "@/lib/posts";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import PostEngagementStats from "@/components/ui/PostEngagementStats";
 import SmartImage from "@/components/ui/SmartImage";
 import { getDisplayImageUrl } from "@/lib/api";
 import { getPostPreview } from "@/lib/utils";
@@ -118,6 +119,13 @@ export default function RecentPosts({ posts }: RecentPostsProps) {
                     >
                       {getPostPreview(post.excerpt, post.contentHtml, 120)}
                     </CardDescription>
+                    <PostEngagementStats
+                      className="mt-4"
+                      compact
+                      viewCount={post.viewCount}
+                      likeCount={post.likeCount}
+                      commentCount={post.commentCount}
+                    />
                     <div className="mt-6 flex items-center gap-2 text-sm font-bold text-indigo-600 dark:text-indigo-400 opacity-100 transition-all md:opacity-0 md:translate-y-2 md:group-hover:translate-y-0 md:group-hover:opacity-100">
                       읽어보기
                       <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">

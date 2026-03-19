@@ -5,6 +5,7 @@ import { motion } from "framer-motion";
 import { PostData } from "@/lib/posts";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
+import PostEngagementStats from "@/components/ui/PostEngagementStats";
 import SmartImage from "@/components/ui/SmartImage";
 import { getDisplayImageUrl } from "@/lib/api";
 import { getPostPreview } from "@/lib/utils";
@@ -128,6 +129,13 @@ export default function PopularPosts({ posts }: PopularPostsProps) {
                       <p className="text-sm text-zinc-500 dark:text-zinc-400 line-clamp-2 leading-relaxed mb-4">
                         {getPostPreview(post.excerpt, post.contentHtml, 80)}
                       </p>
+                      <PostEngagementStats
+                        className="mb-4"
+                        compact
+                        viewCount={post.viewCount}
+                        likeCount={post.likeCount}
+                        commentCount={post.commentCount}
+                      />
                       <div className="mt-auto flex items-center justify-between text-[11px] text-zinc-400 font-medium">
                         <span>{post.date}</span>
                         <span className="flex items-center gap-1">

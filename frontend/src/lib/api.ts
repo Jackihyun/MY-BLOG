@@ -11,6 +11,7 @@ import {
   ReactionRequest,
   LikeResponse,
   LoginResponse,
+  VisitTrackRequest,
   VisitorStatsResponse,
   VisitTrackResponse,
   CategoryTreeResponse,
@@ -159,17 +160,21 @@ export async function fetchPopularPosts(limit = 5): Promise<PostResponse[]> {
 
 // ============ Visitor API ============
 
-export async function trackVisitor(clientId: string): Promise<VisitTrackResponse> {
-  return fetchApi<VisitTrackResponse>(
-    `/visitors/track?clientId=${encodeURIComponent(clientId)}`,
-    {
-      method: "POST",
-    }
-  );
+export async function trackVisitor(
+  payload: VisitTrackRequest
+): Promise<VisitTrackResponse> {
+  return fetchApi<VisitTrackResponse>("/visitors/track", {
+    method: "POST",
+    body: JSON.stringify(payload),
+  });
 }
 
-export async function fetchVisitorStats(): Promise<VisitorStatsResponse> {
-  return fetchApi<VisitorStatsResponse>("/visitors/stats");
+export async function fetchVisitorStats(
+  token: string
+): Promise<VisitorStatsResponse> {
+  return fetchApi<VisitorStatsResponse>("/visitors/stats", {
+    headers: getAuthHeaders(token),
+  });
 }
 
 // ============ Category Tree API ============

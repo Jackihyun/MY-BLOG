@@ -24,6 +24,8 @@ export interface PostResponse {
   category: string;
   readingTime: number;
   viewCount: number;
+  commentCount: number;
+  likeCount: number;
   isPublished: boolean;
   thumbnail?: string;
   createdAt: string;
@@ -108,10 +110,25 @@ export interface VisitTrackResponse {
   counted: boolean;
 }
 
+export interface VisitTrackRequest {
+  clientId: string;
+  source: string;
+  referrerHost: string;
+  landingPath: string;
+}
+
+export interface VisitorRouteStat {
+  label: string;
+  count: number;
+}
+
 export interface VisitorStatsResponse {
   total: number;
   today: number;
   yesterday: number;
+  topSources: VisitorRouteStat[];
+  topReferrers: VisitorRouteStat[];
+  topLandingPaths: VisitorRouteStat[];
 }
 
 export interface CategoryNode {
@@ -137,6 +154,8 @@ export interface PostData {
   excerpt?: string;
   readingTime?: number;
   viewCount?: number;
+  commentCount?: number;
+  likeCount?: number;
   isPublished?: boolean;
   publishedAt?: string;
   thumbnail?: string;

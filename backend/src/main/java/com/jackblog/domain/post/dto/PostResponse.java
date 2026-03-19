@@ -22,6 +22,8 @@ public class PostResponse {
     private String category;
     private Integer readingTime;
     private Integer viewCount;
+    private Long commentCount;
+    private Long likeCount;
     private Boolean isPublished;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
@@ -73,6 +75,10 @@ public class PostResponse {
     }
 
     public static PostResponse from(Post post) {
+        return from(post, 0L, 0L);
+    }
+
+    public static PostResponse from(Post post, long commentCount, long likeCount) {
         return PostResponse.builder()
             .id(post.getId())
             .slug(post.getSlug())
@@ -82,6 +88,8 @@ public class PostResponse {
             .category(post.getCategory())
             .readingTime(post.getReadingTime())
             .viewCount(post.getViewCount())
+            .commentCount(commentCount)
+            .likeCount(likeCount)
             .isPublished(post.getIsPublished())
             .createdAt(post.getCreatedAt())
             .updatedAt(post.getUpdatedAt())
