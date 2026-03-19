@@ -20,27 +20,14 @@ import java.util.List;
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
 public class CommentService {
+    private static final String GUESTBOOK_SLUG = "guestbook";
 
     private final CommentRepository commentRepository;
     private final PostRepository postRepository;
     private final PasswordEncoder passwordEncoder;
 
     public List<CommentResponse> getComments(String slug) {
-        Post post = postRepository.findBySlug(slug)
-            .orElseGet(() -> {
-                if ("guestbook".equals(slug)) {
-                    Post guestbook = Post.builder()
-                        .slug("guestbook")
-                        .title("Guest Book")
-                        .content("Guest Book Content")
-                        .contentHtml("<p>Guest Book Content</p>")
-                        .category("System")
-                        .isPublished(true)
-                        .build();
-                    return postRepository.save(guestbook);
-                }
-                throw ResourceNotFoundException.post(slug);
-            });
+        Post post = resolveCommentTargetPost(slug);
 
         List<Comment> rootComments = commentRepository.findRootCommentsByPostId(post.getId());
         return CommentResponse.fromList(rootComments);
@@ -48,21 +35,7 @@ public class CommentService {
 
     @Transactional
     public CommentResponse createComment(String slug, CommentCreateRequest request) {
-        Post post = postRepository.findBySlug(slug)
-            .orElseGet(() -> {
-                if ("guestbook".equals(slug)) {
-                    Post guestbook = Post.builder()
-                        .slug("guestbook")
-                        .title("Guest Book")
-                        .content("Guest Book Content")
-                        .contentHtml("<p>Guest Book Content</p>")
-                        .category("System")
-                        .isPublished(true)
-                        .build();
-                    return postRepository.save(guestbook);
-                }
-                throw ResourceNotFoundException.post(slug);
-            });
+        Post post = resolveCommentTargetPost(slug);
 
         Comment comment = Comment.builder()
             .post(post)
@@ -134,5 +107,29 @@ public class CommentService {
         } else {
             commentRepository.delete(comment);
         }
+    }
+
+    private Post resolveCommentTargetPost(String slug) {
+        return postRepository.findBySlug(slug)
+            .map(post -> {
+                if (GUESTBOOK_SLUG.equals(slug) && Boolean.TRUE.equals(post.getIsPublished())) {
+                    post.unpublish();
+                }
+                return post;
+            })
+            .orElseGet(() -> {
+                if (GUESTBOOK_SLUG.equals(slug)) {
+                    Post guestbook = Post.builder()
+                        .slug(GUESTBOOK_SLUG)
+                        .title("Guest Book")
+                        .content("Guest Book Content")
+                        .contentHtml("<p>Guest Book Content</p>")
+                        .category("System")
+                        .isPublished(false)
+                        .build();
+                    return postRepository.save(guestbook);
+                }
+                throw ResourceNotFoundException.post(slug);
+            });
     }
 }

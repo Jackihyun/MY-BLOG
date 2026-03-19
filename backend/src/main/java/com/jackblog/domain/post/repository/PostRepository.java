@@ -36,7 +36,7 @@ public interface PostRepository extends JpaRepository<Post, Long> {
            "ORDER BY p.publishedAt DESC")
     List<Post> searchPosts(@Param("query") String query);
 
-    @Query("SELECT p FROM Post p WHERE p.isPublished = true ORDER BY p.viewCount DESC")
+    @Query("SELECT p FROM Post p WHERE p.isPublished = true AND p.slug <> 'guestbook' ORDER BY p.viewCount DESC")
     List<Post> findPopularPosts(Pageable pageable);
 
     @Query("SELECT p FROM Post p ORDER BY p.createdAt DESC")
