@@ -64,6 +64,9 @@ function MainAvatar({
   // 도착 상태를 추적하기 위한 ref
   const hasArrived = useRef(false);
   const currentZone = useRef<ActiveZone>("all");
+  
+  // 아령 렌더링을 위한 상태 (렌더링 사이클에 반영하기 위해 state 사용)
+  const [isExercising, setIsExercising] = useState(false);
 
   useFrame((state) => {
     if (!groupRef.current || reducedMotion) return;
@@ -73,6 +76,7 @@ function MainAvatar({
     if (currentZone.current !== activeZone) {
       hasArrived.current = false;
       currentZone.current = activeZone;
+      setIsExercising(false); // 이동 시작하면 아령 숨김
     }
 
     // 1. 상태에 따른 목표 위치 및 회전 설정
@@ -84,9 +88,9 @@ function MainAvatar({
       targetPos.set(-2.5, isClose ? 0.45 : 0, -1.8);
       targetRot.current = Math.PI;
     } else if (activeZone === "reading") {
-      // 소파에 겹치지 않게 위치 조정 (Z축을 살짝 앞으로 당기고, Y축을 낮춤)
-      const isClose = groupRef.current.position.distanceTo(new Vector3(2.3, groupRef.current.position.y, -2.1)) < 0.2;
-      targetPos.set(2.3, isClose ? 0.2 : 0, -2.1);
+      // 소파에 눕기 위해 위치를 소파 위로 더 올리고 중앙으로 이동
+      const isClose = groupRef.current.position.distanceTo(new Vector3(2.5, groupRef.current.position.y, -2.5)) < 0.2;
+      targetPos.set(2.5, isClose ? 0.4 : 0, -2.5);
       targetRot.current = -Math.PI / 6;
     } else if (activeZone === "exercising") {
       targetPos.set(1.5, 0, 2);
@@ -102,6 +106,9 @@ function MainAvatar({
     // 도착 이벤트 발생
     if (!isMoving && !hasArrived.current) {
       hasArrived.current = true;
+      if (activeZone === "exercising") {
+        setIsExercising(true); // 도착했을 때만 아령 표시
+      }
       if (onArrival) onArrival(activeZone);
     }
     
@@ -163,32 +170,33 @@ function MainAvatar({
         if (rightArmRef.current) rightArmRef.current.rotation.x = Math.cos(t * 15) * 0.1 - 0.5;
         if (headRef.current) headRef.current.rotation.y = Math.sin(t * 2) * 0.05;
       } else if (activeZone === "reading") {
-        // 소파에 편하게 눕는(기대는) 자세
+        // 소파에 완전히 눕는 자세
         if (bodyRef.current) {
-          bodyRef.current.rotation.x = -0.3; // 몸을 뒤로 젖힘
-          bodyRef.current.position.z = 0.1; // 몸을 살짝 뒤로 뺌
+          bodyRef.current.rotation.x = -Math.PI / 2.5; // 몸을 거의 90도 가깝게 뒤로 눕힘
+          bodyRef.current.position.y = 0.1; // 몸을 낮춤
+          bodyRef.current.position.z = 0.2; // 몸을 뒤로 뺌
         }
         
-        // 다리는 앞으로 쭉 뻗음
-        if (leftLegRef.current) leftLegRef.current.rotation.x = -Math.PI / 2.5;
-        if (rightLegRef.current) rightLegRef.current.rotation.x = -Math.PI / 2.5;
-        if (leftKneeRef.current) leftKneeRef.current.rotation.x = 0.2; // 무릎 살짝만 굽힘
-        if (rightKneeRef.current) rightKneeRef.current.rotation.x = 0.2;
+        // 다리는 앞으로 쭉 뻗어서 소파 위에 올림
+        if (leftLegRef.current) leftLegRef.current.rotation.x = -Math.PI / 2;
+        if (rightLegRef.current) rightLegRef.current.rotation.x = -Math.PI / 2;
+        if (leftKneeRef.current) leftKneeRef.current.rotation.x = 0; // 무릎 쫙 폄
+        if (rightKneeRef.current) rightKneeRef.current.rotation.x = 0;
         
-        // 팔은 소파 팔걸이에 걸치거나 배 위에 편하게
+        // 팔은 배 위에 편안하게 모음
         if (leftArmRef.current) {
-          leftArmRef.current.rotation.x = -0.2;
-          leftArmRef.current.rotation.z = 0.4;
+          leftArmRef.current.rotation.x = -0.5;
+          leftArmRef.current.rotation.z = 0.5;
         }
         if (rightArmRef.current) {
-          rightArmRef.current.rotation.x = -0.2;
-          rightArmRef.current.rotation.z = -0.4;
+          rightArmRef.current.rotation.x = -0.5;
+          rightArmRef.current.rotation.z = -0.5;
         }
         
-        // 고개는 하늘을 보거나 살짝 까딱
+        // 고개는 하늘을 보며 살짝 까딱 (숨쉬는 느낌)
         if (headRef.current) {
-          headRef.current.rotation.x = 0.2; // 기대서 앞을 보는 각도
-          headRef.current.rotation.y = Math.sin(t * 0.5) * 0.05; // 숨쉬듯 아주 살짝만
+          headRef.current.rotation.x = 0.3; // 천장을 봄
+          headRef.current.rotation.y = Math.sin(t * 0.5) * 0.05;
         }
       } else if (activeZone === "exercising") {
         // 아령 들고 운동하는 자세 (이두 컬)
@@ -199,7 +207,7 @@ function MainAvatar({
         const curl = (Math.sin(t * 3) + 1) / 2; // 0 ~ 1 사이 값
         
         if (leftArmRef.current) {
-          leftArmRef.current.rotation.x = -0.2 - (curl * 1.5); // 팔 전체를 살짝 들고 무릎 굽힘
+          leftArmRef.current.rotation.x = -0.2 - (curl * 1.5);
           leftArmRef.current.rotation.z = 0.2;
         }
         if (rightArmRef.current) {
@@ -259,8 +267,8 @@ function MainAvatar({
             <meshStandardMaterial color={skinColor} />
           </Sphere>
           
-          {/* 손에 든 아령 (운동 중일 때만 표시) */}
-          <group position={[0, -0.26, 0.05]} visible={activeZone === "exercising" && hasArrived.current}>
+          {/* 손에 든 아령 (도착해서 운동 중일 때만 표시) */}
+          <group position={[0, -0.26, 0.05]} visible={isExercising}>
             <Cylinder args={[0.02, 0.02, 0.15]} rotation={[0, 0, Math.PI / 2]} castShadow>
               <meshStandardMaterial color="#ccc" metalness={0.8} />
             </Cylinder>
@@ -284,8 +292,8 @@ function MainAvatar({
             <meshStandardMaterial color={skinColor} />
           </Sphere>
           
-          {/* 손에 든 아령 (운동 중일 때만 표시) */}
-          <group position={[0, -0.26, 0.05]} visible={activeZone === "exercising" && hasArrived.current}>
+          {/* 손에 든 아령 (도착해서 운동 중일 때만 표시) */}
+          <group position={[0, -0.26, 0.05]} visible={isExercising}>
             <Cylinder args={[0.02, 0.02, 0.15]} rotation={[0, 0, Math.PI / 2]} castShadow>
               <meshStandardMaterial color="#ccc" metalness={0.8} />
             </Cylinder>
@@ -359,9 +367,9 @@ function OutdoorEnvironment({ isNight }: { isNight: boolean }) {
   const groundColor = useRef(new Color());
   
   useFrame(() => {
-    // 부드러운 색상 전환 (밤일 때 너무 까맣지 않게 짙은 네이비/보라빛으로 수정)
-    const targetSky = isNight ? new Color("#1e1b4b") : new Color("#fb923c");
-    const targetGround = isNight ? new Color("#0f172a") : new Color("#d97706");
+    // 밤일 때 파란빛 대신 따뜻하고 아늑한 웜그레이/다크초콜릿 톤으로 변경
+    const targetSky = isNight ? new Color("#2c2826") : new Color("#fb923c");
+    const targetGround = isNight ? new Color("#1a1816") : new Color("#d97706");
     
     skyColor.current.lerp(targetSky, 0.02);
     groundColor.current.lerp(targetGround, 0.02);
@@ -370,7 +378,7 @@ function OutdoorEnvironment({ isNight }: { isNight: boolean }) {
   return (
     <group>
       {isNight ? (
-        <Stars radius={50} depth={50} count={2000} factor={4} saturation={0} fade speed={1} />
+        <Stars radius={50} depth={50} count={1000} factor={3} saturation={0.5} fade speed={1} />
       ) : (
         <Sky distance={450000} sunPosition={[10, 2, -10]} inclination={0.49} azimuth={0.25} />
       )}
@@ -378,7 +386,7 @@ function OutdoorEnvironment({ isNight }: { isNight: boolean }) {
       {/* 먼 배경 바닥 (잔디/땅) */}
       <mesh position={[0, -2, 0]} rotation={[-Math.PI / 2, 0, 0]}>
         <planeGeometry args={[200, 200]} />
-        <meshBasicMaterial color={isNight ? "#0f172a" : "#7c9a6c"} />
+        <meshBasicMaterial color={isNight ? "#1a1816" : "#7c9a6c"} />
       </mesh>
       
       {/* 창밖 나무들 */}
@@ -386,13 +394,13 @@ function OutdoorEnvironment({ isNight }: { isNight: boolean }) {
         {[...Array(5)].map((_, i) => (
           <group key={i} position={[(i - 2) * 4 + Math.random() * 2, 0, Math.random() * -5]}>
             <Cylinder args={[0.2, 0.3, 3]} position={[0, 1.5, 0]}>
-              <meshBasicMaterial color={isNight ? "#1e293b" : "#5d4037"} />
+              <meshBasicMaterial color={isNight ? "#2c2826" : "#5d4037"} />
             </Cylinder>
             <Sphere args={[1.5, 16, 16]} position={[0, 3.5, 0]}>
-              <meshBasicMaterial color={isNight ? "#0f172a" : "#386641"} />
+              <meshBasicMaterial color={isNight ? "#1a1816" : "#386641"} />
             </Sphere>
             <Sphere args={[1.2, 16, 16]} position={[0.8, 3, 0.5]}>
-              <meshBasicMaterial color={isNight ? "#0f172a" : "#2a5934"} />
+              <meshBasicMaterial color={isNight ? "#1a1816" : "#2a5934"} />
             </Sphere>
           </group>
         ))}
@@ -626,14 +634,14 @@ function SceneContents({ reducedMotion = false, activeZone = "all", onZoneClick 
       {/* 바깥 풍경 (노을/밤하늘) */}
       <OutdoorEnvironment isNight={isLaptopMode} />
       
-      {/* 메인 조명들 - 밤일 때 너무 까맣지 않도록 밝기 상향 */}
-      <ambientLight intensity={isLaptopMode ? 0.3 : 0.4} color={isLaptopMode ? "#312e81" : "#fbbf24"} />
+      {/* 메인 조명들 - 밤일 때 파란빛을 없애고 따뜻한 웜그레이/주황빛으로 상향 */}
+      <ambientLight intensity={isLaptopMode ? 0.6 : 0.4} color={isLaptopMode ? "#5c544e" : "#fbbf24"} />
       
       <directionalLight
         castShadow
         position={[10, 8, -10]}
-        intensity={isLaptopMode ? 0.5 : 2.5}
-        color={isLaptopMode ? "#818cf8" : "#ffb703"}
+        intensity={isLaptopMode ? 0.8 : 2.5}
+        color={isLaptopMode ? "#fcd34d" : "#ffb703"}
         shadow-mapSize-width={2048}
         shadow-mapSize-height={2048}
         shadow-camera-near={0.5}
@@ -645,7 +653,7 @@ function SceneContents({ reducedMotion = false, activeZone = "all", onZoneClick 
         shadow-bias={-0.0001}
       />
       
-      <directionalLight position={[-5, 5, 5]} intensity={isLaptopMode ? 0.4 : 0.8} color={isLaptopMode ? "#4f46e5" : "#a78bfa"} />
+      <directionalLight position={[-5, 5, 5]} intensity={isLaptopMode ? 0.6 : 0.8} color={isLaptopMode ? "#d6d3d1" : "#a78bfa"} />
 
       <DioramaRoom reducedMotion={reducedMotion} activeZone={activeZone} onZoneClick={onZoneClick} isLaptopMode={isLaptopMode} hasArrived={hasArrived} />
       
