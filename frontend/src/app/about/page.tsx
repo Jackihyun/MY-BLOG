@@ -1,10 +1,9 @@
-import React from "react";
-import MyIntro from "@/containers/main/MyIntro";
+import AboutShowcase from "@/components/about/AboutShowcase";
 
 export default function AboutPage() {
   return (
-    <div className="py-12">
-      <MyIntro />
+    <div className="relative left-1/2 w-screen -translate-x-1/2">
+      <AboutShowcase />
     </div>
   );
 }

@@ -39,7 +39,7 @@ export default function Header() {
   const normalizedQuery = useMemo(() => normalizeSearchQuery(query), [query]);
   const shouldSearch = useMemo(
     () => canRunSearch(normalizedQuery),
-    [normalizedQuery]
+    [normalizedQuery],
   );
 
   useEffect(() => {
@@ -154,7 +154,7 @@ export default function Header() {
             Guest
           </Link>
           <a
-            href="https://jackihyun.me"
+            href="https://jackihyun.com"
             target="_blank"
             rel="noopener noreferrer"
             className="px-4 py-2 rounded-xl flex items-center gap-1.5 text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-50 hover:bg-zinc-50 dark:hover:bg-zinc-800/50 transition-all"
