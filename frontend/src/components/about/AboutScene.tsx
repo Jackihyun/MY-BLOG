@@ -76,23 +76,30 @@ function MainAvatar({
     }
 
     // 1. 상태에 따른 목표 위치 및 회전 설정
+    // Y축(높이)을 바닥(0)에 맞추고, 의자/소파에 앉을 때만 살짝 올림
     if (activeZone === "all") {
       targetPos.set(0, 0, 0);
       targetRot.current = Math.PI / 4;
     } else if (activeZone === "laptop") {
-      targetPos.set(-2.5, 0.45, -1.8);
+      // 노트북 자리 (이동 중에는 바닥 높이(0), 도착하면 의자 높이(0.45)로)
+      const isClose = groupRef.current.position.distanceTo(new Vector3(-2.5, groupRef.current.position.y, -1.8)) < 0.2;
+      targetPos.set(-2.5, isClose ? 0.45 : 0, -1.8);
       targetRot.current = Math.PI;
     } else if (activeZone === "reading") {
-      targetPos.set(2.5, 0.35, -2.4);
+      // 독서 자리 (이동 중에는 바닥 높이(0), 도착하면 소파 높이(0.35)로)
+      const isClose = groupRef.current.position.distanceTo(new Vector3(2.5, groupRef.current.position.y, -2.4)) < 0.2;
+      targetPos.set(2.5, isClose ? 0.35 : 0, -2.4);
       targetRot.current = -Math.PI / 6;
     } else if (activeZone === "exercising") {
       targetPos.set(1.5, 0, 2);
       targetRot.current = -Math.PI / 4;
     }
 
-    // 2. 이동 및 회전 처리
-    const distance = groupRef.current.position.distanceTo(targetPos);
-    const isMoving = distance > 0.1;
+    // 2. 이동 및 회전 처리 (Y축 무시하고 평면 거리만 계산하여 이동 여부 판단)
+    const currentPosXZ = new Vector3(groupRef.current.position.x, 0, groupRef.current.position.z);
+    const targetPosXZ = new Vector3(targetPos.x, 0, targetPos.z);
+    const distanceXZ = currentPosXZ.distanceTo(targetPosXZ);
+    const isMoving = distanceXZ > 0.1;
     
     // 도착 이벤트 발생
     if (!isMoving && !hasArrived.current) {
@@ -110,12 +117,16 @@ function MainAvatar({
       while (diff > Math.PI) diff -= Math.PI * 2;
       groupRef.current.rotation.y += diff * 0.1;
       
-      groupRef.current.position.lerp(targetPos, 0.05);
+      // 이동 중일 때는 Y축을 0으로 강제 유지 (붕 뜨는 현상 방지)
+      groupRef.current.position.lerp(new Vector3(targetPos.x, 0, targetPos.z), 0.05);
     } else {
       let diff = targetRot.current - groupRef.current.rotation.y;
       while (diff < -Math.PI) diff += Math.PI * 2;
       while (diff > Math.PI) diff -= Math.PI * 2;
       groupRef.current.rotation.y += diff * 0.1;
+      
+      // 도착했을 때만 Y축(의자/소파 높이)까지 부드럽게 이동
+      groupRef.current.position.lerp(targetPos, 0.1);
     }
 
     // 3. 애니메이션 초기화
@@ -451,7 +462,6 @@ function DioramaRoom({ reducedMotion = false, activeZone = "all", onZoneClick, i
           <Sphere args={[0.15, 32, 32, 0, Math.PI * 2, 0, Math.PI / 2]} position={[0, 0.5, 0]} rotation={[0.5, 0, 0]} castShadow>
             <meshStandardMaterial color={isLaptopMode ? "#fef08a" : "#fff"} side={2} />
           </Sphere>
-          {/* 조명은 노트북 모드일 때만 켜짐 */}
           {isLaptopMode && (
             <pointLight position={[0, 0.4, 0.1]} intensity={2.5} color="#fef08a" distance={4} />
           )}
