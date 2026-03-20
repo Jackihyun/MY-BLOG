@@ -1555,21 +1555,25 @@ function PostsList({ allPostsData }: { allPostsData: PostData[] }) {
                             <p className="mt-2.5 text-[13px] md:text-sm text-zinc-600 dark:text-zinc-400 line-clamp-2 leading-relaxed font-medium">
                               {getPostPreview(excerpt, contentHtml, 160)}
                             </p>
-                            <div className="flex items-center gap-3 mt-5">
-                              <span className="px-2.5 py-1 text-xs font-bold rounded-full bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400">
-                                {categoryName}
-                              </span>
-                              <span className="text-xs text-zinc-400 dark:text-zinc-500 font-medium">
-                                {date}
-                              </span>
+                            <div className="mt-5 flex flex-wrap items-center justify-between gap-x-3 gap-y-2">
+                              <div className="flex min-w-0 items-center gap-3">
+                                <span className="px-2.5 py-1 text-xs font-bold rounded-full bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400">
+                                  {categoryName}
+                                </span>
+                                <span className="text-xs text-zinc-400 dark:text-zinc-500 font-medium">
+                                  {date}
+                                </span>
+                              </div>
+                              <PostEngagementStats
+                                className="ml-auto flex-nowrap gap-2.5 text-[11px] md:text-xs"
+                                itemClassName="gap-1 min-w-0 justify-end"
+                                iconClassName="h-3.5 w-3.5"
+                                compact
+                                viewCount={viewCount}
+                                likeCount={likeCount}
+                                commentCount={commentCount}
+                              />
                             </div>
-                            <PostEngagementStats
-                              className="mt-5 justify-end"
-                              itemClassName="min-w-[3.75rem] justify-end"
-                              viewCount={viewCount}
-                              likeCount={likeCount}
-                              commentCount={commentCount}
-                            />
                           </div>
                           <div className="hidden lg:flex items-center justify-center w-10 h-10 rounded-full bg-zinc-50 dark:bg-zinc-800 group-hover:bg-indigo-50 dark:group-hover:bg-indigo-900/30 transition-colors self-center">
                             <svg
