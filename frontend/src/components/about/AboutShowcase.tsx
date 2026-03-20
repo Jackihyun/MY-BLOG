@@ -65,17 +65,20 @@ export default function AboutShowcase() {
   const [activeZone, setActiveZone] = useState<ActiveZone>("all");
 
   return (
-    // 배경색을 투명하게(bg-transparent) 처리하여 부모 레이아웃의 배경과 자연스럽게 이어지도록 수정
     <div className="flex flex-col lg:flex-row min-h-screen bg-transparent">
       {/* Left Column: 3D Scene (Sticky) */}
+      {/* h-screen과 sticky를 사용하여 스크롤 시에도 완벽하게 고정되도록 수정 (상하 여백으로 인한 흔들림 방지) */}
       <div className="relative w-full lg:w-1/2 h-[60vh] lg:h-screen lg:sticky lg:top-0 overflow-hidden border-b lg:border-b-0 lg:border-r border-zinc-200/50 dark:border-zinc-800/50 flex items-center justify-center">
-        {/* Background Gradients (은은하게) */}
+        {/* Background Gradients */}
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(245,158,11,0.03),transparent_60%)] dark:bg-[radial-gradient(circle_at_50%_50%,rgba(245,158,11,0.08),transparent_60%)]" />
         <div className="absolute inset-0 bg-[linear-gradient(rgba(148,163,184,0.03)_1px,transparent_1px),linear-gradient(90deg,rgba(148,163,184,0.03)_1px,transparent_1px)] bg-[size:32px_32px]" />
         
-        <AboutScene reducedMotion={prefersReducedMotion} activeZone={activeZone} onZoneClick={setActiveZone} />
+        {/* 3D Canvas Container */}
+        <div className="absolute inset-0 w-full h-full">
+          <AboutScene reducedMotion={prefersReducedMotion} activeZone={activeZone} onZoneClick={setActiveZone} />
+        </div>
         
-        <div className="absolute left-6 top-6 lg:left-10 lg:top-10 pointer-events-none">
+        <div className="absolute left-6 top-6 lg:left-10 lg:top-10 pointer-events-none z-10">
           <p className="text-[10px] font-bold uppercase tracking-[0.3em] text-zinc-500 dark:text-zinc-400">
             Interactive Room
           </p>
@@ -146,8 +149,8 @@ export default function AboutShowcase() {
           <div className="grid gap-4 sm:grid-cols-3">
             {[
               { id: "laptop", label: "💻 코딩/작업" },
-              { id: "reading", label: "📚 독서/기록" },
-              { id: "exercising", label: "🏋️ 운동/휴식" },
+              { id: "reading", label: "📚 독서/휴식" },
+              { id: "exercising", label: "🏋️ 운동" },
             ].map((btn) => (
               <button
                 key={btn.id}
