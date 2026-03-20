@@ -21,7 +21,6 @@ function CameraRig({ reducedMotion = false }: { reducedMotion?: boolean }) {
   const targetPos = new Vector3();
 
   useFrame(() => {
-    // 마우스에 따라 살짝만 움직이도록 (전체 방 뷰 고정)
     const pointerX = reducedMotion ? 0 : pointer.x * 2;
     const pointerY = reducedMotion ? 0 : pointer.y * 2;
     targetPos.set(7.5 + pointerX, 6 + pointerY, 9);
@@ -61,25 +60,21 @@ function MainAvatar({
   const targetPos = useMemo(() => new Vector3(), []);
   const targetRot = useRef(0);
   
-  // 도착 상태를 추적하기 위한 ref
   const hasArrived = useRef(false);
   const currentZone = useRef<ActiveZone>("all");
   
-  // 아령 렌더링을 위한 상태
   const [isExercising, setIsExercising] = useState(false);
 
   useFrame((state) => {
     if (!groupRef.current || reducedMotion) return;
     const t = state.clock.elapsedTime;
 
-    // 존이 변경되었을 때 초기화
     if (currentZone.current !== activeZone) {
       hasArrived.current = false;
       currentZone.current = activeZone;
-      setIsExercising(false); // 이동 시작하면 아령 숨김
+      setIsExercising(false);
     }
 
-    // 1. 상태에 따른 목표 위치 및 회전 설정
     if (activeZone === "all") {
       targetPos.set(0, 0, 0);
       targetRot.current = Math.PI / 4;
@@ -96,13 +91,11 @@ function MainAvatar({
       targetRot.current = -Math.PI / 4;
     }
 
-    // 2. 이동 및 회전 처리
     const currentPosXZ = new Vector3(groupRef.current.position.x, 0, groupRef.current.position.z);
     const targetPosXZ = new Vector3(targetPos.x, 0, targetPos.z);
     const distanceXZ = currentPosXZ.distanceTo(targetPosXZ);
     const isMoving = distanceXZ > 0.1;
     
-    // 도착 이벤트 발생
     if (!isMoving && !hasArrived.current) {
       hasArrived.current = true;
       if (activeZone === "exercising") {
@@ -131,7 +124,6 @@ function MainAvatar({
       groupRef.current.position.lerp(targetPos, 0.1);
     }
 
-    // 3. 애니메이션 초기화 (기본값)
     if (headRef.current) headRef.current.rotation.set(0, 0, 0);
     if (leftArmRef.current) leftArmRef.current.rotation.set(0, 0, 0);
     if (rightArmRef.current) rightArmRef.current.rotation.set(0, 0, 0);
@@ -144,7 +136,6 @@ function MainAvatar({
       bodyRef.current.rotation.set(0, 0, 0);
     }
 
-    // 4. 상태별 애니메이션 적용
     if (isMoving) {
       if (bodyRef.current) bodyRef.current.position.y = 0.25 + Math.abs(Math.sin(t * 15)) * 0.05;
       if (leftArmRef.current) leftArmRef.current.rotation.x = Math.sin(t * 15) * 0.6;
@@ -351,7 +342,6 @@ function InteractiveZone({
   );
 }
 
-// 배경 환경 컴포넌트 (실제 시간에 따라 변하도록 수정)
 function OutdoorEnvironment({ timeOfDay }: { timeOfDay: "day" | "sunset" | "night" }) {
   const skyColor = useRef(new Color());
   const groundColor = useRef(new Color());
@@ -366,8 +356,8 @@ function OutdoorEnvironment({ timeOfDay }: { timeOfDay: "day" | "sunset" | "nigh
       targetSky = new Color("#fb923c");
       targetGround = new Color("#d97706");
     } else {
-      targetSky = new Color("#60a5fa"); // 낮 하늘
-      targetGround = new Color("#4ade80"); // 낮 잔디
+      targetSky = new Color("#60a5fa");
+      targetGround = new Color("#4ade80");
     }
     
     skyColor.current.lerp(targetSky, 0.02);
@@ -387,13 +377,11 @@ function OutdoorEnvironment({ timeOfDay }: { timeOfDay: "day" | "sunset" | "nigh
         />
       )}
       
-      {/* 먼 배경 바닥 (잔디/땅) */}
       <mesh position={[0, -2, 0]} rotation={[-Math.PI / 2, 0, 0]}>
         <planeGeometry args={[200, 200]} />
         <meshBasicMaterial color={timeOfDay === "night" ? "#1a1816" : (timeOfDay === "sunset" ? "#7c9a6c" : "#86efac")} />
       </mesh>
       
-      {/* 창밖 나무들 */}
       <group position={[0, -1, -10]}>
         {[...Array(5)].map((_, i) => (
           <group key={i} position={[(i - 2) * 4 + Math.random() * 2, 0, Math.random() * -5]}>
@@ -420,17 +408,14 @@ function DioramaRoom({ reducedMotion = false, activeZone = "all", onZoneClick, i
 
   return (
     <group position={[0, -1, 0]}>
-      {/* 감성적인 우드 바닥 */}
       <Box args={[8, 0.4, 8]} position={[0, -0.2, 0]} receiveShadow>
         <meshStandardMaterial color="#b08968" roughness={0.8} />
       </Box>
       
-      {/* 따뜻한 크림색 벽 */}
       <Box args={[0.4, 5, 8]} position={[-4.2, 2.5, 0]} receiveShadow castShadow>
         <meshStandardMaterial color="#fdfbf7" roughness={0.9} />
       </Box>
       
-      {/* 뒷벽 (창문 뚫기 위해 여러 파트로 분할) */}
       <group position={[0, 2.5, -4.2]}>
         <Box args={[8, 1.2, 0.4]} position={[0, 1.9, 0]} receiveShadow castShadow><meshStandardMaterial color="#fdfbf7" roughness={0.9} /></Box>
         <Box args={[8, 1.2, 0.4]} position={[0, -1.9, 0]} receiveShadow castShadow><meshStandardMaterial color="#fdfbf7" roughness={0.9} /></Box>
@@ -438,11 +423,9 @@ function DioramaRoom({ reducedMotion = false, activeZone = "all", onZoneClick, i
         <Box args={[2, 2.6, 0.4]} position={[3, 0, 0]} receiveShadow castShadow><meshStandardMaterial color="#fdfbf7" roughness={0.9} /></Box>
       </group>
 
-      {/* 나무 몰딩 */}
       <Box args={[0.1, 0.4, 8]} position={[-3.95, 0.2, 0]} receiveShadow><meshStandardMaterial color="#7f5539" roughness={0.8} /></Box>
       <Box args={[8, 0.4, 0.1]} position={[0, 0.2, -3.95]} receiveShadow><meshStandardMaterial color="#7f5539" roughness={0.8} /></Box>
 
-      {/* 뚫린 창문 프레임 */}
       <group position={[0, 2.5, -4]}>
         <Box args={[4.2, 2.8, 0.2]} position={[0, 0, 0]} castShadow><meshStandardMaterial color="#fff" /></Box>
         <Box args={[4, 2.6, 0.25]} position={[0, 0, 0]}><meshBasicMaterial color="#000" colorWrite={false} depthWrite={false} /></Box>
@@ -454,12 +437,10 @@ function DioramaRoom({ reducedMotion = false, activeZone = "all", onZoneClick, i
         <Box args={[4, 0.1, 0.1]} position={[0, 0, 0.05]} castShadow><meshStandardMaterial color="#fff" /></Box>
       </group>
 
-      {/* 포근한 러그 */}
       <Cylinder args={[3, 3, 0.04, 64]} position={[0, 0.02, 0]} receiveShadow>
         <meshStandardMaterial color="#e2e8f0" roughness={1} />
       </Cylinder>
 
-      {/* 1. 노트북 존 */}
       <InteractiveZone position={[-2.5, 0, -2.5]} zone="laptop" onClick={handleZoneClick}>
         <RoundedBox args={[2.2, 0.1, 1.2]} position={[0, 1, 0]} radius={0.05} castShadow receiveShadow>
           <meshStandardMaterial color="#7f5539" roughness={0.7} />
@@ -482,7 +463,6 @@ function DioramaRoom({ reducedMotion = false, activeZone = "all", onZoneClick, i
           </group>
         </group>
 
-        {/* 감성 스탠드 조명 */}
         <group position={[-0.8, 1.05, -0.3]}>
           <Cylinder args={[0.12, 0.15, 0.05, 32]} castShadow><meshStandardMaterial color="#eab308" /></Cylinder>
           <Cylinder args={[0.02, 0.02, 0.5, 16]} position={[0, 0.25, 0]} castShadow><meshStandardMaterial color="#eab308" /></Cylinder>
@@ -502,7 +482,6 @@ function DioramaRoom({ reducedMotion = false, activeZone = "all", onZoneClick, i
         </group>
       </InteractiveZone>
 
-      {/* 2. 휴식 존 */}
       <InteractiveZone position={[2.5, 0, -2.5]} zone="reading" onClick={handleZoneClick}>
         <group position={[0, 0.3, 0]} rotation={[0, -Math.PI / 6, 0]}>
           <RoundedBox args={[1.4, 0.6, 1.4]} position={[0, 0, 0]} radius={0.2} castShadow receiveShadow><meshStandardMaterial color="#e07a5f" roughness={0.9} /></RoundedBox>
@@ -520,7 +499,6 @@ function DioramaRoom({ reducedMotion = false, activeZone = "all", onZoneClick, i
         </group>
       </InteractiveZone>
 
-      {/* 3. 운동 존 */}
       <InteractiveZone position={[1.5, 0, 2]} zone="exercising" onClick={handleZoneClick}>
         <group position={[-1.2, 0.1, 0.5]} visible={activeZone !== "exercising" || !hasArrived}>
           <group position={[0, 0, 0]}>
@@ -572,7 +550,6 @@ function SceneContents({ reducedMotion = false, activeZone = "all", onZoneClick 
   const [hasArrived, setHasArrived] = useState(false);
   const [timeOfDay, setTimeOfDay] = useState<"day" | "sunset" | "night">("day");
   
-  // 실제 시간에 따른 배경 및 조명 설정
   useEffect(() => {
     const hour = new Date().getHours();
     if (hour >= 18 || hour < 6) {
@@ -584,13 +561,11 @@ function SceneContents({ reducedMotion = false, activeZone = "all", onZoneClick 
     }
   }, []);
   
-  // 아바타가 도착했을 때만 조명을 바꾸기 위한 콜백
   const handleArrival = (zone: ActiveZone) => {
     setHasArrived(true);
     setIsLaptopMode(zone === "laptop");
   };
 
-  // 존이 바뀌면 일단 조명은 원래대로 (이동 중에는 밝게)
   useEffect(() => {
     setHasArrived(false);
     if (activeZone !== "laptop") {
@@ -598,51 +573,47 @@ function SceneContents({ reducedMotion = false, activeZone = "all", onZoneClick 
     }
   }, [activeZone]);
 
-  // 시간에 따른 조명 색상 및 강도 설정
+  // 그림자 문제를 해결하기 위해 조명 설정 대폭 수정
+  // 그림자를 생성하는 방향광(directionalLight)은 유지하되, 
+  // 그림자가 지는 어두운 부분을 밝혀주는 환경광(ambientLight)과 보조광(fill light)을 강하게 설정
   const getLightSettings = () => {
     if (isLaptopMode) {
-      // 노트북 모드 (밤/새벽 감성)
       return {
-        ambientColor: "#5c544e",
-        ambientIntensity: 0.6,
+        ambientColor: "#ffffff", // 밤에도 기본 물체 색상이 보이도록 흰색 계열의 환경광
+        ambientIntensity: 1.2, // 환경광을 매우 높여서 그림자 대비를 줄임
         dirColor: "#fcd34d",
-        dirIntensity: 0.8,
-        fillColor: "#d6d3d1",
-        fillIntensity: 0.6,
-        shadowOpacity: 0.8 // 그림자 연하게
+        dirIntensity: 0.5, // 그림자를 만드는 메인 빛은 약하게
+        fillColor: "#ffffff",
+        fillIntensity: 1.0,
       };
     }
     
     if (timeOfDay === "night") {
       return {
-        ambientColor: "#475569",
-        ambientIntensity: 0.5,
+        ambientColor: "#ffffff",
+        ambientIntensity: 1.2,
         dirColor: "#93c5fd",
-        dirIntensity: 1.2,
-        fillColor: "#64748b",
-        fillIntensity: 0.8,
-        shadowOpacity: 0.6
+        dirIntensity: 0.5,
+        fillColor: "#ffffff",
+        fillIntensity: 1.0,
       };
     } else if (timeOfDay === "sunset") {
       return {
-        ambientColor: "#fbbf24",
-        ambientIntensity: 0.6,
+        ambientColor: "#ffffff",
+        ambientIntensity: 1.5,
         dirColor: "#ffb703",
-        dirIntensity: 2.0,
-        fillColor: "#a78bfa",
-        fillIntensity: 0.8,
-        shadowOpacity: 0.8
+        dirIntensity: 1.0,
+        fillColor: "#ffffff",
+        fillIntensity: 1.2,
       };
     } else {
-      // 낮
       return {
         ambientColor: "#ffffff",
-        ambientIntensity: 0.8,
-        dirColor: "#fdfbf7",
-        dirIntensity: 2.5,
-        fillColor: "#bae6fd",
-        fillIntensity: 1.0,
-        shadowOpacity: 0.9 // 그림자 연하게
+        ambientIntensity: 1.8, // 낮에는 그림자 진 곳도 매우 밝게
+        dirColor: "#ffffff",
+        dirIntensity: 1.2,
+        fillColor: "#ffffff",
+        fillIntensity: 1.5,
       };
     }
   };
@@ -651,48 +622,49 @@ function SceneContents({ reducedMotion = false, activeZone = "all", onZoneClick 
 
   return (
     <>
-      {/* 그림자 대비를 낮춰서 너무 진하지 않게 설정 */}
-      <SoftShadows size={25} samples={16} focus={0.5} />
+      {/* 그림자를 아주 연하게 만들기 위해 SoftShadows 제거 (기본 그림자만 사용) */}
       
-      {/* 바깥 풍경 (실제 시간 연동) */}
       <OutdoorEnvironment timeOfDay={isLaptopMode ? "night" : timeOfDay} />
       
-      {/* 메인 조명들 */}
+      {/* 환경광: 방 전체의 기본 밝기를 결정 (그림자 진 곳을 밝혀줌) */}
       <ambientLight intensity={lights.ambientIntensity} color={lights.ambientColor} />
       
+      {/* 메인 방향광: 그림자를 생성하는 빛 */}
       <directionalLight
         castShadow
-        position={[10, 8, -10]}
+        position={[10, 15, -10]}
         intensity={lights.dirIntensity}
         color={lights.dirColor}
-        shadow-mapSize-width={2048}
-        shadow-mapSize-height={2048}
+        shadow-mapSize-width={1024}
+        shadow-mapSize-height={1024}
         shadow-camera-near={0.5}
-        shadow-camera-far={30}
-        shadow-camera-left={-10}
-        shadow-camera-right={10}
-        shadow-camera-top={10}
-        shadow-camera-bottom={-10}
-        shadow-bias={-0.0001}
+        shadow-camera-far={50}
+        shadow-camera-left={-15}
+        shadow-camera-right={15}
+        shadow-camera-top={15}
+        shadow-camera-bottom={-15}
+        shadow-bias={-0.001}
       />
       
-      <directionalLight position={[-5, 5, 5]} intensity={lights.fillIntensity} color={lights.fillColor} />
+      {/* 보조광: 그림자가 지는 반대편에서 빛을 쏴서 그림자를 옅게 만듦 */}
+      <directionalLight position={[-10, 10, 10]} intensity={lights.fillIntensity} color={lights.fillColor} />
+      <directionalLight position={[0, 10, 10]} intensity={lights.fillIntensity * 0.5} color={lights.fillColor} />
 
       <DioramaRoom reducedMotion={reducedMotion} activeZone={activeZone} onZoneClick={onZoneClick} isLaptopMode={isLaptopMode} hasArrived={hasArrived} />
       
-      {/* 아바타를 방 밖으로 빼되, 위치를 방 좌표계에 맞게 보정 (Y=-1) */}
       <group position={[0, -1, 0]}>
         <MainAvatar activeZone={activeZone} reducedMotion={reducedMotion} onArrival={handleArrival} />
       </group>
       
+      {/* 바닥 그림자도 아주 연하게 */}
       <ContactShadows
         position={[0, -1.05, 0]}
-        opacity={lights.shadowOpacity * 0.5} // 바닥 그림자도 연하게
+        opacity={0.2}
         scale={25}
         blur={2.5}
         far={4}
         resolution={1024}
-        color="#432818"
+        color="#000000"
       />
       <CameraRig reducedMotion={reducedMotion} />
     </>
