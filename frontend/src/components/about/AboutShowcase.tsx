@@ -4,8 +4,6 @@ import { motion, useReducedMotion } from "framer-motion";
 import Link from "next/link";
 import AboutScene from "@/components/about/AboutScene";
 
-const introPills = ["Frontend", "기록", "AI 활용"];
-
 const profileHighlights = [
   {
     index: "01",
@@ -61,58 +59,58 @@ const stackGroups = [
   },
 ];
 
-const workStyle = [
-  "기능만 구현하는 것보다, 화면이 어떻게 읽히는지까지 함께 봅니다.",
-  "처음부터 완벽하게 만들기보다 일단 만들고 계속 고쳐가는 쪽에 가깝습니다.",
-  "새로운 기술은 블로그나 사이드 프로젝트에 직접 써보면서 익힙니다.",
-];
-
 export default function AboutShowcase() {
   const prefersReducedMotion = useReducedMotion();
 
   return (
-    <div className="space-y-16 pb-20">
-      {/* 1. Hero Section (Text Only) */}
-      <section className="relative pt-20 pb-10 md:pt-32 md:pb-16 px-6 text-center max-w-4xl mx-auto">
-        <motion.div
+    <div className="flex flex-col lg:flex-row min-h-screen bg-white dark:bg-[#090c10]">
+      {/* Left Column: 3D Scene (Sticky) */}
+      <div className="relative w-full lg:w-1/2 h-[60vh] lg:h-screen lg:sticky lg:top-0 overflow-hidden bg-zinc-50 dark:bg-[#0d1117] border-b lg:border-b-0 lg:border-r border-zinc-200 dark:border-zinc-800 flex items-center justify-center">
+        {/* Background Gradients */}
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(245,158,11,0.05),transparent_50%)] dark:bg-[radial-gradient(circle_at_50%_50%,rgba(245,158,11,0.1),transparent_50%)]" />
+        <div className="absolute inset-0 bg-[linear-gradient(rgba(148,163,184,0.05)_1px,transparent_1px),linear-gradient(90deg,rgba(148,163,184,0.05)_1px,transparent_1px)] bg-[size:32px_32px]" />
+        
+        <AboutScene reducedMotion={prefersReducedMotion} />
+        
+        <div className="absolute left-6 top-6 lg:left-10 lg:top-10">
+          <p className="text-[10px] font-bold uppercase tracking-[0.3em] text-zinc-500 dark:text-zinc-400">
+            Interactive Room
+          </p>
+        </div>
+      </div>
+
+      {/* Right Column: Scrollable Content */}
+      <div className="w-full lg:w-1/2 px-6 py-16 md:px-12 lg:px-20 lg:py-32 space-y-32">
+        
+        {/* Hero Section */}
+        <motion.section
           initial={{ opacity: 0, y: prefersReducedMotion ? 0 : 20 }}
-          animate={{ opacity: 1, y: 0 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
           transition={{ duration: 0.7 }}
-          className="space-y-8 flex flex-col items-center"
+          className="space-y-8"
         >
-          <div className="inline-flex items-center gap-3 border border-zinc-900/10 bg-white/60 px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.26em] text-zinc-700 backdrop-blur dark:border-white/10 dark:bg-white/5 dark:text-zinc-200 rounded-full">
-            <span className="h-2 w-2 rounded-full bg-amber-500" />
+          <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-zinc-100 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 text-xs font-semibold text-zinc-700 dark:text-zinc-300">
+            <span className="w-2 h-2 rounded-full bg-amber-500 animate-pulse"></span>
             About Jack
           </div>
 
-          <h1 className="text-[3rem] font-black leading-[1.1] tracking-tight md:text-[5rem] xl:text-[6rem] text-zinc-900 dark:text-zinc-50">
-            안녕하세요,
-            <br />
+          <h1 className="text-[2.5rem] md:text-[3.5rem] lg:text-[4rem] font-black leading-[1.1] tracking-tight text-zinc-900 dark:text-zinc-50">
+            안녕하세요,<br />
             Jack입니다.
           </h1>
           
-          <p className="max-w-2xl text-base leading-8 text-zinc-600 dark:text-zinc-400 md:text-lg">
+          <p className="text-lg leading-8 text-zinc-600 dark:text-zinc-400">
             화면을 설계하고 다듬는 일을 좋아합니다. 기능만 되는 것보다
             읽기 쉽고, 흐름이 자연스럽고, 다시 손대기 좋은 구조를 더
             좋아합니다. 이 페이지는 저를 소개하는 공간이지만, 동시에 제가
             화면을 다루는 방식이 자연스럽게 보이도록 만든 About이기도 합니다.
           </p>
 
-          <div className="flex flex-wrap justify-center gap-2.5 pt-4">
-            {introPills.map((pill) => (
-              <span
-                key={pill}
-                className="border border-zinc-900/10 bg-white px-4 py-2 text-sm font-medium text-zinc-700 dark:border-white/10 dark:bg-zinc-800 dark:text-zinc-200 rounded-full"
-              >
-                {pill}
-              </span>
-            ))}
-          </div>
-
-          <div className="flex flex-wrap justify-center gap-3 pt-4">
+          <div className="flex flex-wrap gap-3 pt-4">
             <Link
               href="/posts"
-              className="inline-flex items-center justify-center bg-zinc-900 px-6 py-3.5 text-sm font-semibold text-white transition-colors hover:bg-zinc-800 dark:bg-white dark:text-zinc-900 dark:hover:bg-zinc-200 rounded-full"
+              className="inline-flex items-center justify-center bg-zinc-900 px-6 py-3.5 text-sm font-semibold text-white transition-all hover:bg-zinc-800 hover:scale-[1.02] dark:bg-white dark:text-zinc-900 dark:hover:bg-zinc-200 rounded-xl shadow-sm"
             >
               글 보러가기
             </Link>
@@ -120,168 +118,101 @@ export default function AboutShowcase() {
               href="https://github.com/jackihyun"
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center justify-center border border-zinc-900/10 bg-white px-6 py-3.5 text-sm font-semibold text-zinc-800 transition-colors hover:bg-zinc-50 dark:border-white/10 dark:bg-zinc-900 dark:text-zinc-100 dark:hover:bg-zinc-800 rounded-full"
+              className="inline-flex items-center justify-center bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 px-6 py-3.5 text-sm font-semibold text-zinc-800 dark:text-zinc-200 transition-all hover:bg-zinc-50 dark:hover:bg-zinc-800 hover:scale-[1.02] rounded-xl shadow-sm"
             >
               GitHub
             </a>
-            <a
-              href="https://jackihyun.me/"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center justify-center border border-zinc-900/10 bg-white px-6 py-3.5 text-sm font-semibold text-zinc-800 transition-colors hover:bg-zinc-50 dark:border-white/10 dark:bg-zinc-900 dark:text-zinc-100 dark:hover:bg-zinc-800 rounded-full"
-            >
-              Portfolio
-            </a>
           </div>
-        </motion.div>
-      </section>
+        </motion.section>
 
-      {/* 2. 3D Room Showcase (Full Width / Large Block) */}
-      <section className="px-4 md:px-8 max-w-[1600px] mx-auto">
-        <motion.div
-          initial={{ opacity: 0, scale: prefersReducedMotion ? 1 : 0.98 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ duration: 0.8, delay: 0.2 }}
-          className="relative w-full h-[60vh] min-h-[500px] max-h-[800px] rounded-3xl overflow-hidden shadow-2xl border border-zinc-200/50 dark:border-zinc-800"
+        {/* Highlights Section */}
+        <motion.section
+          initial={{ opacity: 0, y: prefersReducedMotion ? 0 : 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.7 }}
+          className="space-y-10"
         >
-          <AboutScene reducedMotion={prefersReducedMotion} />
-          
-          <div className="absolute left-6 top-6 max-w-[280px] rounded-2xl border border-white/50 bg-white/60 px-5 py-4 text-zinc-800 backdrop-blur-md dark:border-white/10 dark:bg-black/40 dark:text-zinc-200">
-            <p className="text-[11px] font-bold uppercase tracking-[0.2em] text-zinc-500 dark:text-zinc-400">
-              My Routine Room
-            </p>
-            <p className="mt-2 text-sm leading-relaxed">
-              제가 좋아하는 작업, 독서, 운동 루틴을
-              <br />
-              디오라마(Diorama) 형태의 3D 방으로 구현했습니다.
-            </p>
+          <h2 className="text-2xl font-bold tracking-tight text-zinc-900 dark:text-zinc-50">
+            제가 일하는 방식
+          </h2>
+          <div className="grid gap-6">
+            {profileHighlights.map((card, index) => (
+              <div key={card.title} className="group relative bg-zinc-50 dark:bg-zinc-900/50 border border-zinc-200 dark:border-zinc-800 rounded-2xl p-6 md:p-8 transition-colors hover:bg-zinc-100 dark:hover:bg-zinc-900">
+                <p className="text-[11px] font-bold uppercase tracking-[0.2em] text-amber-500 mb-4">
+                  {card.index}
+                </p>
+                <h3 className="text-xl font-bold text-zinc-900 dark:text-zinc-50 mb-3">
+                  {card.title}
+                </h3>
+                <p className="text-zinc-600 dark:text-zinc-400 leading-relaxed">
+                  {card.description}
+                </p>
+              </div>
+            ))}
           </div>
-        </motion.div>
-      </section>
+        </motion.section>
 
-      {/* 3. Content Grid */}
-      <div className="mx-auto max-w-[1320px] px-4 md:px-8 xl:px-10 pt-10">
-        <section className="grid gap-px border border-zinc-200/80 bg-zinc-200/80 dark:border-zinc-800 dark:bg-zinc-800 lg:grid-cols-3 rounded-3xl overflow-hidden">
-          {profileHighlights.map((card, index) => (
-            <motion.article
-              key={card.title}
-              initial={{ opacity: 0, y: prefersReducedMotion ? 0 : 18 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true, amount: 0.35 }}
-              transition={{ duration: 0.5, delay: index * 0.06 }}
-              className="bg-white px-8 py-10 dark:bg-[#090c10]"
-            >
-              <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-zinc-400 dark:text-zinc-500">
-                {card.index}
-              </p>
-              <h2 className="mt-4 text-2xl font-bold tracking-tight text-zinc-900 dark:text-zinc-50">
-                {card.title}
-              </h2>
-              <p className="mt-4 text-sm leading-7 text-zinc-600 dark:text-zinc-400 md:text-base">
-                {card.description}
-              </p>
-            </motion.article>
-          ))}
-        </section>
-
-        <section className="mt-8 grid gap-8 xl:grid-cols-[1.1fr_0.9fr]">
-          <motion.div
-            initial={{ opacity: 0, y: prefersReducedMotion ? 0 : 18 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, amount: 0.2 }}
-            transition={{ duration: 0.55 }}
-            className="border border-zinc-200/80 bg-white dark:border-zinc-800 dark:bg-[#090c10] rounded-3xl overflow-hidden"
-          >
-            <div className="border-b border-zinc-200/80 px-8 py-8 dark:border-zinc-800">
-              <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-zinc-400 dark:text-zinc-500">
-                Introduction
-              </p>
-              <h2 className="mt-3 text-3xl font-black tracking-tight text-zinc-900 dark:text-zinc-50">
-                지금의 저를 조금 더 구체적으로 소개하면
-              </h2>
-            </div>
-            <div className="divide-y divide-zinc-200/80 dark:divide-zinc-800">
-              {introSections.map((point) => (
-                <div
-                  key={point.title}
-                  className="grid gap-4 px-8 py-8 md:grid-cols-[160px_1fr]"
-                >
-                  <p className="text-[12px] font-semibold uppercase tracking-[0.2em] text-zinc-400 dark:text-zinc-500 pt-1">
-                    {point.label}
-                  </p>
-                  <div>
-                    <h3 className="text-xl font-bold tracking-tight text-zinc-900 dark:text-zinc-50">
-                      {point.title}
-                    </h3>
-                    <p className="mt-3 text-base leading-8 text-zinc-600 dark:text-zinc-400">
-                      {point.body}
-                    </p>
-                  </div>
+        {/* Tech Stack Section */}
+        <motion.section
+          initial={{ opacity: 0, y: prefersReducedMotion ? 0 : 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.7 }}
+          className="space-y-10"
+        >
+          <h2 className="text-2xl font-bold tracking-tight text-zinc-900 dark:text-zinc-50">
+            주로 다루는 기술
+          </h2>
+          <div className="grid gap-6 sm:grid-cols-2">
+            {stackGroups.map((group) => (
+              <div key={group.title} className="bg-zinc-50 dark:bg-zinc-900/50 border border-zinc-200 dark:border-zinc-800 rounded-2xl p-6">
+                <h3 className="text-sm font-bold tracking-tight text-zinc-900 dark:text-zinc-100 mb-4">
+                  {group.title}
+                </h3>
+                <div className="flex flex-wrap gap-2">
+                  {group.items.map((item) => (
+                    <span
+                      key={item}
+                      className="bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 px-3 py-1.5 text-xs font-medium text-zinc-700 dark:text-zinc-300 rounded-lg shadow-sm"
+                    >
+                      {item}
+                    </span>
+                  ))}
                 </div>
-              ))}
-            </div>
-          </motion.div>
-
-          <div className="grid gap-8">
-            <motion.div
-              initial={{ opacity: 0, y: prefersReducedMotion ? 0 : 18 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true, amount: 0.3 }}
-              transition={{ duration: 0.55 }}
-              className="border border-zinc-200/80 bg-[#fcf9f5] p-8 dark:border-zinc-800 dark:bg-[#10161d] rounded-3xl"
-            >
-              <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-zinc-400 dark:text-zinc-500">
-                Tech Stack
-              </p>
-              <div className="mt-6 space-y-6">
-                {stackGroups.map((group) => (
-                  <div key={group.title}>
-                    <h3 className="text-sm font-bold tracking-tight text-zinc-800 dark:text-zinc-200">
-                      {group.title}
-                    </h3>
-                    <div className="mt-3 flex flex-wrap gap-2">
-                      {group.items.map((item) => (
-                        <span
-                          key={item}
-                          className="border border-zinc-900/10 bg-white px-3.5 py-1.5 text-sm font-medium text-zinc-700 dark:border-white/10 dark:bg-white/5 dark:text-zinc-200 rounded-lg"
-                        >
-                          {item}
-                        </span>
-                      ))}
-                    </div>
-                  </div>
-                ))}
               </div>
-            </motion.div>
-
-            <motion.div
-              initial={{ opacity: 0, y: prefersReducedMotion ? 0 : 18 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true, amount: 0.3 }}
-              transition={{ duration: 0.55, delay: 0.05 }}
-              className="border border-zinc-200/80 bg-zinc-950 p-8 text-white dark:border-zinc-800 rounded-3xl"
-            >
-              <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-zinc-400">
-                Work Style
-              </p>
-              <div className="mt-6 space-y-4">
-                {workStyle.map((step, index) => (
-                  <div
-                    key={step}
-                    className="border border-white/10 bg-white/[0.04] px-5 py-5 rounded-2xl"
-                  >
-                    <p className="text-[11px] font-bold uppercase tracking-[0.2em] text-amber-300">
-                      Point 0{index + 1}
-                    </p>
-                    <p className="mt-2 text-sm leading-7 text-zinc-200">
-                      {step}
-                    </p>
-                  </div>
-                ))}
-              </div>
-            </motion.div>
+            ))}
           </div>
-        </section>
+        </motion.section>
+
+        {/* Detailed Intro Section */}
+        <motion.section
+          initial={{ opacity: 0, y: prefersReducedMotion ? 0 : 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.7 }}
+          className="space-y-10 border-t border-zinc-200 dark:border-zinc-800 pt-16"
+        >
+          <h2 className="text-2xl font-bold tracking-tight text-zinc-900 dark:text-zinc-50">
+            조금 더 깊은 이야기
+          </h2>
+          <div className="space-y-12">
+            {introSections.map((point) => (
+              <div key={point.title} className="space-y-3">
+                <p className="text-[12px] font-bold uppercase tracking-[0.2em] text-zinc-400 dark:text-zinc-500">
+                  {point.label}
+                </p>
+                <h3 className="text-xl font-bold text-zinc-900 dark:text-zinc-50">
+                  {point.title}
+                </h3>
+                <p className="text-base leading-8 text-zinc-600 dark:text-zinc-400">
+                  {point.body}
+                </p>
+              </div>
+            ))}
+          </div>
+        </motion.section>
+
       </div>
     </div>
   );

@@ -315,7 +315,7 @@ function DioramaRoom({ reducedMotion = false }: { reducedMotion?: boolean }) {
 function SceneContents({ reducedMotion = false }: AboutSceneProps) {
   return (
     <>
-      <color attach="background" args={["#fcf9f5"]} />
+      {/* 배경색 제거하여 부모 컨테이너(Tailwind)의 배경색이 보이도록 함 */}
       <ambientLight intensity={0.8} />
       <directionalLight
         castShadow
@@ -356,9 +356,9 @@ export default function AboutScene({ reducedMotion = false }: AboutSceneProps) {
     <div className="absolute inset-0">
       <Canvas
         dpr={[1, 1.5]}
-        camera={{ position: [7, 6, 9], fov: 45 }}
+        camera={{ position: [7, 6, 9], fov: 50 }}
         shadows
-        gl={{ antialias: true, alpha: false }}
+        gl={{ antialias: true, alpha: true }}
       >
         <Suspense fallback={null}>
           <SceneContents reducedMotion={reducedMotion} />
