@@ -76,19 +76,14 @@ function MainAvatar({
     }
 
     // 1. 상태에 따른 목표 위치 및 회전 설정
-    // Y축(높이)을 바닥(0)에 맞추고, 의자/소파에 앉을 때만 살짝 올림
     if (activeZone === "all") {
       targetPos.set(0, 0, 0);
       targetRot.current = Math.PI / 4;
     } else if (activeZone === "laptop") {
-      // 노트북 자리 (이동 중에는 바닥 높이(0), 도착하면 의자 높이(0.45)로)
-      const isClose = groupRef.current.position.distanceTo(new Vector3(-2.5, groupRef.current.position.y, -1.8)) < 0.2;
-      targetPos.set(-2.5, isClose ? 0.45 : 0, -1.8);
+      targetPos.set(-2.5, 0.45, -1.8);
       targetRot.current = Math.PI;
     } else if (activeZone === "reading") {
-      // 독서 자리 (이동 중에는 바닥 높이(0), 도착하면 소파 높이(0.35)로)
-      const isClose = groupRef.current.position.distanceTo(new Vector3(2.5, groupRef.current.position.y, -2.4)) < 0.2;
-      targetPos.set(2.5, isClose ? 0.35 : 0, -2.4);
+      targetPos.set(2.5, 0.35, -2.4);
       targetRot.current = -Math.PI / 6;
     } else if (activeZone === "exercising") {
       targetPos.set(1.5, 0, 2);
@@ -342,7 +337,7 @@ function OutdoorEnvironment({ isNight }: { isNight: boolean }) {
   );
 }
 
-function DioramaRoom({ reducedMotion = false, activeZone = "all", onZoneClick, isLaptopMode }: AboutSceneProps & { isLaptopMode: boolean }) {
+function DioramaRoom({ reducedMotion = false, activeZone = "all", onZoneClick, isLaptopMode, onArrival }: AboutSceneProps & { isLaptopMode: boolean; onArrival?: (zone: ActiveZone) => void }) {
   const handleZoneClick = (zone: ActiveZone) => {
     if (onZoneClick) onZoneClick(zone);
   };
@@ -462,6 +457,7 @@ function DioramaRoom({ reducedMotion = false, activeZone = "all", onZoneClick, i
           <Sphere args={[0.15, 32, 32, 0, Math.PI * 2, 0, Math.PI / 2]} position={[0, 0.5, 0]} rotation={[0.5, 0, 0]} castShadow>
             <meshStandardMaterial color={isLaptopMode ? "#fef08a" : "#fff"} side={2} />
           </Sphere>
+          {/* 조명은 노트북 모드일 때만 켜짐 */}
           {isLaptopMode && (
             <pointLight position={[0, 0.4, 0.1]} intensity={2.5} color="#fef08a" distance={4} />
           )}
@@ -536,6 +532,9 @@ function DioramaRoom({ reducedMotion = false, activeZone = "all", onZoneClick, i
           <Sphere args={[0.2]} position={[0, 0.3, 0]} castShadow><meshStandardMaterial color="#84a59d" /></Sphere>
         </group>
       </group>
+
+      {/* 아바타를 방 내부에 배치 */}
+      <MainAvatar activeZone={activeZone} reducedMotion={reducedMotion} onArrival={onArrival} />
     </group>
   );
 }
@@ -583,9 +582,7 @@ function SceneContents({ reducedMotion = false, activeZone = "all", onZoneClick 
       
       <directionalLight position={[-5, 5, 5]} intensity={isLaptopMode ? 0.1 : 0.8} color="#a78bfa" />
 
-      <DioramaRoom reducedMotion={reducedMotion} activeZone={activeZone} onZoneClick={onZoneClick} isLaptopMode={isLaptopMode} />
-      
-      <MainAvatar activeZone={activeZone} reducedMotion={reducedMotion} onArrival={handleArrival} />
+      <DioramaRoom reducedMotion={reducedMotion} activeZone={activeZone} onZoneClick={onZoneClick} isLaptopMode={isLaptopMode} onArrival={handleArrival} />
       
       <ContactShadows
         position={[0, -1.05, 0]}
