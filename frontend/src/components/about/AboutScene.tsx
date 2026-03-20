@@ -13,28 +13,18 @@ interface AboutSceneProps {
   onZoneClick?: (zone: ActiveZone) => void;
 }
 
-function CameraRig({ reducedMotion = false, activeZone = "all" }: { reducedMotion?: boolean; activeZone?: ActiveZone }) {
+// 카메라를 고정(전체 화면)으로 유지
+function CameraRig({ reducedMotion = false }: { reducedMotion?: boolean }) {
   const { camera, pointer } = useThree();
   const currentLookAt = useRef(new Vector3(0, 0.5, 0));
-  const targetLookAt = new Vector3();
+  const targetLookAt = new Vector3(0, 0.5, 0);
   const targetPos = new Vector3();
 
   useFrame(() => {
-    if (activeZone === "laptop") {
-      targetPos.set(-2.5, 2.2, 1.5);
-      targetLookAt.set(-2.5, 0.8, -2.5);
-    } else if (activeZone === "reading") {
-      targetPos.set(2.5, 2.0, 1.0);
-      targetLookAt.set(2.5, 0.6, -2.5);
-    } else if (activeZone === "exercising") {
-      targetPos.set(1.5, 1.5, 5.0);
-      targetLookAt.set(1.5, 0.3, 1.5);
-    } else {
-      const pointerX = reducedMotion ? 0 : pointer.x * 1.5;
-      const pointerY = reducedMotion ? 0 : pointer.y * 1.5;
-      targetPos.set(7.5 + pointerX, 6 + pointerY, 9);
-      targetLookAt.set(0, 0.5, 0);
-    }
+    // 마우스에 따라 살짝만 움직이도록 (전체 방 뷰 고정)
+    const pointerX = reducedMotion ? 0 : pointer.x * 1.5;
+    const pointerY = reducedMotion ? 0 : pointer.y * 1.5;
+    targetPos.set(7.5 + pointerX, 6 + pointerY, 9);
 
     camera.position.lerp(targetPos, 0.04);
     currentLookAt.current.lerp(targetLookAt, 0.04);
@@ -44,7 +34,6 @@ function CameraRig({ reducedMotion = false, activeZone = "all" }: { reducedMotio
   return null;
 }
 
-// 단일 아바타 컴포넌트 (상태에 따라 이동 및 애니메이션 변경)
 function MainAvatar({ 
   activeZone,
   reducedMotion = false 
@@ -57,13 +46,14 @@ function MainAvatar({
   const leftArmRef = useRef<Group>(null);
   const rightArmRef = useRef<Group>(null);
   const bodyRef = useRef<Group>(null);
+  const leftLegRef = useRef<Group>(null);
+  const rightLegRef = useRef<Group>(null);
 
   const skinColor = "#ffdfc4";
   const hairColor = "#3e2723";
   const shirtColor = "#f1faee";
   const pantsColor = "#457b9d";
 
-  // 목표 위치와 회전값 설정
   const targetPos = useMemo(() => new Vector3(), []);
   const targetRot = useRef(0);
 
@@ -73,65 +63,82 @@ function MainAvatar({
 
     // 1. 상태에 따른 목표 위치 및 회전 설정
     if (activeZone === "all") {
-      // 중앙에서 손 흔들기
       targetPos.set(0, 0, 0);
-      targetRot.current = Math.PI / 4; // 살짝 비스듬히 앞을 봄
+      targetRot.current = Math.PI / 4;
     } else if (activeZone === "laptop") {
-      // 노트북 자리
       targetPos.set(-2.5, 0.35, -1.8);
-      targetRot.current = Math.PI; // 노트북을 바라봄
+      targetRot.current = Math.PI;
     } else if (activeZone === "reading") {
-      // 독서 자리
       targetPos.set(2.5, 0.05, -2.4);
-      targetRot.current = -Math.PI / 6; // 소파 방향
+      targetRot.current = -Math.PI / 6;
     } else if (activeZone === "exercising") {
-      // 운동 자리
       targetPos.set(1.5, 0, 2);
-      targetRot.current = -Math.PI / 4; // 앞을 봄
+      targetRot.current = -Math.PI / 4;
     }
 
-    // 2. 부드러운 이동 (Lerp)
-    groupRef.current.position.lerp(targetPos, 0.05);
-    
-    // 부드러운 회전 (최단 거리로 회전하도록 보정)
-    const currentRot = groupRef.current.rotation.y;
-    let diff = targetRot.current - currentRot;
-    while (diff < -Math.PI) diff += Math.PI * 2;
-    while (diff > Math.PI) diff -= Math.PI * 2;
-    groupRef.current.rotation.y += diff * 0.05;
-
-    // 이동 중인지 확인 (애니메이션 분기를 위해)
+    // 2. 이동 및 회전 처리
     const isMoving = groupRef.current.position.distanceTo(targetPos) > 0.1;
+    
+    if (isMoving) {
+      // 이동 중일 때는 목표 지점을 바라보도록 회전 (걸어가는 방향)
+      const dx = targetPos.x - groupRef.current.position.x;
+      const dz = targetPos.z - groupRef.current.position.z;
+      const moveRot = Math.atan2(dx, dz);
+      
+      let diff = moveRot - groupRef.current.rotation.y;
+      while (diff < -Math.PI) diff += Math.PI * 2;
+      while (diff > Math.PI) diff -= Math.PI * 2;
+      groupRef.current.rotation.y += diff * 0.1;
+      
+      // 위치 이동
+      groupRef.current.position.lerp(targetPos, 0.05);
+    } else {
+      // 도착하면 최종 방향으로 회전
+      let diff = targetRot.current - groupRef.current.rotation.y;
+      while (diff < -Math.PI) diff += Math.PI * 2;
+      while (diff > Math.PI) diff -= Math.PI * 2;
+      groupRef.current.rotation.y += diff * 0.1;
+    }
 
-    // 3. 상태별 애니메이션
-    // 기본값 초기화
+    // 3. 애니메이션 초기화
     if (headRef.current) headRef.current.rotation.set(0, 0, 0);
     if (leftArmRef.current) leftArmRef.current.rotation.set(0, 0, 0);
     if (rightArmRef.current) rightArmRef.current.rotation.set(0, 0, 0);
+    if (leftLegRef.current) leftLegRef.current.rotation.set(0, 0, 0);
+    if (rightLegRef.current) rightLegRef.current.rotation.set(0, 0, 0);
     if (bodyRef.current) bodyRef.current.position.y = 0.25;
 
+    // 4. 상태별 애니메이션 적용
     if (isMoving) {
-      // 걷는 애니메이션 (통통 튀기)
-      if (bodyRef.current) bodyRef.current.position.y = 0.25 + Math.abs(Math.sin(t * 10)) * 0.05;
-      if (leftArmRef.current) leftArmRef.current.rotation.x = Math.sin(t * 10) * 0.5;
-      if (rightArmRef.current) rightArmRef.current.rotation.x = -Math.sin(t * 10) * 0.5;
+      // 걷는 애니메이션 (팔 다리 교차, 몸통 통통)
+      if (bodyRef.current) bodyRef.current.position.y = 0.25 + Math.abs(Math.sin(t * 15)) * 0.05;
+      if (leftArmRef.current) leftArmRef.current.rotation.x = Math.sin(t * 15) * 0.6;
+      if (rightArmRef.current) rightArmRef.current.rotation.x = -Math.sin(t * 15) * 0.6;
+      if (leftLegRef.current) leftLegRef.current.rotation.x = -Math.sin(t * 15) * 0.6;
+      if (rightLegRef.current) rightLegRef.current.rotation.x = Math.sin(t * 15) * 0.6;
     } else {
-      // 도착 후 해당 구역 애니메이션
+      // 도착 후 활동 애니메이션
       if (activeZone === "all") {
-        // 손 흔들기 (오른팔)
+        // 손 흔들기
         if (rightArmRef.current) {
-          rightArmRef.current.rotation.z = Math.sin(t * 5) * 0.3 + 2.5; // 팔을 위로 들고 흔듦
+          rightArmRef.current.rotation.z = Math.sin(t * 5) * 0.3 + 2.5;
           rightArmRef.current.rotation.x = 0;
         }
-        if (leftArmRef.current) leftArmRef.current.rotation.z = 0.2; // 왼팔은 자연스럽게
-        if (headRef.current) headRef.current.rotation.y = Math.sin(t * 2) * 0.1; // 고개 갸우뚱
+        if (leftArmRef.current) leftArmRef.current.rotation.z = 0.2;
+        if (headRef.current) headRef.current.rotation.y = Math.sin(t * 2) * 0.1;
       } else if (activeZone === "laptop") {
+        // 앉은 자세 (다리 꺾임)
+        if (leftLegRef.current) leftLegRef.current.rotation.x = Math.PI / 2;
+        if (rightLegRef.current) rightLegRef.current.rotation.x = Math.PI / 2;
         // 타이핑
         if (leftArmRef.current) leftArmRef.current.rotation.x = Math.sin(t * 15) * 0.1 - 0.5;
         if (rightArmRef.current) rightArmRef.current.rotation.x = Math.cos(t * 15) * 0.1 - 0.5;
         if (headRef.current) headRef.current.rotation.y = Math.sin(t * 2) * 0.05;
       } else if (activeZone === "reading") {
-        // 독서 (고개 끄덕임)
+        // 앉은 자세
+        if (leftLegRef.current) leftLegRef.current.rotation.x = Math.PI / 2;
+        if (rightLegRef.current) rightLegRef.current.rotation.x = Math.PI / 2;
+        // 독서
         if (headRef.current) headRef.current.rotation.x = Math.sin(t * 1.5) * 0.05 + 0.15;
         if (leftArmRef.current) leftArmRef.current.rotation.x = -0.8;
         if (rightArmRef.current) rightArmRef.current.rotation.x = -0.8;
@@ -149,32 +156,23 @@ function MainAvatar({
   return (
     <group ref={groupRef}>
       <group ref={bodyRef}>
-        {/* 머리 그룹 */}
+        {/* 머리 */}
         <group ref={headRef} position={[0, 0.65, 0]}>
-          {/* 목 */}
           <Cylinder args={[0.06, 0.08, 0.1]} position={[0, -0.2, 0]} castShadow>
             <meshStandardMaterial color={skinColor} />
           </Cylinder>
-          
-          {/* 머리카락 */}
           <Sphere args={[0.26, 32, 32]} position={[0, 0.02, -0.03]} castShadow>
             <meshStandardMaterial color={hairColor} roughness={0.9} />
           </Sphere>
-          
-          {/* 얼굴 */}
           <Sphere args={[0.24, 32, 32]} position={[0, -0.02, 0.04]} castShadow receiveShadow>
             <meshStandardMaterial color={skinColor} roughness={0.5} />
           </Sphere>
-
-          {/* 눈 */}
           <Sphere args={[0.025, 16, 16]} position={[-0.09, 0.02, 0.26]}>
             <meshBasicMaterial color="#222" />
           </Sphere>
           <Sphere args={[0.025, 16, 16]} position={[0.09, 0.02, 0.26]}>
             <meshBasicMaterial color="#222" />
           </Sphere>
-          
-          {/* 볼터치 */}
           <Sphere args={[0.04, 16, 16]} position={[-0.13, -0.04, 0.24]}>
             <meshBasicMaterial color="#ff9999" transparent opacity={0.5} />
           </Sphere>
@@ -182,7 +180,6 @@ function MainAvatar({
             <meshBasicMaterial color="#ff9999" transparent opacity={0.5} />
           </Sphere>
 
-          {/* 안경 (독서할 때만 보이게) */}
           <group position={[0, 0.02, 0.27]} visible={activeZone === "reading"}>
             <Cylinder args={[0.06, 0.06, 0.01, 32]} position={[-0.09, 0, 0]} rotation={[Math.PI/2, 0, 0]}>
               <meshStandardMaterial color="#111" />
@@ -195,7 +192,6 @@ function MainAvatar({
             </Box>
           </group>
           
-          {/* 헤드폰 (노트북할 때만 보이게) */}
           <group position={[0, 0.02, 0]} visible={activeZone === "laptop"}>
             <Cylinder args={[0.27, 0.27, 0.06, 32]} rotation={[0, 0, Math.PI / 2]} castShadow>
               <meshStandardMaterial color="#111" />
@@ -208,7 +204,6 @@ function MainAvatar({
             </Cylinder>
           </group>
 
-          {/* 헤어밴드 (운동할 때만 보이게) */}
           <group visible={activeZone === "exercising"}>
             <Cylinder args={[0.265, 0.265, 0.08, 32]} position={[0, 0.12, -0.02]} castShadow>
               <meshStandardMaterial color="#e63946" />
@@ -226,7 +221,7 @@ function MainAvatar({
           </Box>
         </group>
 
-        {/* 팔 & 손 */}
+        {/* 팔 */}
         <group ref={leftArmRef} position={[-0.2, 0.13, 0]}>
           <Cylinder args={[0.045, 0.04, 0.25, 16]} position={[0, -0.12, 0]} castShadow receiveShadow>
             <meshStandardMaterial color={skinColor} roughness={0.6} />
@@ -251,12 +246,13 @@ function MainAvatar({
           </Sphere>
         </group>
 
-        {/* 다리 & 발 */}
-        <group position={[-0.1, -0.2, 0]} rotation={activeZone === "laptop" || activeZone === "reading" ? [Math.PI / 2, 0, 0] : [0, 0, 0]}>
+        {/* 다리 (독립적인 관절로 분리) */}
+        <group ref={leftLegRef} position={[-0.1, -0.2, 0]}>
           <Cylinder args={[0.06, 0.05, 0.25, 16]} position={[0, -0.12, 0]} castShadow receiveShadow>
             <meshStandardMaterial color={activeZone === "exercising" ? "#1d3557" : pantsColor} roughness={0.9} />
           </Cylinder>
-          <group position={[0, -0.25, 0]} rotation={activeZone === "laptop" || activeZone === "reading" ? [-Math.PI / 2, 0, 0] : [0, 0, 0]}>
+          {/* 무릎 아래 (앉을 때 꺾임) */}
+          <group position={[0, -0.25, 0]} rotation={groupRef.current?.position.distanceTo(targetPos) && groupRef.current.position.distanceTo(targetPos) > 0.1 ? [0, 0, 0] : (activeZone === "laptop" || activeZone === "reading" ? [-Math.PI / 2, 0, 0] : [0, 0, 0])}>
             <Cylinder args={[0.05, 0.04, 0.25, 16]} position={[0, -0.12, 0]} castShadow receiveShadow>
               <meshStandardMaterial color={skinColor} />
             </Cylinder>
@@ -265,11 +261,12 @@ function MainAvatar({
             </RoundedBox>
           </group>
         </group>
-        <group position={[0.1, -0.2, 0]} rotation={activeZone === "laptop" || activeZone === "reading" ? [Math.PI / 2, 0, 0] : [0, 0, 0]}>
+        
+        <group ref={rightLegRef} position={[0.1, -0.2, 0]}>
           <Cylinder args={[0.06, 0.05, 0.25, 16]} position={[0, -0.12, 0]} castShadow receiveShadow>
             <meshStandardMaterial color={activeZone === "exercising" ? "#1d3557" : pantsColor} roughness={0.9} />
           </Cylinder>
-          <group position={[0, -0.25, 0]} rotation={activeZone === "laptop" || activeZone === "reading" ? [-Math.PI / 2, 0, 0] : [0, 0, 0]}>
+          <group position={[0, -0.25, 0]} rotation={groupRef.current?.position.distanceTo(targetPos) && groupRef.current.position.distanceTo(targetPos) > 0.1 ? [0, 0, 0] : (activeZone === "laptop" || activeZone === "reading" ? [-Math.PI / 2, 0, 0] : [0, 0, 0])}>
             <Cylinder args={[0.05, 0.04, 0.25, 16]} position={[0, -0.12, 0]} castShadow receiveShadow>
               <meshStandardMaterial color={skinColor} />
             </Cylinder>
@@ -283,7 +280,6 @@ function MainAvatar({
   );
 }
 
-// 인터랙티브 존 래퍼
 function InteractiveZone({ 
   position, 
   children, 
@@ -323,20 +319,15 @@ function DioramaRoom({ reducedMotion = false, activeZone = "all", onZoneClick }:
 
   return (
     <group position={[0, -1, 0]}>
-      {/* 감성적인 우드 바닥 (Floor) */}
       <Box args={[8, 0.4, 8]} position={[0, -0.2, 0]} receiveShadow>
         <meshStandardMaterial color="#c29d77" roughness={0.7} />
       </Box>
-      
-      {/* 따뜻한 크림색 벽 (Walls) */}
       <Box args={[0.4, 5, 8]} position={[-4.2, 2.5, 0]} receiveShadow castShadow>
         <meshStandardMaterial color="#fdfbf7" roughness={0.9} />
       </Box>
       <Box args={[8, 5, 0.4]} position={[0, 2.5, -4.2]} receiveShadow castShadow>
         <meshStandardMaterial color="#fdfbf7" roughness={0.9} />
       </Box>
-
-      {/* 나무 몰딩 */}
       <Box args={[0.1, 0.4, 8]} position={[-3.95, 0.2, 0]} receiveShadow>
         <meshStandardMaterial color="#8b5e3c" roughness={0.8} />
       </Box>
@@ -344,12 +335,10 @@ function DioramaRoom({ reducedMotion = false, activeZone = "all", onZoneClick }:
         <meshStandardMaterial color="#8b5e3c" roughness={0.8} />
       </Box>
 
-      {/* 큰 창문 (빛이 들어오는 느낌) */}
       <group position={[0, 2.5, -4]}>
         <Box args={[3.6, 2.6, 0.2]} position={[0, 0, 0]} castShadow>
           <meshStandardMaterial color="#fff" />
         </Box>
-        {/* 창밖 풍경 (노을빛) */}
         <Box args={[3.4, 2.4, 0.05]} position={[0, 0, 0.05]}>
           <meshBasicMaterial color="#ffb703" />
         </Box>
@@ -361,31 +350,19 @@ function DioramaRoom({ reducedMotion = false, activeZone = "all", onZoneClick }:
         </Box>
       </group>
 
-      {/* 포근한 러그 */}
       <Cylinder args={[3, 3, 0.04, 64]} position={[0, 0.02, 0]} receiveShadow>
         <meshStandardMaterial color="#e2e8f0" roughness={1} />
       </Cylinder>
 
-      {/* 1. 노트북 존 (왼쪽 구석) */}
       <InteractiveZone position={[-2.5, 0, -2.5]} zone="laptop" activeZone={activeZone} onClick={handleZoneClick}>
-        {/* 책상 */}
         <RoundedBox args={[2.2, 0.1, 1.2]} position={[0, 1, 0]} radius={0.05} castShadow receiveShadow>
           <meshStandardMaterial color="#8b5e3c" roughness={0.7} />
         </RoundedBox>
-        <Cylinder args={[0.06, 0.06, 1, 16]} position={[-0.9, 0.5, -0.4]} castShadow receiveShadow>
-          <meshStandardMaterial color="#222" />
-        </Cylinder>
-        <Cylinder args={[0.06, 0.06, 1, 16]} position={[0.9, 0.5, -0.4]} castShadow receiveShadow>
-          <meshStandardMaterial color="#222" />
-        </Cylinder>
-        <Cylinder args={[0.06, 0.06, 1, 16]} position={[-0.9, 0.5, 0.4]} castShadow receiveShadow>
-          <meshStandardMaterial color="#222" />
-        </Cylinder>
-        <Cylinder args={[0.06, 0.06, 1, 16]} position={[0.9, 0.5, 0.4]} castShadow receiveShadow>
-          <meshStandardMaterial color="#222" />
-        </Cylinder>
+        <Cylinder args={[0.06, 0.06, 1, 16]} position={[-0.9, 0.5, -0.4]} castShadow receiveShadow><meshStandardMaterial color="#222" /></Cylinder>
+        <Cylinder args={[0.06, 0.06, 1, 16]} position={[0.9, 0.5, -0.4]} castShadow receiveShadow><meshStandardMaterial color="#222" /></Cylinder>
+        <Cylinder args={[0.06, 0.06, 1, 16]} position={[-0.9, 0.5, 0.4]} castShadow receiveShadow><meshStandardMaterial color="#222" /></Cylinder>
+        <Cylinder args={[0.06, 0.06, 1, 16]} position={[0.9, 0.5, 0.4]} castShadow receiveShadow><meshStandardMaterial color="#222" /></Cylinder>
         
-        {/* 노트북 (화면이 +Z를 향함) */}
         <group position={[0, 1.05, 0]}>
           <RoundedBox args={[0.7, 0.03, 0.5]} position={[0, 0, 0]} radius={0.01} castShadow>
             <meshStandardMaterial color="#d1d5db" metalness={0.6} roughness={0.3} />
@@ -407,133 +384,72 @@ function DioramaRoom({ reducedMotion = false, activeZone = "all", onZoneClick }:
           </group>
         </group>
 
-        {/* 감성 스탠드 조명 */}
         <group position={[-0.8, 1.05, -0.3]}>
-          <Cylinder args={[0.12, 0.15, 0.05, 32]} castShadow>
-            <meshStandardMaterial color="#eab308" />
-          </Cylinder>
-          <Cylinder args={[0.02, 0.02, 0.5, 16]} position={[0, 0.25, 0]} castShadow>
-            <meshStandardMaterial color="#eab308" />
-          </Cylinder>
+          <Cylinder args={[0.12, 0.15, 0.05, 32]} castShadow><meshStandardMaterial color="#eab308" /></Cylinder>
+          <Cylinder args={[0.02, 0.02, 0.5, 16]} position={[0, 0.25, 0]} castShadow><meshStandardMaterial color="#eab308" /></Cylinder>
           <Sphere args={[0.15, 32, 32, 0, Math.PI * 2, 0, Math.PI / 2]} position={[0, 0.5, 0]} rotation={[0.5, 0, 0]} castShadow>
             <meshStandardMaterial color="#fff" side={2} />
           </Sphere>
           <pointLight position={[0, 0.4, 0.1]} intensity={0.8} color="#fef08a" distance={3} />
         </group>
 
-        {/* 의자 */}
         <group position={[0, 0.5, 0.8]}>
-          <Cylinder args={[0.05, 0.05, 0.5, 16]} position={[0, 0, 0]} castShadow>
-             <meshStandardMaterial color="#333" />
-          </Cylinder>
-          <Cylinder args={[0.3, 0.3, 0.05, 32]} position={[0, -0.25, 0]} castShadow>
-             <meshStandardMaterial color="#111" />
-          </Cylinder>
-          <RoundedBox args={[0.6, 0.1, 0.6]} position={[0, 0.25, 0]} radius={0.05} castShadow receiveShadow>
-            <meshStandardMaterial color="#f4f4f5" />
-          </RoundedBox>
-          <RoundedBox args={[0.6, 0.6, 0.1]} position={[0, 0.55, 0.25]} radius={0.05} castShadow receiveShadow>
-            <meshStandardMaterial color="#f4f4f5" />
-          </RoundedBox>
+          <Cylinder args={[0.05, 0.05, 0.5, 16]} position={[0, 0, 0]} castShadow><meshStandardMaterial color="#333" /></Cylinder>
+          <Cylinder args={[0.3, 0.3, 0.05, 32]} position={[0, -0.25, 0]} castShadow><meshStandardMaterial color="#111" /></Cylinder>
+          <RoundedBox args={[0.6, 0.1, 0.6]} position={[0, 0.25, 0]} radius={0.05} castShadow receiveShadow><meshStandardMaterial color="#f4f4f5" /></RoundedBox>
+          <RoundedBox args={[0.6, 0.6, 0.1]} position={[0, 0.55, 0.25]} radius={0.05} castShadow receiveShadow><meshStandardMaterial color="#f4f4f5" /></RoundedBox>
         </group>
       </InteractiveZone>
 
-      {/* 2. 독서 존 (오른쪽 벽면) */}
       <InteractiveZone position={[2.5, 0, -2.5]} zone="reading" activeZone={activeZone} onClick={handleZoneClick}>
-        {/* 포근한 1인용 소파 */}
         <group position={[0, 0.3, 0]} rotation={[0, -Math.PI / 6, 0]}>
-          <RoundedBox args={[1.4, 0.6, 1.4]} position={[0, 0, 0]} radius={0.2} castShadow receiveShadow>
-            <meshStandardMaterial color="#e07a5f" roughness={0.9} />
-          </RoundedBox>
-          <RoundedBox args={[1.4, 1.2, 0.4]} position={[0, 0.4, -0.5]} radius={0.2} castShadow receiveShadow>
-            <meshStandardMaterial color="#e07a5f" roughness={0.9} />
-          </RoundedBox>
-          <RoundedBox args={[0.3, 0.8, 1.2]} position={[-0.65, 0.2, 0.1]} radius={0.15} castShadow receiveShadow>
-            <meshStandardMaterial color="#e07a5f" roughness={0.9} />
-          </RoundedBox>
-          <RoundedBox args={[0.3, 0.8, 1.2]} position={[0.65, 0.2, 0.1]} radius={0.15} castShadow receiveShadow>
-            <meshStandardMaterial color="#e07a5f" roughness={0.9} />
-          </RoundedBox>
-          
-          {/* 쿠션 */}
-          <RoundedBox args={[0.6, 0.4, 0.2]} position={[0, 0.4, -0.2]} rotation={[0.2, 0, 0]} radius={0.1} castShadow>
-            <meshStandardMaterial color="#f4a261" />
-          </RoundedBox>
+          <RoundedBox args={[1.4, 0.6, 1.4]} position={[0, 0, 0]} radius={0.2} castShadow receiveShadow><meshStandardMaterial color="#e07a5f" roughness={0.9} /></RoundedBox>
+          <RoundedBox args={[1.4, 1.2, 0.4]} position={[0, 0.4, -0.5]} radius={0.2} castShadow receiveShadow><meshStandardMaterial color="#e07a5f" roughness={0.9} /></RoundedBox>
+          <RoundedBox args={[0.3, 0.8, 1.2]} position={[-0.65, 0.2, 0.1]} radius={0.15} castShadow receiveShadow><meshStandardMaterial color="#e07a5f" roughness={0.9} /></RoundedBox>
+          <RoundedBox args={[0.3, 0.8, 1.2]} position={[0.65, 0.2, 0.1]} radius={0.15} castShadow receiveShadow><meshStandardMaterial color="#e07a5f" roughness={0.9} /></RoundedBox>
+          <RoundedBox args={[0.6, 0.4, 0.2]} position={[0, 0.4, -0.2]} rotation={[0.2, 0, 0]} radius={0.1} castShadow><meshStandardMaterial color="#f4a261" /></RoundedBox>
 
-          {/* 책 */}
           <group position={[0, 0.6, 0.4]} rotation={[0.2, 0, 0]}>
-            <Box args={[0.5, 0.05, 0.35]} castShadow>
-              <meshStandardMaterial color="#2a9d8f" />
-            </Box>
-            <Box args={[0.45, 0.06, 0.3]} position={[0, 0.01, 0]}>
-              <meshStandardMaterial color="#fff" />
-            </Box>
+            <Box args={[0.5, 0.05, 0.35]} castShadow><meshStandardMaterial color="#2a9d8f" /></Box>
+            <Box args={[0.45, 0.06, 0.3]} position={[0, 0.01, 0]}><meshStandardMaterial color="#fff" /></Box>
           </group>
         </group>
 
-        {/* 장스탠드 (플로어 램프) */}
         <group position={[1.2, 0, -0.5]}>
-          <Cylinder args={[0.2, 0.2, 0.05, 32]} position={[0, 0.025, 0]} castShadow>
-            <meshStandardMaterial color="#333" />
-          </Cylinder>
-          <Cylinder args={[0.03, 0.03, 2.5, 16]} position={[0, 1.25, 0]} castShadow>
-            <meshStandardMaterial color="#333" />
-          </Cylinder>
-          <Cylinder args={[0.3, 0.4, 0.5, 32]} position={[0, 2.5, 0]} castShadow>
-            <meshStandardMaterial color="#fefae0" side={2} transparent opacity={0.9} />
-          </Cylinder>
+          <Cylinder args={[0.2, 0.2, 0.05, 32]} position={[0, 0.025, 0]} castShadow><meshStandardMaterial color="#333" /></Cylinder>
+          <Cylinder args={[0.03, 0.03, 2.5, 16]} position={[0, 1.25, 0]} castShadow><meshStandardMaterial color="#333" /></Cylinder>
+          <Cylinder args={[0.3, 0.4, 0.5, 32]} position={[0, 2.5, 0]} castShadow><meshStandardMaterial color="#fefae0" side={2} transparent opacity={0.9} /></Cylinder>
           <pointLight position={[0, 2.5, 0]} intensity={1.2} color="#ffedd5" distance={5} />
         </group>
       </InteractiveZone>
 
-      {/* 3. 운동 존 (앞쪽) - 매트 제거 */}
       <InteractiveZone position={[1.5, 0, 2]} zone="exercising" activeZone={activeZone} onClick={handleZoneClick}>
-        {/* 덤벨 세트 */}
         <group position={[-1.2, 0.1, 0.5]}>
           <group position={[0, 0, 0]}>
-            <Cylinder args={[0.03, 0.03, 0.4]} rotation={[0, 0, Math.PI / 2]} castShadow>
-              <meshStandardMaterial color="#ccc" metalness={0.8} />
-            </Cylinder>
-            <Cylinder args={[0.15, 0.15, 0.1]} position={[-0.15, 0, 0]} rotation={[0, 0, Math.PI / 2]} castShadow>
-              <meshStandardMaterial color="#111" />
-            </Cylinder>
-            <Cylinder args={[0.15, 0.15, 0.1]} position={[0.15, 0, 0]} rotation={[0, 0, Math.PI / 2]} castShadow>
-              <meshStandardMaterial color="#111" />
-            </Cylinder>
+            <Cylinder args={[0.03, 0.03, 0.4]} rotation={[0, 0, Math.PI / 2]} castShadow><meshStandardMaterial color="#ccc" metalness={0.8} /></Cylinder>
+            <Cylinder args={[0.15, 0.15, 0.1]} position={[-0.15, 0, 0]} rotation={[0, 0, Math.PI / 2]} castShadow><meshStandardMaterial color="#111" /></Cylinder>
+            <Cylinder args={[0.15, 0.15, 0.1]} position={[0.15, 0, 0]} rotation={[0, 0, Math.PI / 2]} castShadow><meshStandardMaterial color="#111" /></Cylinder>
           </group>
         </group>
       </InteractiveZone>
       
-      {/* 식물 (몬스테라 느낌) */}
       <group position={[-3.2, 0, 2.5]}>
-        <Cylinder args={[0.4, 0.3, 0.8]} position={[0, 0.4, 0]} castShadow receiveShadow>
-          <meshStandardMaterial color="#d4a373" roughness={0.8} />
-        </Cylinder>
+        <Cylinder args={[0.4, 0.3, 0.8]} position={[0, 0.4, 0]} castShadow receiveShadow><meshStandardMaterial color="#d4a373" roughness={0.8} /></Cylinder>
         <Float speed={2} rotationIntensity={0.1} floatIntensity={0.1}>
           <group position={[0, 1.2, 0]}>
-            <Sphere args={[0.8, 16, 16]} position={[0, 0, 0]} castShadow receiveShadow>
-              <meshStandardMaterial color="#52796f" roughness={0.8} />
-            </Sphere>
-            <Sphere args={[0.6, 16, 16]} position={[0.5, -0.2, 0.3]} castShadow receiveShadow>
-              <meshStandardMaterial color="#52796f" roughness={0.8} />
-            </Sphere>
-            <Sphere args={[0.5, 16, 16]} position={[-0.4, -0.1, -0.4]} castShadow receiveShadow>
-              <meshStandardMaterial color="#52796f" roughness={0.8} />
-            </Sphere>
+            <Sphere args={[0.8, 16, 16]} position={[0, 0, 0]} castShadow receiveShadow><meshStandardMaterial color="#52796f" roughness={0.8} /></Sphere>
+            <Sphere args={[0.6, 16, 16]} position={[0.5, -0.2, 0.3]} castShadow receiveShadow><meshStandardMaterial color="#52796f" roughness={0.8} /></Sphere>
+            <Sphere args={[0.5, 16, 16]} position={[-0.4, -0.1, -0.4]} castShadow receiveShadow><meshStandardMaterial color="#52796f" roughness={0.8} /></Sphere>
           </group>
         </Float>
       </group>
 
-      {/* 디테일한 책장 */}
       <group position={[-3.8, 0, 0]}>
-        <Box args={[0.6, 3.5, 2.5]} position={[0, 1.75, 0]} castShadow receiveShadow>
-          <meshStandardMaterial color="#8b5e3c" />
-        </Box>
+        <Box args={[0.6, 3.5, 2.5]} position={[0, 1.75, 0]} castShadow receiveShadow><meshStandardMaterial color="#8b5e3c" /></Box>
         <Box args={[0.65, 0.05, 2.4]} position={[0, 1, 0]} castShadow><meshStandardMaterial color="#553d30" /></Box>
         <Box args={[0.65, 0.05, 2.4]} position={[0, 2, 0]} castShadow><meshStandardMaterial color="#553d30" /></Box>
         <Box args={[0.65, 0.05, 2.4]} position={[0, 3, 0]} castShadow><meshStandardMaterial color="#553d30" /></Box>
 
-        {/* 책들 */}
         <group position={[0, 1.05, -0.8]}>
           <Box args={[0.4, 0.5, 0.1]} position={[0, 0.25, 0]} castShadow><meshStandardMaterial color="#e63946" /></Box>
           <Box args={[0.4, 0.6, 0.1]} position={[0, 0.3, 0.12]} castShadow><meshStandardMaterial color="#457b9d" /></Box>
@@ -544,14 +460,12 @@ function DioramaRoom({ reducedMotion = false, activeZone = "all", onZoneClick }:
           <Box args={[0.4, 0.4, 0.1]} position={[0, 0.2, 0.12]} castShadow><meshStandardMaterial color="#e9c46a" /></Box>
         </group>
         
-        {/* 책장 위 작은 화분 */}
         <group position={[0, 3.05, -0.6]}>
           <Cylinder args={[0.15, 0.1, 0.2]} position={[0, 0.1, 0]} castShadow><meshStandardMaterial color="#fff" /></Cylinder>
           <Sphere args={[0.2]} position={[0, 0.3, 0]} castShadow><meshStandardMaterial color="#84a59d" /></Sphere>
         </group>
       </group>
 
-      {/* 단일 메인 아바타 렌더링 */}
       <MainAvatar activeZone={activeZone} reducedMotion={reducedMotion} />
     </group>
   );
@@ -590,7 +504,7 @@ function SceneContents({ reducedMotion = false, activeZone = "all", onZoneClick 
         resolution={1024}
         color="#432818"
       />
-      <CameraRig reducedMotion={reducedMotion} activeZone={activeZone} />
+      <CameraRig reducedMotion={reducedMotion} />
       <Environment preset="sunset" />
     </>
   );
