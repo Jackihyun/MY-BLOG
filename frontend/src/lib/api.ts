@@ -13,6 +13,7 @@ import {
   LoginResponse,
   VisitTrackRequest,
   VisitorStatsResponse,
+  VisitorSummaryResponse,
   VisitTrackResponse,
   CategoryTreeResponse,
 } from "@/types";
@@ -175,6 +176,10 @@ export async function fetchVisitorStats(
   return fetchApi<VisitorStatsResponse>("/visitors/stats", {
     headers: getAuthHeaders(token),
   });
+}
+
+export async function fetchVisitorSummary(): Promise<VisitorSummaryResponse> {
+  return fetchApi<VisitorSummaryResponse>("/visitors/summary");
 }
 
 // ============ Category Tree API ============

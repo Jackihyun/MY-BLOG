@@ -10,7 +10,10 @@ import SmartImage from "@/components/ui/SmartImage";
 import PostEngagementStats from "@/components/ui/PostEngagementStats";
 import { getDisplayImageUrl } from "@/lib/api";
 import { getPostPreview } from "@/lib/utils";
-import { useVisitorStatsQuery } from "@/hooks/queries/useVisitorStatsQuery";
+import {
+  useVisitorStatsQuery,
+  useVisitorSummaryQuery,
+} from "@/hooks/queries/useVisitorStatsQuery";
 import {
   useCategoryTreeQuery,
   useUpdateCategoryTreeMutation,
@@ -631,7 +634,7 @@ function PostsList({ allPostsData }: { allPostsData: PostData[] }) {
   const mobileCategoryPopupRef = useRef<HTMLDivElement | null>(null);
 
   const { isAuthenticated, token } = useAuth();
-  const { data: visitorStats } = useVisitorStatsQuery(token, isAuthenticated);
+  const { data: visitorSummary } = useVisitorSummaryQuery();
   const { data: categoryTreeData } = useCategoryTreeQuery();
   const updateCategoryTreeMutation = useUpdateCategoryTreeMutation();
   const router = useRouter();
@@ -1350,50 +1353,43 @@ function PostsList({ allPostsData }: { allPostsData: PostData[] }) {
         <div className="grid grid-cols-1 gap-6 lg:grid-cols-[274px_minmax(0,1fr)]">
           <aside className="hidden lg:block min-w-0">
             <div className="sticky top-24 space-y-4">
-              {isAuthenticated && (
-                  <div className="rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-[#0a0a0a] p-4">
-                    <div className="flex items-start justify-between gap-3">
-                      <div>
-                        <p className="text-xs font-bold tracking-wide text-zinc-500 dark:text-zinc-400 uppercase">
-                          Visitor
-                        </p>
-                        <p className="mt-1 text-xs text-zinc-500 dark:text-zinc-400">
-                          누적 방문자 요약
-                        </p>
-                      </div>
-                      <span className="inline-flex items-center rounded-full bg-zinc-100 px-2 py-1 text-[10px] font-bold text-zinc-600 dark:bg-zinc-900 dark:text-zinc-300">
-                        Admin
-                      </span>
-                    </div>
+              <div className="rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-[#0a0a0a] p-4">
+                <div>
+                  <p className="text-xs font-bold tracking-wide text-zinc-500 dark:text-zinc-400 uppercase">
+                    Visitor
+                  </p>
+                  <p className="mt-1 text-xs text-zinc-500 dark:text-zinc-400">
+                    블로그 방문자 수
+                  </p>
+                </div>
 
-                  <div className="mt-3 grid grid-cols-3 gap-2 text-center">
-                    <div className="rounded-xl bg-zinc-50 dark:bg-zinc-900 px-2 py-3">
-                      <p className="text-[11px] text-zinc-500 dark:text-zinc-400">
-                        Total
-                      </p>
-                      <p className="mt-1 text-base font-bold text-zinc-900 dark:text-zinc-100">
-                        {visitorStats?.total ?? "-"}
-                      </p>
-                    </div>
-                    <div className="rounded-xl bg-zinc-50 dark:bg-zinc-900 px-2 py-3">
-                      <p className="text-[11px] text-zinc-500 dark:text-zinc-400">
-                        Today
-                      </p>
-                      <p className="mt-1 text-base font-bold text-zinc-900 dark:text-zinc-100">
-                        {visitorStats?.today ?? "-"}
-                      </p>
-                    </div>
-                    <div className="rounded-xl bg-zinc-50 dark:bg-zinc-900 px-2 py-3">
-                      <p className="text-[11px] text-zinc-500 dark:text-zinc-400">
-                        Yesterday
-                      </p>
-                      <p className="mt-1 text-base font-bold text-zinc-900 dark:text-zinc-100">
-                        {visitorStats?.yesterday ?? "-"}
-                      </p>
-                    </div>
+                <div className="mt-3 grid grid-cols-3 gap-2 text-center">
+                  <div className="rounded-xl bg-zinc-50 dark:bg-zinc-900 px-2 py-3">
+                    <p className="text-[11px] text-zinc-500 dark:text-zinc-400">
+                      Total
+                    </p>
+                    <p className="mt-1 text-base font-bold text-zinc-900 dark:text-zinc-100">
+                      {visitorSummary?.total ?? "-"}
+                    </p>
+                  </div>
+                  <div className="rounded-xl bg-zinc-50 dark:bg-zinc-900 px-2 py-3">
+                    <p className="text-[11px] text-zinc-500 dark:text-zinc-400">
+                      Today
+                    </p>
+                    <p className="mt-1 text-base font-bold text-zinc-900 dark:text-zinc-100">
+                      {visitorSummary?.today ?? "-"}
+                    </p>
+                  </div>
+                  <div className="rounded-xl bg-zinc-50 dark:bg-zinc-900 px-2 py-3">
+                    <p className="text-[11px] text-zinc-500 dark:text-zinc-400">
+                      Yesterday
+                    </p>
+                    <p className="mt-1 text-base font-bold text-zinc-900 dark:text-zinc-100">
+                      {visitorSummary?.yesterday ?? "-"}
+                    </p>
                   </div>
                 </div>
-              )}
+              </div>
 
               <div className="rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-[#0a0a0a] p-3">
                 <div className="px-2 pb-2 flex items-center justify-between gap-2">

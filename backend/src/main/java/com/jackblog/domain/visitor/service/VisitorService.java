@@ -4,6 +4,7 @@ import com.jackblog.common.exception.BadRequestException;
 import com.jackblog.domain.visitor.dto.VisitTrackRequest;
 import com.jackblog.domain.visitor.dto.VisitorRouteStatResponse;
 import com.jackblog.domain.visitor.dto.VisitorStatsResponse;
+import com.jackblog.domain.visitor.dto.VisitorSummaryResponse;
 import com.jackblog.domain.visitor.entity.VisitorLog;
 import com.jackblog.domain.visitor.repository.VisitorLogRepository;
 import com.jackblog.domain.visitor.repository.VisitorRouteStatProjection;
@@ -49,18 +50,28 @@ public class VisitorService {
     }
 
     public VisitorStatsResponse getVisitorStats() {
-        LocalDate todayDate = LocalDate.now();
-        String today = todayDate.toString();
-        String yesterday = todayDate.minusDays(1).toString();
+        VisitorSummaryResponse summary = getVisitorSummary();
         PageRequest topFive = PageRequest.of(0, 5);
 
         return VisitorStatsResponse.builder()
-            .total(visitorLogRepository.count())
-            .today(visitorLogRepository.countByVisitDate(today))
-            .yesterday(visitorLogRepository.countByVisitDate(yesterday))
+            .total(summary.getTotal())
+            .today(summary.getToday())
+            .yesterday(summary.getYesterday())
             .topSources(mapRouteStats(visitorLogRepository.findTopSources(topFive)))
             .topReferrers(mapRouteStats(visitorLogRepository.findTopReferrers(topFive)))
             .topLandingPaths(mapRouteStats(visitorLogRepository.findTopLandingPaths(topFive)))
+            .build();
+    }
+
+    public VisitorSummaryResponse getVisitorSummary() {
+        LocalDate todayDate = LocalDate.now();
+        String today = todayDate.toString();
+        String yesterday = todayDate.minusDays(1).toString();
+
+        return VisitorSummaryResponse.builder()
+            .total(visitorLogRepository.count())
+            .today(visitorLogRepository.countByVisitDate(today))
+            .yesterday(visitorLogRepository.countByVisitDate(yesterday))
             .build();
     }
 

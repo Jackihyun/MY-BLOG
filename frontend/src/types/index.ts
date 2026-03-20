@@ -122,6 +122,12 @@ export interface VisitorRouteStat {
   count: number;
 }
 
+export interface VisitorSummaryResponse {
+  total: number;
+  today: number;
+  yesterday: number;
+}
+
 export interface VisitorStatsResponse {
   total: number;
   today: number;
