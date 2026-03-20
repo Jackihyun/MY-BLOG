@@ -65,7 +65,7 @@ function MainAvatar({
   const hasArrived = useRef(false);
   const currentZone = useRef<ActiveZone>("all");
   
-  // 아령 렌더링을 위한 상태 (렌더링 사이클에 반영하기 위해 state 사용)
+  // 아령 렌더링을 위한 상태
   const [isExercising, setIsExercising] = useState(false);
 
   useFrame((state) => {
@@ -88,7 +88,6 @@ function MainAvatar({
       targetPos.set(-2.5, isClose ? 0.45 : 0, -1.8);
       targetRot.current = Math.PI;
     } else if (activeZone === "reading") {
-      // 소파에 눕기 위해 위치를 소파 위로 더 올리고 중앙으로 이동
       const isClose = groupRef.current.position.distanceTo(new Vector3(2.5, groupRef.current.position.y, -2.5)) < 0.2;
       targetPos.set(2.5, isClose ? 0.4 : 0, -2.5);
       targetRot.current = -Math.PI / 6;
@@ -107,7 +106,7 @@ function MainAvatar({
     if (!isMoving && !hasArrived.current) {
       hasArrived.current = true;
       if (activeZone === "exercising") {
-        setIsExercising(true); // 도착했을 때만 아령 표시
+        setIsExercising(true);
       }
       if (onArrival) onArrival(activeZone);
     }
@@ -170,20 +169,17 @@ function MainAvatar({
         if (rightArmRef.current) rightArmRef.current.rotation.x = Math.cos(t * 15) * 0.1 - 0.5;
         if (headRef.current) headRef.current.rotation.y = Math.sin(t * 2) * 0.05;
       } else if (activeZone === "reading") {
-        // 소파에 완전히 눕는 자세
         if (bodyRef.current) {
-          bodyRef.current.rotation.x = -Math.PI / 2.5; // 몸을 거의 90도 가깝게 뒤로 눕힘
-          bodyRef.current.position.y = 0.1; // 몸을 낮춤
-          bodyRef.current.position.z = 0.2; // 몸을 뒤로 뺌
+          bodyRef.current.rotation.x = -Math.PI / 2.5;
+          bodyRef.current.position.y = 0.1;
+          bodyRef.current.position.z = 0.2;
         }
         
-        // 다리는 앞으로 쭉 뻗어서 소파 위에 올림
         if (leftLegRef.current) leftLegRef.current.rotation.x = -Math.PI / 2;
         if (rightLegRef.current) rightLegRef.current.rotation.x = -Math.PI / 2;
-        if (leftKneeRef.current) leftKneeRef.current.rotation.x = 0; // 무릎 쫙 폄
+        if (leftKneeRef.current) leftKneeRef.current.rotation.x = 0;
         if (rightKneeRef.current) rightKneeRef.current.rotation.x = 0;
         
-        // 팔은 배 위에 편안하게 모음
         if (leftArmRef.current) {
           leftArmRef.current.rotation.x = -0.5;
           leftArmRef.current.rotation.z = 0.5;
@@ -193,18 +189,15 @@ function MainAvatar({
           rightArmRef.current.rotation.z = -0.5;
         }
         
-        // 고개는 하늘을 보며 살짝 까딱 (숨쉬는 느낌)
         if (headRef.current) {
-          headRef.current.rotation.x = 0.3; // 천장을 봄
+          headRef.current.rotation.x = 0.3;
           headRef.current.rotation.y = Math.sin(t * 0.5) * 0.05;
         }
       } else if (activeZone === "exercising") {
-        // 아령 들고 운동하는 자세 (이두 컬)
         if (leftLegRef.current) leftLegRef.current.rotation.x = -0.1;
         if (rightLegRef.current) rightLegRef.current.rotation.x = -0.1;
         
-        // 팔을 위아래로 굽혔다 폈다 (이두 컬)
-        const curl = (Math.sin(t * 3) + 1) / 2; // 0 ~ 1 사이 값
+        const curl = (Math.sin(t * 3) + 1) / 2;
         
         if (leftArmRef.current) {
           leftArmRef.current.rotation.x = -0.2 - (curl * 1.5);
@@ -215,7 +208,6 @@ function MainAvatar({
           rightArmRef.current.rotation.z = -0.2;
         }
         
-        // 몸통도 살짝 반동
         if (bodyRef.current) {
           bodyRef.current.position.y = 0.25 + (Math.sin(t * 3) * 0.02);
         }
@@ -267,7 +259,6 @@ function MainAvatar({
             <meshStandardMaterial color={skinColor} />
           </Sphere>
           
-          {/* 손에 든 아령 (도착해서 운동 중일 때만 표시) */}
           <group position={[0, -0.26, 0.05]} visible={isExercising}>
             <Cylinder args={[0.02, 0.02, 0.15]} rotation={[0, 0, Math.PI / 2]} castShadow>
               <meshStandardMaterial color="#ccc" metalness={0.8} />
@@ -292,7 +283,6 @@ function MainAvatar({
             <meshStandardMaterial color={skinColor} />
           </Sphere>
           
-          {/* 손에 든 아령 (도착해서 운동 중일 때만 표시) */}
           <group position={[0, -0.26, 0.05]} visible={isExercising}>
             <Cylinder args={[0.02, 0.02, 0.15]} rotation={[0, 0, Math.PI / 2]} castShadow>
               <meshStandardMaterial color="#ccc" metalness={0.8} />
@@ -361,15 +351,24 @@ function InteractiveZone({
   );
 }
 
-// 배경 환경 컴포넌트
-function OutdoorEnvironment({ isNight }: { isNight: boolean }) {
+// 배경 환경 컴포넌트 (실제 시간에 따라 변하도록 수정)
+function OutdoorEnvironment({ timeOfDay }: { timeOfDay: "day" | "sunset" | "night" }) {
   const skyColor = useRef(new Color());
   const groundColor = useRef(new Color());
   
   useFrame(() => {
-    // 밤일 때 파란빛 대신 따뜻하고 아늑한 웜그레이/다크초콜릿 톤으로 변경
-    const targetSky = isNight ? new Color("#2c2826") : new Color("#fb923c");
-    const targetGround = isNight ? new Color("#1a1816") : new Color("#d97706");
+    let targetSky, targetGround;
+    
+    if (timeOfDay === "night") {
+      targetSky = new Color("#1e1b4b");
+      targetGround = new Color("#0f172a");
+    } else if (timeOfDay === "sunset") {
+      targetSky = new Color("#fb923c");
+      targetGround = new Color("#d97706");
+    } else {
+      targetSky = new Color("#60a5fa"); // 낮 하늘
+      targetGround = new Color("#4ade80"); // 낮 잔디
+    }
     
     skyColor.current.lerp(targetSky, 0.02);
     groundColor.current.lerp(targetGround, 0.02);
@@ -377,16 +376,21 @@ function OutdoorEnvironment({ isNight }: { isNight: boolean }) {
 
   return (
     <group>
-      {isNight ? (
+      {timeOfDay === "night" ? (
         <Stars radius={50} depth={50} count={1000} factor={3} saturation={0.5} fade speed={1} />
       ) : (
-        <Sky distance={450000} sunPosition={[10, 2, -10]} inclination={0.49} azimuth={0.25} />
+        <Sky 
+          distance={450000} 
+          sunPosition={timeOfDay === "sunset" ? [10, 2, -10] : [10, 20, -10]} 
+          inclination={timeOfDay === "sunset" ? 0.49 : 0.2} 
+          azimuth={0.25} 
+        />
       )}
       
       {/* 먼 배경 바닥 (잔디/땅) */}
       <mesh position={[0, -2, 0]} rotation={[-Math.PI / 2, 0, 0]}>
         <planeGeometry args={[200, 200]} />
-        <meshBasicMaterial color={isNight ? "#1a1816" : "#7c9a6c"} />
+        <meshBasicMaterial color={timeOfDay === "night" ? "#1a1816" : (timeOfDay === "sunset" ? "#7c9a6c" : "#86efac")} />
       </mesh>
       
       {/* 창밖 나무들 */}
@@ -394,13 +398,13 @@ function OutdoorEnvironment({ isNight }: { isNight: boolean }) {
         {[...Array(5)].map((_, i) => (
           <group key={i} position={[(i - 2) * 4 + Math.random() * 2, 0, Math.random() * -5]}>
             <Cylinder args={[0.2, 0.3, 3]} position={[0, 1.5, 0]}>
-              <meshBasicMaterial color={isNight ? "#2c2826" : "#5d4037"} />
+              <meshBasicMaterial color={timeOfDay === "night" ? "#2c2826" : "#5d4037"} />
             </Cylinder>
             <Sphere args={[1.5, 16, 16]} position={[0, 3.5, 0]}>
-              <meshBasicMaterial color={isNight ? "#1a1816" : "#386641"} />
+              <meshBasicMaterial color={timeOfDay === "night" ? "#1a1816" : "#386641"} />
             </Sphere>
             <Sphere args={[1.2, 16, 16]} position={[0.8, 3, 0.5]}>
-              <meshBasicMaterial color={isNight ? "#1a1816" : "#2a5934"} />
+              <meshBasicMaterial color={timeOfDay === "night" ? "#1a1816" : "#2a5934"} />
             </Sphere>
           </group>
         ))}
@@ -428,62 +432,26 @@ function DioramaRoom({ reducedMotion = false, activeZone = "all", onZoneClick, i
       
       {/* 뒷벽 (창문 뚫기 위해 여러 파트로 분할) */}
       <group position={[0, 2.5, -4.2]}>
-        {/* 창문 위 */}
-        <Box args={[8, 1.2, 0.4]} position={[0, 1.9, 0]} receiveShadow castShadow>
-          <meshStandardMaterial color="#fdfbf7" roughness={0.9} />
-        </Box>
-        {/* 창문 아래 */}
-        <Box args={[8, 1.2, 0.4]} position={[0, -1.9, 0]} receiveShadow castShadow>
-          <meshStandardMaterial color="#fdfbf7" roughness={0.9} />
-        </Box>
-        {/* 창문 왼쪽 */}
-        <Box args={[2, 2.6, 0.4]} position={[-3, 0, 0]} receiveShadow castShadow>
-          <meshStandardMaterial color="#fdfbf7" roughness={0.9} />
-        </Box>
-        {/* 창문 오른쪽 */}
-        <Box args={[2, 2.6, 0.4]} position={[3, 0, 0]} receiveShadow castShadow>
-          <meshStandardMaterial color="#fdfbf7" roughness={0.9} />
-        </Box>
+        <Box args={[8, 1.2, 0.4]} position={[0, 1.9, 0]} receiveShadow castShadow><meshStandardMaterial color="#fdfbf7" roughness={0.9} /></Box>
+        <Box args={[8, 1.2, 0.4]} position={[0, -1.9, 0]} receiveShadow castShadow><meshStandardMaterial color="#fdfbf7" roughness={0.9} /></Box>
+        <Box args={[2, 2.6, 0.4]} position={[-3, 0, 0]} receiveShadow castShadow><meshStandardMaterial color="#fdfbf7" roughness={0.9} /></Box>
+        <Box args={[2, 2.6, 0.4]} position={[3, 0, 0]} receiveShadow castShadow><meshStandardMaterial color="#fdfbf7" roughness={0.9} /></Box>
       </group>
 
       {/* 나무 몰딩 */}
-      <Box args={[0.1, 0.4, 8]} position={[-3.95, 0.2, 0]} receiveShadow>
-        <meshStandardMaterial color="#7f5539" roughness={0.8} />
-      </Box>
-      <Box args={[8, 0.4, 0.1]} position={[0, 0.2, -3.95]} receiveShadow>
-        <meshStandardMaterial color="#7f5539" roughness={0.8} />
-      </Box>
+      <Box args={[0.1, 0.4, 8]} position={[-3.95, 0.2, 0]} receiveShadow><meshStandardMaterial color="#7f5539" roughness={0.8} /></Box>
+      <Box args={[8, 0.4, 0.1]} position={[0, 0.2, -3.95]} receiveShadow><meshStandardMaterial color="#7f5539" roughness={0.8} /></Box>
 
       {/* 뚫린 창문 프레임 */}
       <group position={[0, 2.5, -4]}>
-        {/* 창틀 (바깥쪽) */}
-        <Box args={[4.2, 2.8, 0.2]} position={[0, 0, 0]} castShadow>
-          <meshStandardMaterial color="#fff" />
-        </Box>
-        {/* 창틀 (안쪽 빈 공간을 위해 덮어씌움) */}
-        <Box args={[4, 2.6, 0.25]} position={[0, 0, 0]}>
-          <meshBasicMaterial color="#000" colorWrite={false} depthWrite={false} />
-        </Box>
-        {/* 투명한 유리 */}
+        <Box args={[4.2, 2.8, 0.2]} position={[0, 0, 0]} castShadow><meshStandardMaterial color="#fff" /></Box>
+        <Box args={[4, 2.6, 0.25]} position={[0, 0, 0]}><meshBasicMaterial color="#000" colorWrite={false} depthWrite={false} /></Box>
         <mesh position={[0, 0, 0.05]}>
           <planeGeometry args={[4, 2.6]} />
-          <meshPhysicalMaterial 
-            color="#ffffff" 
-            transparent 
-            opacity={0.2} 
-            roughness={0.1} 
-            metalness={0.1}
-            transmission={0.9}
-            thickness={0.5}
-          />
+          <meshPhysicalMaterial color="#ffffff" transparent opacity={0.2} roughness={0.1} metalness={0.1} transmission={0.9} thickness={0.5} />
         </mesh>
-        {/* 창살 */}
-        <Box args={[0.1, 2.6, 0.1]} position={[0, 0, 0.05]} castShadow>
-          <meshStandardMaterial color="#fff" />
-        </Box>
-        <Box args={[4, 0.1, 0.1]} position={[0, 0, 0.05]} castShadow>
-          <meshStandardMaterial color="#fff" />
-        </Box>
+        <Box args={[0.1, 2.6, 0.1]} position={[0, 0, 0.05]} castShadow><meshStandardMaterial color="#fff" /></Box>
+        <Box args={[4, 0.1, 0.1]} position={[0, 0, 0.05]} castShadow><meshStandardMaterial color="#fff" /></Box>
       </group>
 
       {/* 포근한 러그 */}
@@ -502,19 +470,11 @@ function DioramaRoom({ reducedMotion = false, activeZone = "all", onZoneClick, i
         <Cylinder args={[0.06, 0.06, 1, 16]} position={[0.9, 0.5, 0.4]} castShadow receiveShadow><meshStandardMaterial color="#222" /></Cylinder>
         
         <group position={[0, 1.05, 0]}>
-          <RoundedBox args={[0.7, 0.03, 0.5]} position={[0, 0, 0]} radius={0.01} castShadow>
-            <meshStandardMaterial color="#d1d5db" metalness={0.6} roughness={0.3} />
-          </RoundedBox>
-          <Box args={[0.6, 0.031, 0.25]} position={[0, 0, 0.05]}>
-            <meshStandardMaterial color="#333" />
-          </Box>
+          <RoundedBox args={[0.7, 0.03, 0.5]} position={[0, 0, 0]} radius={0.01} castShadow><meshStandardMaterial color="#d1d5db" metalness={0.6} roughness={0.3} /></RoundedBox>
+          <Box args={[0.6, 0.031, 0.25]} position={[0, 0, 0.05]}><meshStandardMaterial color="#333" /></Box>
           <group position={[0, 0.015, -0.25]} rotation={[-0.2, 0, 0]}>
-            <RoundedBox args={[0.7, 0.5, 0.03]} position={[0, 0.25, 0]} radius={0.01} castShadow>
-              <meshStandardMaterial color="#d1d5db" metalness={0.6} roughness={0.3} />
-            </RoundedBox>
-            <Box args={[0.66, 0.46, 0.031]} position={[0, 0.25, 0.001]}>
-              <meshStandardMaterial color="#111" />
-            </Box>
+            <RoundedBox args={[0.7, 0.5, 0.03]} position={[0, 0.25, 0]} radius={0.01} castShadow><meshStandardMaterial color="#d1d5db" metalness={0.6} roughness={0.3} /></RoundedBox>
+            <Box args={[0.66, 0.46, 0.031]} position={[0, 0.25, 0.001]}><meshStandardMaterial color="#111" /></Box>
             <mesh position={[0, 0.25, 0.017]}>
               <planeGeometry args={[0.62, 0.42]} />
               <meshBasicMaterial color="#93c5fd" transparent opacity={0.8} />
@@ -529,7 +489,6 @@ function DioramaRoom({ reducedMotion = false, activeZone = "all", onZoneClick, i
           <Sphere args={[0.15, 32, 32, 0, Math.PI * 2, 0, Math.PI / 2]} position={[0, 0.5, 0]} rotation={[0.5, 0, 0]} castShadow>
             <meshStandardMaterial color={isLaptopMode ? "#fef08a" : "#fff"} side={2} />
           </Sphere>
-          {/* 조명은 노트북 모드일 때만 켜짐 */}
           {isLaptopMode && (
             <pointLight position={[0, 0.4, 0.1]} intensity={2.5} color="#fef08a" distance={4} />
           )}
@@ -563,7 +522,6 @@ function DioramaRoom({ reducedMotion = false, activeZone = "all", onZoneClick, i
 
       {/* 3. 운동 존 */}
       <InteractiveZone position={[1.5, 0, 2]} zone="exercising" onClick={handleZoneClick}>
-        {/* 바닥에 놓인 아령 (운동 중이 아닐 때만 보임) */}
         <group position={[-1.2, 0.1, 0.5]} visible={activeZone !== "exercising" || !hasArrived}>
           <group position={[0, 0, 0]}>
             <Cylinder args={[0.03, 0.03, 0.4]} rotation={[0, 0, Math.PI / 2]} castShadow><meshStandardMaterial color="#ccc" metalness={0.8} /></Cylinder>
@@ -612,6 +570,19 @@ function DioramaRoom({ reducedMotion = false, activeZone = "all", onZoneClick, i
 function SceneContents({ reducedMotion = false, activeZone = "all", onZoneClick }: AboutSceneProps) {
   const [isLaptopMode, setIsLaptopMode] = useState(false);
   const [hasArrived, setHasArrived] = useState(false);
+  const [timeOfDay, setTimeOfDay] = useState<"day" | "sunset" | "night">("day");
+  
+  // 실제 시간에 따른 배경 및 조명 설정
+  useEffect(() => {
+    const hour = new Date().getHours();
+    if (hour >= 18 || hour < 6) {
+      setTimeOfDay("night");
+    } else if (hour >= 16 && hour < 18) {
+      setTimeOfDay("sunset");
+    } else {
+      setTimeOfDay("day");
+    }
+  }, []);
   
   // 아바타가 도착했을 때만 조명을 바꾸기 위한 콜백
   const handleArrival = (zone: ActiveZone) => {
@@ -627,21 +598,73 @@ function SceneContents({ reducedMotion = false, activeZone = "all", onZoneClick 
     }
   }, [activeZone]);
 
+  // 시간에 따른 조명 색상 및 강도 설정
+  const getLightSettings = () => {
+    if (isLaptopMode) {
+      // 노트북 모드 (밤/새벽 감성)
+      return {
+        ambientColor: "#5c544e",
+        ambientIntensity: 0.6,
+        dirColor: "#fcd34d",
+        dirIntensity: 0.8,
+        fillColor: "#d6d3d1",
+        fillIntensity: 0.6,
+        shadowOpacity: 0.8 // 그림자 연하게
+      };
+    }
+    
+    if (timeOfDay === "night") {
+      return {
+        ambientColor: "#475569",
+        ambientIntensity: 0.5,
+        dirColor: "#93c5fd",
+        dirIntensity: 1.2,
+        fillColor: "#64748b",
+        fillIntensity: 0.8,
+        shadowOpacity: 0.6
+      };
+    } else if (timeOfDay === "sunset") {
+      return {
+        ambientColor: "#fbbf24",
+        ambientIntensity: 0.6,
+        dirColor: "#ffb703",
+        dirIntensity: 2.0,
+        fillColor: "#a78bfa",
+        fillIntensity: 0.8,
+        shadowOpacity: 0.8
+      };
+    } else {
+      // 낮
+      return {
+        ambientColor: "#ffffff",
+        ambientIntensity: 0.8,
+        dirColor: "#fdfbf7",
+        dirIntensity: 2.5,
+        fillColor: "#bae6fd",
+        fillIntensity: 1.0,
+        shadowOpacity: 0.9 // 그림자 연하게
+      };
+    }
+  };
+
+  const lights = getLightSettings();
+
   return (
     <>
-      <SoftShadows size={15} samples={10} focus={0.5} />
+      {/* 그림자 대비를 낮춰서 너무 진하지 않게 설정 */}
+      <SoftShadows size={25} samples={16} focus={0.5} />
       
-      {/* 바깥 풍경 (노을/밤하늘) */}
-      <OutdoorEnvironment isNight={isLaptopMode} />
+      {/* 바깥 풍경 (실제 시간 연동) */}
+      <OutdoorEnvironment timeOfDay={isLaptopMode ? "night" : timeOfDay} />
       
-      {/* 메인 조명들 - 밤일 때 파란빛을 없애고 따뜻한 웜그레이/주황빛으로 상향 */}
-      <ambientLight intensity={isLaptopMode ? 0.6 : 0.4} color={isLaptopMode ? "#5c544e" : "#fbbf24"} />
+      {/* 메인 조명들 */}
+      <ambientLight intensity={lights.ambientIntensity} color={lights.ambientColor} />
       
       <directionalLight
         castShadow
         position={[10, 8, -10]}
-        intensity={isLaptopMode ? 0.8 : 2.5}
-        color={isLaptopMode ? "#fcd34d" : "#ffb703"}
+        intensity={lights.dirIntensity}
+        color={lights.dirColor}
         shadow-mapSize-width={2048}
         shadow-mapSize-height={2048}
         shadow-camera-near={0.5}
@@ -653,7 +676,7 @@ function SceneContents({ reducedMotion = false, activeZone = "all", onZoneClick 
         shadow-bias={-0.0001}
       />
       
-      <directionalLight position={[-5, 5, 5]} intensity={isLaptopMode ? 0.6 : 0.8} color={isLaptopMode ? "#d6d3d1" : "#a78bfa"} />
+      <directionalLight position={[-5, 5, 5]} intensity={lights.fillIntensity} color={lights.fillColor} />
 
       <DioramaRoom reducedMotion={reducedMotion} activeZone={activeZone} onZoneClick={onZoneClick} isLaptopMode={isLaptopMode} hasArrived={hasArrived} />
       
@@ -664,7 +687,7 @@ function SceneContents({ reducedMotion = false, activeZone = "all", onZoneClick 
       
       <ContactShadows
         position={[0, -1.05, 0]}
-        opacity={0.6}
+        opacity={lights.shadowOpacity * 0.5} // 바닥 그림자도 연하게
         scale={25}
         blur={2.5}
         far={4}
