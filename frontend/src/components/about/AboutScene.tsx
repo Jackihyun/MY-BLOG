@@ -159,13 +159,13 @@ function MainAvatar({
         if (leftKneeRef.current) leftKneeRef.current.rotation.x = Math.PI / 2;
         if (rightKneeRef.current) rightKneeRef.current.rotation.x = Math.PI / 2;
         
-        // 노트북 위로 손이 올라가도록 팔 각도 수정 (앞으로 뻗고 살짝 내림)
+        // 노트북 위로 손이 올라가도록 팔 각도 수정 (앞으로 쭉 뻗고 살짝만 내림)
         if (leftArmRef.current) {
-          leftArmRef.current.rotation.x = -1.1 + Math.sin(t * 15) * 0.1;
+          leftArmRef.current.rotation.x = -1.4 + Math.sin(t * 15) * 0.1;
           leftArmRef.current.rotation.z = 0.1;
         }
         if (rightArmRef.current) {
-          rightArmRef.current.rotation.x = -1.1 + Math.cos(t * 15) * 0.1;
+          rightArmRef.current.rotation.x = -1.4 + Math.cos(t * 15) * 0.1;
           rightArmRef.current.rotation.z = -0.1;
         }
         if (headRef.current) headRef.current.rotation.y = Math.sin(t * 2) * 0.05;
