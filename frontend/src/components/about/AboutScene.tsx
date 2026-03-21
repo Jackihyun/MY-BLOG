@@ -84,7 +84,8 @@ function MainAvatar({
       targetRot.current = Math.PI;
     } else if (activeZone === "reading") {
       const isClose = groupRef.current.position.distanceTo(new Vector3(2.5, groupRef.current.position.y, -2.5)) < 0.2;
-      targetPos.set(2.5, isClose ? 0.4 : 0, -2.5);
+      // 소파에 파묻히지 않도록 Y축(높이)을 0.4에서 0.55로 대폭 상향
+      targetPos.set(2.5, isClose ? 0.55 : 0, -2.5);
       targetRot.current = -Math.PI / 6;
     } else if (activeZone === "exercising") {
       targetPos.set(1.5, 0, 2);
@@ -162,12 +163,14 @@ function MainAvatar({
       } else if (activeZone === "reading") {
         if (bodyRef.current) {
           bodyRef.current.rotation.x = -Math.PI / 2.5;
-          bodyRef.current.position.y = 0.1;
-          bodyRef.current.position.z = 0.2;
+          // 몸통을 조금 더 위로, 앞으로 빼서 소파 쿠션 위로 완전히 올라오게 함
+          bodyRef.current.position.y = 0.2;
+          bodyRef.current.position.z = 0.3;
         }
         
-        if (leftLegRef.current) leftLegRef.current.rotation.x = -Math.PI / 2;
-        if (rightLegRef.current) rightLegRef.current.rotation.x = -Math.PI / 2;
+        // 다리는 소파 위로 뻗기 위해 각도를 조금 더 들어올림
+        if (leftLegRef.current) leftLegRef.current.rotation.x = -Math.PI / 1.8;
+        if (rightLegRef.current) rightLegRef.current.rotation.x = -Math.PI / 1.8;
         if (leftKneeRef.current) leftKneeRef.current.rotation.x = 0;
         if (rightKneeRef.current) rightKneeRef.current.rotation.x = 0;
         
