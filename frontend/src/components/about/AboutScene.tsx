@@ -84,17 +84,26 @@ function MainAvatar({
       targetPos.set(-2.5, isClose ? 0.5 : 0, -1.7);
       targetRot.current = Math.PI;
     } else if (activeZone === "reading") {
-      const isClose = groupRef.current.position.distanceTo(new Vector3(2.5, groupRef.current.position.y, -2.5)) < 0.2;
-      // 소파 등받이에 기대기 위해 위치 재조정 (Z축을 뒤로, Y축을 살짝 낮춤)
-      targetPos.set(2.5, isClose ? 0.35 : 0, -2.6);
+      // 소파에 겹치지 않게 가기 위해, 도착 지점(소파 위)과 거리가 멀 때는 소파 앞쪽(Z=-1.5)을 먼저 경유하도록 처리
+      const distanceToSofa = groupRef.current.position.distanceTo(new Vector3(2.5, groupRef.current.position.y, -2.6));
+      const isClose = distanceToSofa < 0.3;
+      
+      if (!isClose) {
+        // 아직 멀었으면 소파 앞쪽 바닥으로 이동
+        targetPos.set(2.5, 0, -1.5);
+      } else {
+        // 소파 앞에 도착했으면 소파 위로 올라감
+        targetPos.set(2.5, 0.55, -2.6);
+      }
       targetRot.current = -Math.PI / 6;
     } else if (activeZone === "exercising") {
       targetPos.set(1.5, 0, 2);
       targetRot.current = -Math.PI / 4;
     }
 
+    const finalTargetZ = activeZone === "reading" ? -2.6 : targetPos.z;
     const currentPosXZ = new Vector3(groupRef.current.position.x, 0, groupRef.current.position.z);
-    const targetPosXZ = new Vector3(targetPos.x, 0, targetPos.z);
+    const targetPosXZ = new Vector3(targetPos.x, 0, finalTargetZ);
     const distanceXZ = currentPosXZ.distanceTo(targetPosXZ);
     const isMoving = distanceXZ > 0.1;
     
