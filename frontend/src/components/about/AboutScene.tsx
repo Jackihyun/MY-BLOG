@@ -80,12 +80,13 @@ function MainAvatar({
       targetRot.current = Math.PI / 4;
     } else if (activeZone === "laptop") {
       const isClose = groupRef.current.position.distanceTo(new Vector3(-2.5, groupRef.current.position.y, -1.8)) < 0.2;
-      targetPos.set(-2.5, isClose ? 0.45 : 0, -1.8);
+      // 책상에 더 가까이 붙고, 높이를 살짝 올려서 손이 노트북에 닿게 함
+      targetPos.set(-2.5, isClose ? 0.5 : 0, -1.5);
       targetRot.current = Math.PI;
     } else if (activeZone === "reading") {
       const isClose = groupRef.current.position.distanceTo(new Vector3(2.5, groupRef.current.position.y, -2.5)) < 0.2;
-      // 소파에 파묻히지 않도록 Y축(높이)을 0.4에서 0.55로 대폭 상향
-      targetPos.set(2.5, isClose ? 0.55 : 0, -2.5);
+      // 소파 등받이에 기대기 위해 위치 재조정 (Z축을 뒤로, Y축을 살짝 낮춤)
+      targetPos.set(2.5, isClose ? 0.35 : 0, -2.6);
       targetRot.current = -Math.PI / 6;
     } else if (activeZone === "exercising") {
       targetPos.set(1.5, 0, 2);
@@ -157,34 +158,42 @@ function MainAvatar({
         if (leftKneeRef.current) leftKneeRef.current.rotation.x = Math.PI / 2;
         if (rightKneeRef.current) rightKneeRef.current.rotation.x = Math.PI / 2;
         
-        if (leftArmRef.current) leftArmRef.current.rotation.x = Math.sin(t * 15) * 0.1 - 0.5;
-        if (rightArmRef.current) rightArmRef.current.rotation.x = Math.cos(t * 15) * 0.1 - 0.5;
-        if (headRef.current) headRef.current.rotation.y = Math.sin(t * 2) * 0.05;
-      } else if (activeZone === "reading") {
-        if (bodyRef.current) {
-          bodyRef.current.rotation.x = -Math.PI / 2.5;
-          // 몸통을 조금 더 위로, 앞으로 빼서 소파 쿠션 위로 완전히 올라오게 함
-          bodyRef.current.position.y = 0.2;
-          bodyRef.current.position.z = 0.3;
-        }
-        
-        // 다리는 소파 위로 뻗기 위해 각도를 조금 더 들어올림
-        if (leftLegRef.current) leftLegRef.current.rotation.x = -Math.PI / 1.8;
-        if (rightLegRef.current) rightLegRef.current.rotation.x = -Math.PI / 1.8;
-        if (leftKneeRef.current) leftKneeRef.current.rotation.x = 0;
-        if (rightKneeRef.current) rightKneeRef.current.rotation.x = 0;
-        
+        // 노트북 위로 손이 올라가도록 팔 각도 수정 (앞으로 뻗고 살짝 내림)
         if (leftArmRef.current) {
-          leftArmRef.current.rotation.x = -0.5;
-          leftArmRef.current.rotation.z = 0.5;
+          leftArmRef.current.rotation.x = -1.2 + Math.sin(t * 15) * 0.1;
+          leftArmRef.current.rotation.z = 0.1;
         }
         if (rightArmRef.current) {
-          rightArmRef.current.rotation.x = -0.5;
-          rightArmRef.current.rotation.z = -0.5;
+          rightArmRef.current.rotation.x = -1.2 + Math.cos(t * 15) * 0.1;
+          rightArmRef.current.rotation.z = -0.1;
+        }
+        if (headRef.current) headRef.current.rotation.y = Math.sin(t * 2) * 0.05;
+      } else if (activeZone === "reading") {
+        // 소파에 자연스럽게 눕는 자세 (등받이에 기대는 느낌)
+        if (bodyRef.current) {
+          bodyRef.current.rotation.x = -0.6; // 너무 눕지 않고 등받이 각도(약 35도)에 맞춤
+          bodyRef.current.position.y = 0.15; // 높이 살짝 낮춤
+          bodyRef.current.position.z = 0.1; // 뒤로 살짝 뺌
+        }
+        
+        // 다리는 소파 밖으로 자연스럽게 떨어지도록 (무릎을 살짝 굽힘)
+        if (leftLegRef.current) leftLegRef.current.rotation.x = -Math.PI / 2.2;
+        if (rightLegRef.current) rightLegRef.current.rotation.x = -Math.PI / 2.2;
+        if (leftKneeRef.current) leftKneeRef.current.rotation.x = 0.5; // 무릎이 아래로 떨어지게
+        if (rightKneeRef.current) rightKneeRef.current.rotation.x = 0.5;
+        
+        // 팔은 배 위에 편안하게 모음
+        if (leftArmRef.current) {
+          leftArmRef.current.rotation.x = -0.8;
+          leftArmRef.current.rotation.z = 0.6;
+        }
+        if (rightArmRef.current) {
+          rightArmRef.current.rotation.x = -0.8;
+          rightArmRef.current.rotation.z = -0.6;
         }
         
         if (headRef.current) {
-          headRef.current.rotation.x = 0.3;
+          headRef.current.rotation.x = 0.2; // 정면을 살짝 응시
           headRef.current.rotation.y = Math.sin(t * 0.5) * 0.05;
         }
       } else if (activeZone === "exercising") {
