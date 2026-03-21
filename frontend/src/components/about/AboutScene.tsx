@@ -104,8 +104,10 @@ function MainAvatar({
     const finalTargetZ = activeZone === "reading" ? -2.6 : targetPos.z;
     const currentPosXZ = new Vector3(groupRef.current.position.x, 0, groupRef.current.position.z);
     const targetPosXZ = new Vector3(targetPos.x, 0, finalTargetZ);
+    // 소파로 갈 때는 도착 판정 기준을 0.2로 늘려서 무한 걷기 버그 방지
+    const distanceThreshold = activeZone === "reading" ? 0.2 : 0.1;
     const distanceXZ = currentPosXZ.distanceTo(targetPosXZ);
-    const isMoving = distanceXZ > 0.1;
+    const isMoving = distanceXZ > distanceThreshold;
     
     if (!isMoving && !hasArrived.current) {
       hasArrived.current = true;
