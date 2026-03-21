@@ -101,13 +101,19 @@ function MainAvatar({
       targetRot.current = -Math.PI / 4;
     }
 
-    const finalTargetZ = activeZone === "reading" ? -2.6 : targetPos.z;
     const currentPosXZ = new Vector3(groupRef.current.position.x, 0, groupRef.current.position.z);
-    const targetPosXZ = new Vector3(targetPos.x, 0, finalTargetZ);
-    // 소파로 갈 때는 도착 판정 기준을 0.2로 늘려서 무한 걷기 버그 방지
+    const targetPosXZ = new Vector3(targetPos.x, 0, targetPos.z);
+    
+    // 소파로 갈 때는 거리를 조금 더 여유롭게 판단
     const distanceThreshold = activeZone === "reading" ? 0.2 : 0.1;
     const distanceXZ = currentPosXZ.distanceTo(targetPosXZ);
-    const isMoving = distanceXZ > distanceThreshold;
+    
+    // 현재 향하고 있는 목표(targetPos)에 도착했는지 여부
+    const reachedCurrentTarget = distanceXZ <= distanceThreshold;
+    
+    // 최종 목적지에 도착했는지 여부 (reading 모드일 때는 Z가 -2.6이어야 최종 도착)
+    const isFinalDestination = activeZone === "reading" ? targetPos.z === -2.6 && reachedCurrentTarget : reachedCurrentTarget;
+    const isMoving = !isFinalDestination;
     
     if (!isMoving && !hasArrived.current) {
       hasArrived.current = true;
