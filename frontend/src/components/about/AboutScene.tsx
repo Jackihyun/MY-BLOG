@@ -80,8 +80,8 @@ function MainAvatar({
       targetRot.current = Math.PI / 4;
     } else if (activeZone === "laptop") {
       const isClose = groupRef.current.position.distanceTo(new Vector3(-2.5, groupRef.current.position.y, -1.8)) < 0.2;
-      // 책상에 더 가까이 붙고, 높이를 살짝 올려서 손이 노트북에 닿게 함
-      targetPos.set(-2.5, isClose ? 0.5 : 0, -1.5);
+      // 책상에 더 가까이 붙으면서도 의자 위에 정확히 앉도록 Y축과 Z축을 미세 조정
+      targetPos.set(-2.5, isClose ? 0.5 : 0, -1.7);
       targetRot.current = Math.PI;
     } else if (activeZone === "reading") {
       const isClose = groupRef.current.position.distanceTo(new Vector3(2.5, groupRef.current.position.y, -2.5)) < 0.2;
@@ -153,6 +153,7 @@ function MainAvatar({
         if (leftArmRef.current) leftArmRef.current.rotation.z = 0.2;
         if (headRef.current) headRef.current.rotation.y = Math.sin(t * 2) * 0.1;
       } else if (activeZone === "laptop") {
+        // 의자에 앉는 자세 (허벅지는 앞으로, 종아리는 아래로)
         if (leftLegRef.current) leftLegRef.current.rotation.x = -Math.PI / 2;
         if (rightLegRef.current) rightLegRef.current.rotation.x = -Math.PI / 2;
         if (leftKneeRef.current) leftKneeRef.current.rotation.x = Math.PI / 2;
@@ -160,11 +161,11 @@ function MainAvatar({
         
         // 노트북 위로 손이 올라가도록 팔 각도 수정 (앞으로 뻗고 살짝 내림)
         if (leftArmRef.current) {
-          leftArmRef.current.rotation.x = -1.2 + Math.sin(t * 15) * 0.1;
+          leftArmRef.current.rotation.x = -1.1 + Math.sin(t * 15) * 0.1;
           leftArmRef.current.rotation.z = 0.1;
         }
         if (rightArmRef.current) {
-          rightArmRef.current.rotation.x = -1.2 + Math.cos(t * 15) * 0.1;
+          rightArmRef.current.rotation.x = -1.1 + Math.cos(t * 15) * 0.1;
           rightArmRef.current.rotation.z = -0.1;
         }
         if (headRef.current) headRef.current.rotation.y = Math.sin(t * 2) * 0.05;
