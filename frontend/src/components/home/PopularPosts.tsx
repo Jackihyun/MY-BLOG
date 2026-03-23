@@ -9,12 +9,16 @@ import PostEngagementStats from "@/components/ui/PostEngagementStats";
 import SmartImage from "@/components/ui/SmartImage";
 import { getDisplayImageUrl } from "@/lib/api";
 import { getPostPreview } from "@/lib/utils";
+import { useAuth } from "@/hooks/useAuth";
 
 interface PopularPostsProps {
   posts: PostData[];
 }
 
 export default function PopularPosts({ posts }: PopularPostsProps) {
+  const { isAuthenticated, isHydrated } = useAuth();
+  const canSeeViews = isHydrated && isAuthenticated;
+
   return (
     <section className="space-y-6">
       <div className="flex items-center justify-between">
@@ -72,30 +76,32 @@ export default function PopularPosts({ posts }: PopularPostsProps) {
                           containerClassName="h-full w-full"
                           className="object-cover transition-transform duration-500 group-hover:scale-110"
                         />
-                        <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end p-4">
-                          <span className="text-white text-xs font-bold flex items-center gap-1">
-                            <svg
-                              className="w-3 h-3"
-                              fill="none"
-                              viewBox="0 0 24 24"
-                              stroke="currentColor"
-                            >
-                              <path
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                strokeWidth={2}
-                                d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
-                              />
-                              <path
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                strokeWidth={2}
-                                d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
-                              />
-                            </svg>
-                            {post.viewCount?.toLocaleString()} views
-                          </span>
-                        </div>
+                        {canSeeViews && (
+                          <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end p-4">
+                            <span className="text-white text-xs font-bold flex items-center gap-1">
+                              <svg
+                                className="w-3 h-3"
+                                fill="none"
+                                viewBox="0 0 24 24"
+                                stroke="currentColor"
+                              >
+                                <path
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                  strokeWidth={2}
+                                  d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
+                                />
+                                <path
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                  strokeWidth={2}
+                                  d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
+                                />
+                              </svg>
+                              {post.viewCount?.toLocaleString()} views
+                            </span>
+                          </div>
+                        )}
                       </div>
                     ) : (
                       <div className="aspect-video bg-zinc-100 dark:bg-zinc-900 flex items-center justify-center group-hover:bg-amber-50 dark:group-hover:bg-amber-950/20 transition-colors">
@@ -132,6 +138,7 @@ export default function PopularPosts({ posts }: PopularPostsProps) {
                       <PostEngagementStats
                         className="mb-4"
                         compact
+                        showViews={canSeeViews}
                         viewCount={post.viewCount}
                         likeCount={post.likeCount}
                         commentCount={post.commentCount}

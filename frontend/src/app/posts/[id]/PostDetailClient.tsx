@@ -14,6 +14,7 @@ import { incrementViewCount } from "@/lib/api";
 import { enhanceCodeBlocks } from "@/lib/code-blocks";
 import { motion } from "framer-motion";
 import { toast } from "sonner";
+import { useAuth } from "@/hooks/useAuth";
 
 const ReactionBar = dynamic(
   () => import("@/components/reactions/ReactionBar"),
@@ -65,6 +66,8 @@ export default function PostDetailClient({
   previousPost,
   nextPost,
 }: PostDetailClientProps) {
+  const { isAuthenticated, isHydrated } = useAuth();
+  const canSeeViews = isHydrated && isAuthenticated;
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
   const [lightboxZoom, setLightboxZoom] = useState(1);
   const [isSharing, setIsSharing] = useState(false);
@@ -78,6 +81,7 @@ export default function PostDetailClient({
       ),
     [postData.contentHtml]
   );
+  const contentMarkup = useMemo(() => ({ __html: contentHtml }), [contentHtml]);
 
   const contentImages = useMemo(() => {
     const matches = Array.from(
@@ -291,7 +295,7 @@ export default function PostDetailClient({
               />
             </div>
 
-            {viewCount > 0 && (
+            {canSeeViews && viewCount > 0 && (
               <div className="flex items-center gap-1.5">
                 <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
@@ -351,7 +355,7 @@ export default function PostDetailClient({
                      prose-code:text-indigo-600 dark:prose-code:text-indigo-400 prose-code:bg-zinc-100 dark:prose-code:bg-zinc-800/50 prose-code:px-1.5 prose-code:py-0.5 prose-code:rounded-md prose-code:before:content-none prose-code:after:content-none
                      prose-img:rounded-2xl prose-img:shadow-xl prose-img:max-w-full prose-img:cursor-zoom-in
                      mb-16"
-          dangerouslySetInnerHTML={{ __html: contentHtml }}
+          dangerouslySetInnerHTML={contentMarkup}
         />
 
         {lightboxImage && (

@@ -8,7 +8,7 @@ import Image from "@tiptap/extension-image";
 import CodeBlockLowlight from "@tiptap/extension-code-block-lowlight";
 import { Extension } from "@tiptap/core";
 import { common, createLowlight } from "lowlight";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { uploadImage } from "@/lib/api";
 import { enhanceCodeBlocks } from "@/lib/code-blocks";
 import { useAuth } from "@/hooks/useAuth";
@@ -150,6 +150,48 @@ const TextAlign = Extension.create({
   },
 });
 
+const CodeBlockTabBehavior = Extension.create({
+  name: "codeBlockTabBehavior",
+  addKeyboardShortcuts() {
+    return {
+      Tab: () => {
+        if (!this.editor.isActive("codeBlock")) {
+          return false;
+        }
+        return this.editor.commands.insertContent("  ");
+      },
+      "Shift-Tab": () => {
+        if (!this.editor.isActive("codeBlock")) {
+          return false;
+        }
+
+        const { from, to } = this.editor.state.selection;
+        if (from !== to) {
+          return false;
+        }
+
+        const $from = this.editor.state.doc.resolve(from);
+        const lineStart = $from.start();
+        const textBeforeCursor = this.editor.state.doc.textBetween(
+          lineStart,
+          from,
+          "\n",
+          "\n"
+        );
+
+        if (textBeforeCursor.endsWith("  ")) {
+          return this.editor.commands.deleteRange({ from: from - 2, to: from });
+        }
+        if (textBeforeCursor.endsWith("\t")) {
+          return this.editor.commands.deleteRange({ from: from - 1, to: from });
+        }
+
+        return true;
+      },
+    };
+  },
+});
+
 interface TiptapEditorProps {
   content: string;
   onChange: (content: string) => void;
@@ -162,13 +204,14 @@ export default function TiptapEditor({
   placeholder = "내용을 입력하세요...",
 }: TiptapEditorProps) {
   const { token } = useAuth();
+  const isSyncingFromExternalRef = useRef(false);
+  const lastSyncedContentRef = useRef(content);
   const [isUploading, setIsUploading] = useState(false);
   const [selectedImageAttrs, setSelectedImageAttrs] = useState<{
     cropAspect: ImageCropPreset;
     cropX: string;
     cropY: string;
   } | null>(null);
-  const [selectedCodeLanguage, setSelectedCodeLanguage] = useState("plaintext");
 
   const editor = useEditor({
     extensions: [
@@ -190,6 +233,7 @@ export default function TiptapEditor({
         },
       }),
       TextAlign,
+      CodeBlockTabBehavior,
       CodeBlockLowlight.configure({
         lowlight,
         defaultLanguage: "plaintext",
@@ -204,14 +248,34 @@ export default function TiptapEditor({
       },
     },
     onUpdate: ({ editor }) => {
-      onChange(editor.getHTML());
+      if (isSyncingFromExternalRef.current) {
+        return;
+      }
+
+      const html = editor.getHTML();
+      lastSyncedContentRef.current = html;
+      onChange(html);
     },
   });
 
   useEffect(() => {
-    if (editor && content !== editor.getHTML()) {
-      editor.commands.setContent(content);
+    if (!editor) return;
+
+    if (content === lastSyncedContentRef.current) {
+      return;
     }
+
+    if (content === editor.getHTML()) {
+      lastSyncedContentRef.current = content;
+      return;
+    }
+
+    isSyncingFromExternalRef.current = true;
+    editor.commands.setContent(content);
+    lastSyncedContentRef.current = content;
+    queueMicrotask(() => {
+      isSyncingFromExternalRef.current = false;
+    });
   }, [content, editor]);
 
   useEffect(() => {
@@ -243,29 +307,6 @@ export default function TiptapEditor({
     return () => {
       editor.off("selectionUpdate", updateSelectedImageAttrs);
       editor.off("transaction", updateSelectedImageAttrs);
-    };
-  }, [editor]);
-
-  useEffect(() => {
-    if (!editor) return;
-
-    const updateSelectedCodeLanguage = () => {
-      if (!editor.isActive("codeBlock")) {
-        setSelectedCodeLanguage("plaintext");
-        return;
-      }
-
-      const attrs = editor.getAttributes("codeBlock") as { language?: string };
-      setSelectedCodeLanguage(attrs.language || "plaintext");
-    };
-
-    updateSelectedCodeLanguage();
-    editor.on("selectionUpdate", updateSelectedCodeLanguage);
-    editor.on("transaction", updateSelectedCodeLanguage);
-
-    return () => {
-      editor.off("selectionUpdate", updateSelectedCodeLanguage);
-      editor.off("transaction", updateSelectedCodeLanguage);
     };
   }, [editor]);
 
@@ -386,23 +427,106 @@ export default function TiptapEditor({
   useEffect(() => {
     if (!editor) return;
 
+    const extractCodeLanguage = (codeElement: HTMLElement | null) => {
+      if (!codeElement) return "plaintext";
+      const className = codeElement.className || "";
+      const languageClass = className.match(/language-([\w-]+)/i);
+      if (languageClass?.[1]) return languageClass[1];
+      const altLanguageClass = className.match(/lang(?:uage)?-([\w-]+)/i);
+      if (altLanguageClass?.[1]) return altLanguageClass[1];
+      return "plaintext";
+    };
+
+    const normalizeLanguage = (value: string) => {
+      const found = CODE_LANGUAGES.find((language) => language.value === value);
+      return found?.value || "plaintext";
+    };
+
+    const attachLanguageSelect = () => {
+      const codeBlocks = editor.view.dom.querySelectorAll("pre");
+      codeBlocks.forEach((preElement) => {
+        const pre = preElement as HTMLElement;
+        const toolbar = pre.querySelector(".code-block-toolbar") as HTMLDivElement | null;
+        if (!toolbar) return;
+
+        let select = toolbar.querySelector(
+          ".code-block-language-select"
+        ) as HTMLSelectElement | null;
+
+        if (!select) {
+          select = document.createElement("select");
+          select.className = "code-block-language-select";
+          select.setAttribute("aria-label", "코드 블록 언어 선택");
+
+          for (const language of CODE_LANGUAGES) {
+            const option = document.createElement("option");
+            option.value = language.value;
+            option.textContent = language.label;
+            select.appendChild(option);
+          }
+
+          select.onmousedown = (event) => {
+            event.stopPropagation();
+          };
+
+          select.onchange = () => {
+            const language = normalizeLanguage(select!.value);
+            try {
+              const pos = editor.view.posAtDOM(pre, 0);
+              editor
+                .chain()
+                .focus()
+                .setTextSelection(Math.max(1, pos + 1))
+                .updateAttributes("codeBlock", { language })
+                .run();
+            } catch (error) {
+              console.error("Failed to update code block language:", error);
+            }
+          };
+
+          toolbar.insertBefore(select, toolbar.querySelector(".code-block-copy"));
+        }
+
+        const code = pre.querySelector("code") as HTMLElement | null;
+        const currentLanguage = normalizeLanguage(
+          pre.dataset.codeLanguage || extractCodeLanguage(code)
+        );
+        if (select.value !== currentLanguage) {
+          select.value = currentLanguage;
+        }
+      });
+    };
+
     const decorateCodeBlocks = () => {
       enhanceCodeBlocks(
         editor.view.dom,
         (message) => toast.success(message),
         (message) => toast.error(message)
       );
+      attachLanguageSelect();
+    };
+    let rafId: number | null = null;
+    const scheduleDecorateCodeBlocks = () => {
+      if (rafId !== null) {
+        return;
+      }
+
+      rafId = window.requestAnimationFrame(() => {
+        rafId = null;
+        decorateCodeBlocks();
+      });
     };
 
-    decorateCodeBlocks();
-    editor.on("create", decorateCodeBlocks);
-    editor.on("update", decorateCodeBlocks);
-    editor.on("selectionUpdate", decorateCodeBlocks);
+    scheduleDecorateCodeBlocks();
+    editor.on("create", scheduleDecorateCodeBlocks);
+    editor.on("update", scheduleDecorateCodeBlocks);
 
     return () => {
-      editor.off("create", decorateCodeBlocks);
-      editor.off("update", decorateCodeBlocks);
-      editor.off("selectionUpdate", decorateCodeBlocks);
+      if (rafId !== null) {
+        window.cancelAnimationFrame(rafId);
+      }
+      editor.off("create", scheduleDecorateCodeBlocks);
+      editor.off("update", scheduleDecorateCodeBlocks);
     };
   }, [editor]);
 
@@ -514,22 +638,6 @@ export default function TiptapEditor({
         .focus()
         .setTextAlign(alignment)
         .run();
-    },
-    [editor]
-  );
-
-  const setCodeBlockLanguage = useCallback(
-    (language: string) => {
-      if (!editor) return;
-
-      if (!editor.isActive("codeBlock")) {
-        editor.chain().focus().toggleCodeBlock().updateAttributes("codeBlock", {
-          language,
-        }).run();
-        return;
-      }
-
-      editor.chain().focus().updateAttributes("codeBlock", { language }).run();
     },
     [editor]
   );
@@ -687,21 +795,6 @@ export default function TiptapEditor({
               <path d="M9.293 9.293L5.586 13l3.707 3.707 1.414-1.414L8.414 13l2.293-2.293zm5.414 0l-1.414 1.414L15.586 13l-2.293 2.293 1.414 1.414L18.414 13z" />
             </svg>
           </ToolbarButton>
-          <label className="ml-2 flex items-center gap-2 text-xs font-medium text-gray-500 dark:text-gray-400">
-            <span>언어</span>
-            <select
-              value={selectedCodeLanguage}
-              onChange={(event) => setCodeBlockLanguage(event.target.value)}
-              className="rounded-md border border-gray-300 bg-white px-2 py-1 text-xs text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-200 dark:border-gray-600 dark:bg-[#1a1a1a] dark:text-gray-200 dark:focus:ring-blue-900"
-              title="코드 블록 언어 선택"
-            >
-              {CODE_LANGUAGES.map((language) => (
-                <option key={language.value} value={language.value}>
-                  {language.label}
-                </option>
-              ))}
-            </select>
-          </label>
         </div>
 
         {/* 링크 & 이미지 */}

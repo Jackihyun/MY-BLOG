@@ -633,7 +633,8 @@ function PostsList({ allPostsData }: { allPostsData: PostData[] }) {
   const [isAtBottom, setIsAtBottom] = useState(false);
   const mobileCategoryPopupRef = useRef<HTMLDivElement | null>(null);
 
-  const { isAuthenticated, token } = useAuth();
+  const { isAuthenticated, isHydrated, token } = useAuth();
+  const canSeeViews = isHydrated && isAuthenticated;
   const { data: visitorSummary } = useVisitorSummaryQuery();
   const { data: categoryTreeData } = useCategoryTreeQuery();
   const updateCategoryTreeMutation = useUpdateCategoryTreeMutation();
@@ -1569,6 +1570,7 @@ function PostsList({ allPostsData }: { allPostsData: PostData[] }) {
                                 itemClassName="gap-1 min-w-0 justify-end"
                                 iconClassName="h-3.5 w-3.5"
                                 compact
+                                showViews={canSeeViews}
                                 viewCount={viewCount}
                                 likeCount={likeCount}
                                 commentCount={commentCount}

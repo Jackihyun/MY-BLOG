@@ -16,7 +16,8 @@ interface RecentPostsProps {
 }
 
 export default function RecentPosts({ posts }: RecentPostsProps) {
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, isHydrated } = useAuth();
+  const canSeeViews = isHydrated && isAuthenticated;
 
   return (
     <section className="space-y-6">
@@ -122,6 +123,7 @@ export default function RecentPosts({ posts }: RecentPostsProps) {
                     <PostEngagementStats
                       className="mt-4"
                       compact
+                      showViews={canSeeViews}
                       viewCount={post.viewCount}
                       likeCount={post.likeCount}
                       commentCount={post.commentCount}

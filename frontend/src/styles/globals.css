@@ -121,17 +121,55 @@ input:checked + svg .line-top-bottom {
 
 
 @layer components {
-  .prose pre,
+  .prose pre {
+    @apply relative overflow-x-auto max-w-full rounded-xl border px-4 pb-4 pt-11 shadow-sm;
+    background-color: #f7f6f3;
+    border-color: #e7e5e4;
+    color: #1f2937;
+    box-shadow: 0 1px 2px rgba(15, 23, 42, 0.06);
+  }
+  .dark .prose pre {
+    background-color: #191919;
+    border-color: #2f2f2f;
+    color: #e5e7eb;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.26);
+  }
   .ProseMirror pre {
-    @apply relative bg-zinc-950 text-zinc-100 border border-zinc-800 rounded-2xl overflow-x-auto max-w-full p-4 pt-12 shadow-sm;
+    @apply relative overflow-x-auto max-w-full rounded-xl border px-4 pb-4 pt-11 shadow-sm;
+    background-color: #f7f6f3;
+    border-color: #e7e5e4;
+    color: #1f2937;
+    box-shadow: 0 1px 2px rgba(15, 23, 42, 0.06);
+  }
+  .dark .ProseMirror pre {
+    background-color: #191919;
+    border-color: #2f2f2f;
+    color: #e5e7eb;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.26);
   }
   .prose pre {
     /* 인라인 스타일이 있으면 인라인 스타일(마크다운 본래 색상)이 우선 적용됩니다 */
   }
   .prose pre code,
   .ProseMirror pre code {
-    @apply p-0 border-none font-mono text-sm leading-relaxed text-zinc-100;
+    @apply p-0 border-none font-mono text-sm leading-relaxed;
     background-color: transparent !important;
+    tab-size: 2;
+    white-space: pre;
+  }
+  .prose pre code {
+    color: inherit;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+    font-size: 13px;
+    line-height: 1.72;
+    letter-spacing: -0.01em;
+  }
+  .ProseMirror pre code {
+    color: inherit;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+    font-size: 13px;
+    line-height: 1.72;
+    letter-spacing: -0.01em;
   }
   .prose code {
     @apply break-words whitespace-pre-wrap;
@@ -220,14 +258,250 @@ input:checked + svg .line-top-bottom {
   .ProseMirror pre .hljs-punctuation {
     color: #e2e8f0;
   }
+  .ProseMirror pre .hljs-comment,
+  .ProseMirror pre .hljs-quote {
+    color: #a8a29e;
+  }
+  .ProseMirror pre .hljs-keyword,
+  .ProseMirror pre .hljs-selector-tag,
+  .ProseMirror pre .hljs-literal,
+  .ProseMirror pre .hljs-section,
+  .ProseMirror pre .hljs-link {
+    color: #7c3aed;
+  }
+  .ProseMirror pre .hljs-string,
+  .ProseMirror pre .hljs-title,
+  .ProseMirror pre .hljs-name,
+  .ProseMirror pre .hljs-type,
+  .ProseMirror pre .hljs-attribute,
+  .ProseMirror pre .hljs-symbol,
+  .ProseMirror pre .hljs-bullet,
+  .ProseMirror pre .hljs-addition,
+  .ProseMirror pre .hljs-template-tag,
+  .ProseMirror pre .hljs-template-variable {
+    color: #0f766e;
+  }
+  .ProseMirror pre .hljs-number,
+  .ProseMirror pre .hljs-meta,
+  .ProseMirror pre .hljs-built_in,
+  .ProseMirror pre .hljs-builtin-name,
+  .ProseMirror pre .hljs-variable,
+  .ProseMirror pre .hljs-code,
+  .ProseMirror pre .hljs-selector-class,
+  .ProseMirror pre .hljs-selector-attr,
+  .ProseMirror pre .hljs-selector-pseudo {
+    color: #b45309;
+  }
+  .ProseMirror pre .hljs-function,
+  .ProseMirror pre .hljs-title.function_,
+  .ProseMirror pre .hljs-title.class_,
+  .ProseMirror pre .hljs-class .hljs-title {
+    color: #2563eb;
+  }
+  .ProseMirror pre .hljs-regexp,
+  .ProseMirror pre .hljs-subst,
+  .ProseMirror pre .hljs-operator,
+  .ProseMirror pre .hljs-property,
+  .ProseMirror pre .hljs-params,
+  .ProseMirror pre .hljs-punctuation {
+    color: #334155;
+  }
+  .dark .ProseMirror pre .hljs-comment,
+  .dark .ProseMirror pre .hljs-quote {
+    color: #71717a;
+  }
+  .dark .ProseMirror pre .hljs-keyword,
+  .dark .ProseMirror pre .hljs-selector-tag,
+  .dark .ProseMirror pre .hljs-literal,
+  .dark .ProseMirror pre .hljs-section,
+  .dark .ProseMirror pre .hljs-link {
+    color: #c4b5fd;
+  }
+  .dark .ProseMirror pre .hljs-string,
+  .dark .ProseMirror pre .hljs-title,
+  .dark .ProseMirror pre .hljs-name,
+  .dark .ProseMirror pre .hljs-type,
+  .dark .ProseMirror pre .hljs-attribute,
+  .dark .ProseMirror pre .hljs-symbol,
+  .dark .ProseMirror pre .hljs-bullet,
+  .dark .ProseMirror pre .hljs-addition,
+  .dark .ProseMirror pre .hljs-template-tag,
+  .dark .ProseMirror pre .hljs-template-variable {
+    color: #5eead4;
+  }
+  .dark .ProseMirror pre .hljs-number,
+  .dark .ProseMirror pre .hljs-meta,
+  .dark .ProseMirror pre .hljs-built_in,
+  .dark .ProseMirror pre .hljs-builtin-name,
+  .dark .ProseMirror pre .hljs-variable,
+  .dark .ProseMirror pre .hljs-code,
+  .dark .ProseMirror pre .hljs-selector-class,
+  .dark .ProseMirror pre .hljs-selector-attr,
+  .dark .ProseMirror pre .hljs-selector-pseudo {
+    color: #fcd34d;
+  }
+  .dark .ProseMirror pre .hljs-function,
+  .dark .ProseMirror pre .hljs-title.function_,
+  .dark .ProseMirror pre .hljs-title.class_,
+  .dark .ProseMirror pre .hljs-class .hljs-title {
+    color: #93c5fd;
+  }
+  .dark .ProseMirror pre .hljs-regexp,
+  .dark .ProseMirror pre .hljs-subst,
+  .dark .ProseMirror pre .hljs-operator,
+  .dark .ProseMirror pre .hljs-property,
+  .dark .ProseMirror pre .hljs-params,
+  .dark .ProseMirror pre .hljs-punctuation {
+    color: #d4d4d8;
+  }
+  .prose pre .hljs-comment,
+  .prose pre .hljs-quote {
+    color: #a8a29e;
+  }
+  .prose pre .hljs-keyword,
+  .prose pre .hljs-selector-tag,
+  .prose pre .hljs-literal,
+  .prose pre .hljs-section,
+  .prose pre .hljs-link {
+    color: #7c3aed;
+  }
+  .prose pre .hljs-string,
+  .prose pre .hljs-title,
+  .prose pre .hljs-name,
+  .prose pre .hljs-type,
+  .prose pre .hljs-attribute,
+  .prose pre .hljs-symbol,
+  .prose pre .hljs-bullet,
+  .prose pre .hljs-addition,
+  .prose pre .hljs-template-tag,
+  .prose pre .hljs-template-variable {
+    color: #0f766e;
+  }
+  .prose pre .hljs-number,
+  .prose pre .hljs-meta,
+  .prose pre .hljs-built_in,
+  .prose pre .hljs-builtin-name,
+  .prose pre .hljs-variable,
+  .prose pre .hljs-code,
+  .prose pre .hljs-selector-class,
+  .prose pre .hljs-selector-attr,
+  .prose pre .hljs-selector-pseudo {
+    color: #b45309;
+  }
+  .prose pre .hljs-function,
+  .prose pre .hljs-title.function_,
+  .prose pre .hljs-title.class_,
+  .prose pre .hljs-class .hljs-title {
+    color: #2563eb;
+  }
+  .prose pre .hljs-regexp,
+  .prose pre .hljs-subst,
+  .prose pre .hljs-operator,
+  .prose pre .hljs-property,
+  .prose pre .hljs-params,
+  .prose pre .hljs-punctuation {
+    color: #334155;
+  }
+  .dark .prose pre .hljs-comment,
+  .dark .prose pre .hljs-quote {
+    color: #71717a;
+  }
+  .dark .prose pre .hljs-keyword,
+  .dark .prose pre .hljs-selector-tag,
+  .dark .prose pre .hljs-literal,
+  .dark .prose pre .hljs-section,
+  .dark .prose pre .hljs-link {
+    color: #c4b5fd;
+  }
+  .dark .prose pre .hljs-string,
+  .dark .prose pre .hljs-title,
+  .dark .prose pre .hljs-name,
+  .dark .prose pre .hljs-type,
+  .dark .prose pre .hljs-attribute,
+  .dark .prose pre .hljs-symbol,
+  .dark .prose pre .hljs-bullet,
+  .dark .prose pre .hljs-addition,
+  .dark .prose pre .hljs-template-tag,
+  .dark .prose pre .hljs-template-variable {
+    color: #5eead4;
+  }
+  .dark .prose pre .hljs-number,
+  .dark .prose pre .hljs-meta,
+  .dark .prose pre .hljs-built_in,
+  .dark .prose pre .hljs-builtin-name,
+  .dark .prose pre .hljs-variable,
+  .dark .prose pre .hljs-code,
+  .dark .prose pre .hljs-selector-class,
+  .dark .prose pre .hljs-selector-attr,
+  .dark .prose pre .hljs-selector-pseudo {
+    color: #fcd34d;
+  }
+  .dark .prose pre .hljs-function,
+  .dark .prose pre .hljs-title.function_,
+  .dark .prose pre .hljs-title.class_,
+  .dark .prose pre .hljs-class .hljs-title {
+    color: #93c5fd;
+  }
+  .dark .prose pre .hljs-regexp,
+  .dark .prose pre .hljs-subst,
+  .dark .prose pre .hljs-operator,
+  .dark .prose pre .hljs-property,
+  .dark .prose pre .hljs-params,
+  .dark .prose pre .hljs-punctuation {
+    color: #d4d4d8;
+  }
   .code-block-toolbar {
-    @apply absolute left-3 right-3 top-3 z-10 flex items-center justify-between gap-3;
+    @apply absolute left-3 right-3 top-2 z-10 flex items-center justify-end gap-1.5;
   }
   .code-block-language {
-    @apply inline-flex items-center rounded-full border border-white/10 bg-white/5 px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.16em] text-zinc-300;
+    @apply inline-flex h-7 items-center rounded-md border px-2 text-[11px] font-semibold;
+    border-color: #d6d3d1;
+    background: #efede8;
+    color: #57534e;
+  }
+  .dark .code-block-language {
+    border-color: #3f3f46;
+    background: #242424;
+    color: #a1a1aa;
+  }
+  .code-block-language-select {
+    @apply h-7 rounded-md border px-2 text-[11px] font-semibold outline-none;
+    border-color: #d6d3d1;
+    background: #efede8;
+    color: #57534e;
+    min-width: 72px;
+  }
+  .code-block-language-select:hover {
+    background: #e7e5e4;
+  }
+  .dark .code-block-language-select {
+    border-color: #3f3f46;
+    background: #242424;
+    color: #a1a1aa;
+  }
+  .dark .code-block-language-select:hover {
+    background: #2b2b2b;
   }
   .code-block-copy {
-    @apply inline-flex h-8 w-8 items-center justify-center rounded-full border border-white/10 bg-white/5 text-zinc-200 transition-colors hover:bg-white/10;
+    @apply inline-flex h-7 w-7 items-center justify-center rounded-md border transition-colors;
+    border-color: #d6d3d1;
+    background: #efede8;
+    color: #57534e;
+    opacity: 0.78;
+  }
+  .code-block-copy:hover {
+    background: #e7e5e4;
+    opacity: 1;
+  }
+  .dark .code-block-copy {
+    border-color: #3f3f46;
+    background: #242424;
+    color: #a1a1aa;
+    opacity: 0.86;
+  }
+  .dark .code-block-copy:hover {
+    background: #2b2b2b;
+    opacity: 1;
   }
   .code-block-copy-icon {
     @apply h-4 w-4;
@@ -252,6 +526,23 @@ input:checked + svg .line-top-bottom {
   }
   .prose {
     @apply max-w-full overflow-hidden;
+  }
+  .prose pre::-webkit-scrollbar,
+  .ProseMirror pre::-webkit-scrollbar {
+    height: 10px;
+  }
+  .prose pre::-webkit-scrollbar-track,
+  .ProseMirror pre::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  .prose pre::-webkit-scrollbar-thumb,
+  .ProseMirror pre::-webkit-scrollbar-thumb {
+    background: rgba(120, 113, 108, 0.35);
+    border-radius: 999px;
+  }
+  .dark .prose pre::-webkit-scrollbar-thumb,
+  .dark .ProseMirror pre::-webkit-scrollbar-thumb {
+    background: rgba(113, 113, 122, 0.45);
   }
 }
 

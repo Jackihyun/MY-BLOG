@@ -79,10 +79,19 @@ export function enhanceCodeBlocks(
       button = document.createElement("button");
       button.type = "button";
       button.className = "code-block-copy";
+      button.setAttribute("aria-label", "코드 복사");
+      button.innerHTML = `
+        <span class="sr-only">코드 복사</span>
+        <svg class="code-block-copy-icon code-block-copy-icon-default" viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V5a2 2 0 012-2h8a2 2 0 012 2v8a2 2 0 01-2 2h-2M8 7H6a2 2 0 00-2 2v8a2 2 0 002 2h8a2 2 0 002-2v-2M8 7h8a2 2 0 012 2v8" />
+        </svg>
+        <svg class="code-block-copy-icon code-block-copy-icon-success" viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+        </svg>
+      `;
       toolbar.appendChild(button);
     }
 
-    button.textContent = "복사";
     button.setAttribute("aria-label", "코드 복사");
     button.onclick = async (event) => {
       event.preventDefault();
@@ -101,16 +110,8 @@ export function enhanceCodeBlocks(
         onCopyError?.("코드 복사에 실패했습니다.");
       }
     };
-
-    button.dataset.copied = "false";
-    button.innerHTML = `
-      <span class="sr-only">코드 복사</span>
-      <svg class="code-block-copy-icon code-block-copy-icon-default" viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V5a2 2 0 012-2h8a2 2 0 012 2v8a2 2 0 01-2 2h-2M8 7H6a2 2 0 00-2 2v8a2 2 0 002 2h8a2 2 0 002-2v-2M8 7h8a2 2 0 012 2v8" />
-      </svg>
-      <svg class="code-block-copy-icon code-block-copy-icon-success" viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
-      </svg>
-    `;
+    if (!button.dataset.copied) {
+      button.dataset.copied = "false";
+    }
   });
 }
