@@ -1,9 +1,9 @@
 "use client";
 
 import { Canvas, useFrame, useThree } from "@react-three/fiber";
-import { ContactShadows, Environment, RoundedBox, Sphere, Cylinder, Box, Float, SoftShadows, Stars, Sky } from "@react-three/drei";
+import { ContactShadows, Environment, RoundedBox, Sphere, Cylinder, Box, Float, SoftShadows, Stars, Sky, Billboard } from "@react-three/drei";
 import { Suspense, useRef, useState, useMemo, useEffect } from "react";
-import { Group, Mesh, Vector3, MathUtils, Color } from "three";
+import { Group, Mesh, Vector3, MathUtils, Color, CanvasTexture, LinearFilter } from "three";
 
 export type ActiveZone = "all" | "laptop" | "reading" | "exercising";
 
@@ -11,6 +11,91 @@ interface AboutSceneProps {
   reducedMotion?: boolean;
   activeZone?: ActiveZone;
   onZoneClick?: (zone: ActiveZone) => void;
+}
+
+const SPEECH_MESSAGES: Record<ActiveZone, string> = {
+  all: "안녕하세요, 제 방에 오신 걸 환영해요.",
+  laptop: "집중 모드로 작업하고 있어요.",
+  reading: "소파에서 잠깐 머리 식히는 중이에요.",
+  exercising: "짧게 운동하고 다시 시작할게요.",
+};
+
+function AvatarSpeechBubble({ activeZone, visible }: { activeZone: ActiveZone; visible: boolean }) {
+  const bubbleX = activeZone === "reading" ? -1.85 : 0.8;
+  const bubbleScale = activeZone === "exercising" ? 0.72 : 1;
+  const message = SPEECH_MESSAGES[activeZone];
+  const textTexture = useMemo(() => {
+    if (typeof document === "undefined") return null;
+    const dpr = Math.min(window.devicePixelRatio || 1, 2);
+    const w = Math.floor(1200 * dpr);
+    const h = Math.floor(280 * dpr);
+    const canvas = document.createElement("canvas");
+    canvas.width = w;
+    canvas.height = h;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return null;
+    ctx.scale(dpr, dpr);
+    ctx.clearRect(0, 0, 1200, 280);
+    ctx.fillStyle = "#3f3f46";
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    const fontSize = message.length > 18 ? 66 : 74;
+    ctx.font = `700 ${fontSize}px 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif`;
+    ctx.fillText(message, 600, 140);
+    const texture = new CanvasTexture(canvas);
+    texture.generateMipmaps = false;
+    texture.minFilter = LinearFilter;
+    texture.magFilter = LinearFilter;
+    texture.needsUpdate = true;
+    return texture;
+  }, [message]);
+
+  useEffect(() => {
+    return () => {
+      textTexture?.dispose();
+    };
+  }, [textTexture]);
+
+  if (!textTexture) return null;
+  if (!visible) return null;
+
+  return (
+    <group position={[bubbleX, 2.05, 0.12]} scale={[bubbleScale, bubbleScale, 1]}>
+      <Billboard follow>
+        <group>
+          <RoundedBox args={[2.8, 0.86, 0.03]} radius={0.16} renderOrder={1000}>
+            <meshStandardMaterial
+              color="#ffffff"
+              roughness={0.35}
+              metalness={0.02}
+              transparent
+              opacity={0.96}
+              toneMapped={false}
+              depthTest={false}
+              depthWrite={false}
+            />
+          </RoundedBox>
+          <mesh position={[0, -0.52, 0]} rotation={[0, 0, Math.PI / 4]} renderOrder={1000}>
+            <planeGeometry args={[0.17, 0.17]} />
+            <meshStandardMaterial
+              color="#ffffff"
+              roughness={0.35}
+              metalness={0.02}
+              transparent
+              opacity={0.96}
+              toneMapped={false}
+              depthTest={false}
+              depthWrite={false}
+            />
+          </mesh>
+          <mesh position={[0, 0.02, 0.031]} renderOrder={1001}>
+            <planeGeometry args={[2.4, 0.52]} />
+            <meshBasicMaterial map={textTexture} transparent depthTest={false} depthWrite={false} toneMapped={false} />
+          </mesh>
+        </group>
+      </Billboard>
+    </group>
+  );
 }
 
 // 카메라를 고정(전체 화면)으로 유지
@@ -36,11 +121,13 @@ function CameraRig({ reducedMotion = false }: { reducedMotion?: boolean }) {
 function MainAvatar({ 
   activeZone,
   reducedMotion = false,
-  onArrival
+  onArrival,
+  showSpeech = false,
 }: { 
   activeZone: ActiveZone;
   reducedMotion?: boolean;
   onArrival?: (zone: ActiveZone) => void;
+  showSpeech?: boolean;
 }) {
   const groupRef = useRef<Group>(null);
   const headRef = useRef<Group>(null);
@@ -180,7 +267,8 @@ function MainAvatar({
     const shouldStopWalkPose = isSeatApproach ? distance3D <= poseStopThreshold : distanceXZ <= poseStopThreshold;
 
     const lieBackX = -0.3;
-    const poseMoving = reducedMotion ? false : (isMoving && !shouldStopWalkPose);
+    const poseMoving =
+      reducedMotion ? false : (activeZone === "exercising" ? isMoving : (isMoving && !shouldStopWalkPose));
 
     if (!poseMoving && !hasArrived.current) {
       const isReadyForArrival =
@@ -200,16 +288,10 @@ function MainAvatar({
       const dx = targetPos.x - groupRef.current.position.x;
       const dz = targetPos.z - groupRef.current.position.z;
       const moveRot = Math.atan2(dx, dz);
-      const shouldSnapExerciseFacing = activeZone === "exercising";
-
-      if (shouldSnapExerciseFacing) {
-        groupRef.current.rotation.y = targetRot.current;
-      } else {
-        let diff = moveRot - groupRef.current.rotation.y;
-        while (diff < -Math.PI) diff += Math.PI * 2;
-        while (diff > Math.PI) diff -= Math.PI * 2;
-        groupRef.current.rotation.y += diff * rotToMoveDir;
-      }
+      let diff = moveRot - groupRef.current.rotation.y;
+      while (diff < -Math.PI) diff += Math.PI * 2;
+      while (diff > Math.PI) diff -= Math.PI * 2;
+      groupRef.current.rotation.y += diff * rotToMoveDir;
 
       moveTarget.set(targetPos.x, isSeatApproach ? targetPos.y : 0, targetPos.z);
       groupRef.current.position.lerp(moveTarget, moveLerp);
@@ -348,6 +430,7 @@ function MainAvatar({
 
   return (
     <group ref={groupRef}>
+      <AvatarSpeechBubble activeZone={activeZone} visible={showSpeech} />
       <group ref={bodyRef}>
         <group ref={headRef} position={[0, 0.65, 0]}>
           <Cylinder args={[0.06, 0.08, 0.1]} position={[0, -0.15, 0]} castShadow>
@@ -554,97 +637,156 @@ function DioramaRoom({ reducedMotion = false, activeZone = "all", onZoneClick, i
   const handleZoneClick = (zone: ActiveZone) => {
     if (onZoneClick) onZoneClick(zone);
   };
+  const palette = {
+    floor: "#d4b896",
+    wall: "#f4eee5",
+    wallAccent: "#eadfce",
+    trim: "#b89d81",
+    frame: "#a9825f",
+    glass: "#efe2d0",
+    warmLight: "#fff5e8",
+    brass: "#b58c62",
+    sofa: "#b2bcaa",
+    pillow: "#d9c2ab",
+    desk: "#8f6d4f",
+    deskMetal: "#5f5145",
+    cream: "#f9f4ec",
+    plantPot: "#b08968",
+    leaf1: "#93a287",
+    leaf2: "#86967a",
+    leaf3: "#78886e",
+    shelfBody: "#7d6047",
+    shelfLayer: "#9a785c",
+    accentA: "#d8bf9f",
+    accentB: "#cfae87",
+    accentC: "#a5b39b",
+  };
 
   return (
     <group position={[0, -1, 0]}>
       <Box args={[8, 0.4, 8]} position={[0, -0.2, 0]} receiveShadow>
-        <meshStandardMaterial color="#b08968" roughness={0.8} />
+        <meshStandardMaterial color={palette.floor} roughness={0.85} />
       </Box>
       
       <Box args={[0.4, 5, 8]} position={[-4.2, 2.5, 0]} receiveShadow castShadow>
-        <meshStandardMaterial color="#fdfbf7" roughness={0.9} />
+        <meshStandardMaterial color={palette.wall} roughness={0.92} />
       </Box>
       
       <group position={[0, 2.5, -4.2]}>
-        <Box args={[8, 1.2, 0.4]} position={[0, 1.9, 0]} receiveShadow castShadow><meshStandardMaterial color="#fdfbf7" roughness={0.9} /></Box>
-        <Box args={[8, 1.2, 0.4]} position={[0, -1.9, 0]} receiveShadow castShadow><meshStandardMaterial color="#fdfbf7" roughness={0.9} /></Box>
-        <Box args={[2, 2.6, 0.4]} position={[-3, 0, 0]} receiveShadow castShadow><meshStandardMaterial color="#fdfbf7" roughness={0.9} /></Box>
-        <Box args={[2, 2.6, 0.4]} position={[3, 0, 0]} receiveShadow castShadow><meshStandardMaterial color="#fdfbf7" roughness={0.9} /></Box>
+        <Box args={[8, 1.2, 0.4]} position={[0, 1.9, 0]} receiveShadow castShadow><meshStandardMaterial color={palette.wallAccent} roughness={0.92} /></Box>
+        <Box args={[8, 1.2, 0.4]} position={[0, -1.9, 0]} receiveShadow castShadow><meshStandardMaterial color={palette.wallAccent} roughness={0.92} /></Box>
+        <Box args={[2, 2.6, 0.4]} position={[-3, 0, 0]} receiveShadow castShadow><meshStandardMaterial color={palette.wallAccent} roughness={0.92} /></Box>
+        <Box args={[2, 2.6, 0.4]} position={[3, 0, 0]} receiveShadow castShadow><meshStandardMaterial color={palette.wallAccent} roughness={0.92} /></Box>
       </group>
 
-      <Box args={[0.1, 0.4, 8]} position={[-3.95, 0.2, 0]} receiveShadow><meshStandardMaterial color="#7f5539" roughness={0.8} /></Box>
-      <Box args={[8, 0.4, 0.1]} position={[0, 0.2, -3.95]} receiveShadow><meshStandardMaterial color="#7f5539" roughness={0.8} /></Box>
+      <Box args={[0.1, 0.4, 8]} position={[-3.95, 0.2, 0]} receiveShadow><meshStandardMaterial color={palette.trim} roughness={0.85} /></Box>
+      <Box args={[8, 0.4, 0.1]} position={[0, 0.2, -3.95]} receiveShadow><meshStandardMaterial color={palette.trim} roughness={0.85} /></Box>
 
       <group position={[0, 2.5, -4]}>
-        <Box args={[4.2, 2.8, 0.2]} position={[0, 0, 0]} castShadow><meshStandardMaterial color="#fff" /></Box>
+        <Box args={[4.2, 2.8, 0.2]} position={[0, 0, 0]} castShadow><meshStandardMaterial color={palette.wall} /></Box>
         <Box args={[4, 2.6, 0.25]} position={[0, 0, 0]}><meshBasicMaterial color="#000" colorWrite={false} depthWrite={false} /></Box>
         <mesh position={[0, 0, 0.05]}>
           <planeGeometry args={[4, 2.6]} />
-          <meshPhysicalMaterial color="#ffffff" transparent opacity={0.2} roughness={0.1} metalness={0.1} transmission={0.9} thickness={0.5} />
+          <meshPhysicalMaterial color={palette.glass} transparent opacity={0.22} roughness={0.2} metalness={0.1} transmission={0.72} thickness={0.5} />
         </mesh>
-        <Box args={[0.1, 2.6, 0.1]} position={[0, 0, 0.05]} castShadow><meshStandardMaterial color="#fff" /></Box>
-        <Box args={[4, 0.1, 0.1]} position={[0, 0, 0.05]} castShadow><meshStandardMaterial color="#fff" /></Box>
+        <Box args={[0.1, 2.6, 0.1]} position={[0, 0, 0.05]} castShadow><meshStandardMaterial color={palette.trim} /></Box>
+        <Box args={[4, 0.1, 0.1]} position={[0, 0, 0.05]} castShadow><meshStandardMaterial color={palette.trim} /></Box>
+      </group>
+
+      {/* open-top room: 천장은 제거하고 상부 조명만 유지 */}
+      <pointLight position={[0, 4.2, 0]} intensity={0.92} color={palette.warmLight} distance={9} />
+
+      {/* developer backdrop wall panels */}
+      <Box args={[1.2, 2, 0.1]} position={[-1.8, 2.5, -3.84]} castShadow>
+        <meshStandardMaterial color={palette.wall} roughness={0.9} />
+      </Box>
+      <Box args={[1.2, 2, 0.1]} position={[0, 2.5, -3.84]} castShadow>
+        <meshStandardMaterial color={palette.wall} roughness={0.9} />
+      </Box>
+      <Box args={[1.2, 2, 0.1]} position={[1.8, 2.5, -3.84]} castShadow>
+        <meshStandardMaterial color={palette.wall} roughness={0.9} />
+      </Box>
+      <Box args={[3.8, 0.07, 0.08]} position={[0, 1.5, -3.79]}>
+        <meshStandardMaterial color={palette.brass} emissive={palette.brass} emissiveIntensity={0.32} metalness={0.35} roughness={0.45} />
+      </Box>
+
+      {/* wall frames */}
+      <group position={[-3.98, 2.7, 1.6]} rotation={[0, Math.PI / 2, 0]}>
+        <Box args={[1.3, 0.9, 0.08]} castShadow><meshStandardMaterial color={palette.frame} roughness={0.75} /></Box>
+        <Box args={[1.08, 0.68, 0.09]} position={[0, 0, 0.01]}><meshStandardMaterial color={palette.cream} /></Box>
+        <mesh position={[0, 0, 0.055]}>
+          <planeGeometry args={[0.96, 0.56]} />
+          <meshBasicMaterial color={palette.accentC} />
+        </mesh>
+      </group>
+      <group position={[2.9, 3.55, -3.92]}>
+        <Box args={[1.2, 0.75, 0.08]} castShadow><meshStandardMaterial color={palette.frame} roughness={0.75} /></Box>
+        <Box args={[1, 0.55, 0.09]} position={[0, 0, 0.01]}><meshStandardMaterial color={palette.cream} /></Box>
+        <mesh position={[0, 0, 0.055]}>
+          <planeGeometry args={[0.9, 0.45]} />
+          <meshBasicMaterial color={palette.accentA} />
+        </mesh>
       </group>
 
       <Cylinder args={[3, 3, 0.04, 64]} position={[0, 0.02, 0]} receiveShadow>
-        <meshStandardMaterial color="#e2e8f0" roughness={1} />
+        <meshStandardMaterial color="#eae1d7" roughness={1} />
       </Cylinder>
 
       <InteractiveZone position={[-2.5, 0, -2.5]} zone="laptop" onClick={handleZoneClick}>
         <RoundedBox args={[2.2, 0.1, 1.2]} position={[0, 1, 0]} radius={0.05} castShadow receiveShadow>
-          <meshStandardMaterial color="#7f5539" roughness={0.7} />
+          <meshStandardMaterial color={palette.desk} roughness={0.75} />
         </RoundedBox>
-        <Cylinder args={[0.06, 0.06, 1, 16]} position={[-0.9, 0.5, -0.4]} castShadow receiveShadow><meshStandardMaterial color="#222" /></Cylinder>
-        <Cylinder args={[0.06, 0.06, 1, 16]} position={[0.9, 0.5, -0.4]} castShadow receiveShadow><meshStandardMaterial color="#222" /></Cylinder>
-        <Cylinder args={[0.06, 0.06, 1, 16]} position={[-0.9, 0.5, 0.4]} castShadow receiveShadow><meshStandardMaterial color="#222" /></Cylinder>
-        <Cylinder args={[0.06, 0.06, 1, 16]} position={[0.9, 0.5, 0.4]} castShadow receiveShadow><meshStandardMaterial color="#222" /></Cylinder>
+        <Cylinder args={[0.06, 0.06, 1, 16]} position={[-0.9, 0.5, -0.4]} castShadow receiveShadow><meshStandardMaterial color={palette.deskMetal} /></Cylinder>
+        <Cylinder args={[0.06, 0.06, 1, 16]} position={[0.9, 0.5, -0.4]} castShadow receiveShadow><meshStandardMaterial color={palette.deskMetal} /></Cylinder>
+        <Cylinder args={[0.06, 0.06, 1, 16]} position={[-0.9, 0.5, 0.4]} castShadow receiveShadow><meshStandardMaterial color={palette.deskMetal} /></Cylinder>
+        <Cylinder args={[0.06, 0.06, 1, 16]} position={[0.9, 0.5, 0.4]} castShadow receiveShadow><meshStandardMaterial color={palette.deskMetal} /></Cylinder>
         
         <group position={[0, 1.05, 0]}>
-          <RoundedBox args={[0.7, 0.03, 0.5]} position={[0, 0, 0]} radius={0.01} castShadow><meshStandardMaterial color="#d1d5db" metalness={0.6} roughness={0.3} /></RoundedBox>
+            <RoundedBox args={[0.7, 0.03, 0.5]} position={[0, 0, 0]} radius={0.01} castShadow><meshStandardMaterial color="#d6d2cc" metalness={0.55} roughness={0.35} /></RoundedBox>
           <Box args={[0.6, 0.031, 0.25]} position={[0, 0, 0.05]}><meshStandardMaterial color="#333" /></Box>
           <group position={[0, 0.015, -0.25]} rotation={[-0.2, 0, 0]}>
-            <RoundedBox args={[0.7, 0.5, 0.03]} position={[0, 0.25, 0]} radius={0.01} castShadow><meshStandardMaterial color="#d1d5db" metalness={0.6} roughness={0.3} /></RoundedBox>
+              <RoundedBox args={[0.7, 0.5, 0.03]} position={[0, 0.25, 0]} radius={0.01} castShadow><meshStandardMaterial color="#d6d2cc" metalness={0.55} roughness={0.35} /></RoundedBox>
             <Box args={[0.66, 0.46, 0.031]} position={[0, 0.25, 0.001]}><meshStandardMaterial color="#111" /></Box>
             <mesh position={[0, 0.25, 0.017]}>
               <planeGeometry args={[0.62, 0.42]} />
-              <meshBasicMaterial color="#93c5fd" transparent opacity={0.8} />
+                <meshBasicMaterial color={palette.accentC} transparent opacity={0.85} />
             </mesh>
           </group>
         </group>
 
         <group position={[-0.8, 1.05, -0.3]}>
-          <Cylinder args={[0.12, 0.15, 0.05, 32]} castShadow><meshStandardMaterial color="#eab308" /></Cylinder>
-          <Cylinder args={[0.02, 0.02, 0.5, 16]} position={[0, 0.25, 0]} castShadow><meshStandardMaterial color="#eab308" /></Cylinder>
+          <Cylinder args={[0.12, 0.15, 0.05, 32]} castShadow><meshStandardMaterial color={palette.brass} metalness={0.6} roughness={0.35} /></Cylinder>
+          <Cylinder args={[0.02, 0.02, 0.5, 16]} position={[0, 0.25, 0]} castShadow><meshStandardMaterial color={palette.brass} metalness={0.6} roughness={0.35} /></Cylinder>
           <Sphere args={[0.15, 32, 32, 0, Math.PI * 2, 0, Math.PI / 2]} position={[0, 0.5, 0]} rotation={[0.5, 0, 0]} castShadow>
-            <meshStandardMaterial color={isLaptopMode ? "#fef08a" : "#fff"} side={2} />
+            <meshStandardMaterial color={isLaptopMode ? "#ffe3b1" : palette.cream} side={2} />
           </Sphere>
           {isLaptopMode && (
-            <pointLight position={[0, 0.4, 0.1]} intensity={2.5} color="#fef08a" distance={4} />
+            <pointLight position={[0, 0.4, 0.1]} intensity={2.8} color="#ffd89b" distance={4.5} />
           )}
         </group>
 
         <group position={[0, 0.5, 0.8]}>
-          <Cylinder args={[0.05, 0.05, 0.5, 16]} position={[0, 0, 0]} castShadow><meshStandardMaterial color="#333" /></Cylinder>
+          <Cylinder args={[0.05, 0.05, 0.5, 16]} position={[0, 0, 0]} castShadow><meshStandardMaterial color={palette.deskMetal} /></Cylinder>
           <Cylinder args={[0.3, 0.3, 0.05, 32]} position={[0, -0.25, 0]} castShadow><meshStandardMaterial color="#111" /></Cylinder>
           <RoundedBox args={[0.6, 0.1, 0.6]} position={[0, 0.25, 0]} radius={0.05} castShadow receiveShadow><meshStandardMaterial color="#f4f4f5" /></RoundedBox>
-          <RoundedBox args={[0.6, 0.6, 0.1]} position={[0, 0.55, 0.25]} radius={0.05} castShadow receiveShadow><meshStandardMaterial color="#f4f4f5" /></RoundedBox>
+          <RoundedBox args={[0.6, 0.6, 0.1]} position={[0, 0.55, 0.25]} radius={0.05} castShadow receiveShadow><meshStandardMaterial color={palette.cream} /></RoundedBox>
         </group>
       </InteractiveZone>
 
       <InteractiveZone position={[2.5, 0, -2.5]} zone="reading" onClick={handleZoneClick}>
         <group position={[0, 0.3, 0]} rotation={[0, -Math.PI / 6, 0]}>
-          <RoundedBox args={[1.4, 0.6, 1.4]} position={[0, 0, 0]} radius={0.2} castShadow receiveShadow><meshStandardMaterial color="#e07a5f" roughness={0.9} /></RoundedBox>
-          <RoundedBox args={[1.4, 1.2, 0.4]} position={[0, 0.4, -0.5]} radius={0.2} castShadow receiveShadow><meshStandardMaterial color="#e07a5f" roughness={0.9} /></RoundedBox>
-          <RoundedBox args={[0.3, 0.8, 1.2]} position={[-0.65, 0.2, 0.1]} radius={0.15} castShadow receiveShadow><meshStandardMaterial color="#e07a5f" roughness={0.9} /></RoundedBox>
-          <RoundedBox args={[0.3, 0.8, 1.2]} position={[0.65, 0.2, 0.1]} radius={0.15} castShadow receiveShadow><meshStandardMaterial color="#e07a5f" roughness={0.9} /></RoundedBox>
-          <RoundedBox args={[0.6, 0.4, 0.2]} position={[0, 0.4, -0.2]} rotation={[0.2, 0, 0]} radius={0.1} castShadow><meshStandardMaterial color="#f4a261" /></RoundedBox>
+          <RoundedBox args={[1.4, 0.6, 1.4]} position={[0, 0, 0]} radius={0.2} castShadow receiveShadow><meshStandardMaterial color={palette.sofa} roughness={0.9} /></RoundedBox>
+          <RoundedBox args={[1.4, 1.2, 0.4]} position={[0, 0.4, -0.5]} radius={0.2} castShadow receiveShadow><meshStandardMaterial color={palette.sofa} roughness={0.9} /></RoundedBox>
+          <RoundedBox args={[0.3, 0.8, 1.2]} position={[-0.65, 0.2, 0.1]} radius={0.15} castShadow receiveShadow><meshStandardMaterial color={palette.sofa} roughness={0.9} /></RoundedBox>
+          <RoundedBox args={[0.3, 0.8, 1.2]} position={[0.65, 0.2, 0.1]} radius={0.15} castShadow receiveShadow><meshStandardMaterial color={palette.sofa} roughness={0.9} /></RoundedBox>
+          <RoundedBox args={[0.6, 0.4, 0.2]} position={[0, 0.4, -0.2]} rotation={[0.2, 0, 0]} radius={0.1} castShadow><meshStandardMaterial color={palette.pillow} /></RoundedBox>
         </group>
 
         <group position={[1.2, 0, -0.5]}>
-          <Cylinder args={[0.2, 0.2, 0.05, 32]} position={[0, 0.025, 0]} castShadow><meshStandardMaterial color="#333" /></Cylinder>
-          <Cylinder args={[0.03, 0.03, 2.5, 16]} position={[0, 1.25, 0]} castShadow><meshStandardMaterial color="#333" /></Cylinder>
-          <Cylinder args={[0.3, 0.4, 0.5, 32]} position={[0, 2.5, 0]} castShadow><meshStandardMaterial color="#fefae0" side={2} transparent opacity={0.9} /></Cylinder>
-          {!isLaptopMode && <pointLight position={[0, 2.5, 0]} intensity={1.2} color="#ffedd5" distance={5} />}
+          <Cylinder args={[0.2, 0.2, 0.05, 32]} position={[0, 0.025, 0]} castShadow><meshStandardMaterial color={palette.brass} metalness={0.45} roughness={0.4} /></Cylinder>
+          <Cylinder args={[0.03, 0.03, 2.5, 16]} position={[0, 1.25, 0]} castShadow><meshStandardMaterial color={palette.brass} metalness={0.45} roughness={0.4} /></Cylinder>
+          <Cylinder args={[0.3, 0.4, 0.5, 32]} position={[0, 2.5, 0]} castShadow><meshStandardMaterial color={palette.warmLight} side={2} transparent opacity={0.9} /></Cylinder>
+          {!isLaptopMode && <pointLight position={[0, 2.5, 0]} intensity={1.2} color={palette.warmLight} distance={5} />}
         </group>
       </InteractiveZone>
 
@@ -665,35 +807,70 @@ function DioramaRoom({ reducedMotion = false, activeZone = "all", onZoneClick, i
       </InteractiveZone>
       
       <group position={[-3.2, 0, 2.5]}>
-        <Cylinder args={[0.4, 0.3, 0.8]} position={[0, 0.4, 0]} castShadow receiveShadow><meshStandardMaterial color="#d4a373" roughness={0.8} /></Cylinder>
+        <Cylinder args={[0.4, 0.3, 0.8]} position={[0, 0.4, 0]} castShadow receiveShadow><meshStandardMaterial color={palette.plantPot} roughness={0.85} /></Cylinder>
         <Float speed={2} rotationIntensity={0.1} floatIntensity={0.1}>
           <group position={[0, 1.2, 0]}>
-            <Sphere args={[0.8, 16, 16]} position={[0, 0, 0]} castShadow receiveShadow><meshStandardMaterial color="#52796f" roughness={0.8} /></Sphere>
-            <Sphere args={[0.6, 16, 16]} position={[0.5, -0.2, 0.3]} castShadow receiveShadow><meshStandardMaterial color="#52796f" roughness={0.8} /></Sphere>
-            <Sphere args={[0.5, 16, 16]} position={[-0.4, -0.1, -0.4]} castShadow receiveShadow><meshStandardMaterial color="#52796f" roughness={0.8} /></Sphere>
+            <Sphere args={[0.8, 16, 16]} position={[0, 0, 0]} castShadow receiveShadow><meshStandardMaterial color={palette.leaf1} roughness={0.8} /></Sphere>
+            <Sphere args={[0.6, 16, 16]} position={[0.5, -0.2, 0.3]} castShadow receiveShadow><meshStandardMaterial color={palette.leaf2} roughness={0.8} /></Sphere>
+            <Sphere args={[0.5, 16, 16]} position={[-0.4, -0.1, -0.4]} castShadow receiveShadow><meshStandardMaterial color={palette.leaf3} roughness={0.8} /></Sphere>
           </group>
         </Float>
       </group>
 
-      <group position={[-3.8, 0, 0]}>
-        <Box args={[0.6, 3.5, 2.5]} position={[0, 1.75, 0]} castShadow receiveShadow><meshStandardMaterial color="#7f5539" /></Box>
-        <Box args={[0.65, 0.05, 2.4]} position={[0, 1, 0]} castShadow><meshStandardMaterial color="#553d30" /></Box>
-        <Box args={[0.65, 0.05, 2.4]} position={[0, 2, 0]} castShadow><meshStandardMaterial color="#553d30" /></Box>
-        <Box args={[0.65, 0.05, 2.4]} position={[0, 3, 0]} castShadow><meshStandardMaterial color="#553d30" /></Box>
+      {/* side table + books near sofa (restore) */}
+      <group position={[3.35, 0, -1.8]}>
+        <Cylinder args={[0.25, 0.25, 0.55, 24]} position={[0, 0.28, 0]} castShadow receiveShadow>
+          <meshStandardMaterial color={palette.frame} roughness={0.8} />
+        </Cylinder>
+        <Cylinder args={[0.34, 0.34, 0.04, 24]} position={[0, 0.56, 0]} castShadow receiveShadow>
+          <meshStandardMaterial color={palette.accentA} roughness={0.75} />
+        </Cylinder>
+        <Box args={[0.28, 0.05, 0.18]} position={[0, 0.62, 0.03]} castShadow>
+          <meshStandardMaterial color={palette.accentC} />
+        </Box>
+        <Box args={[0.28, 0.05, 0.18]} position={[0.02, 0.67, -0.02]} castShadow>
+          <meshStandardMaterial color={palette.accentB} />
+        </Box>
+      </group>
 
-        <group position={[0, 1.05, -0.8]}>
-          <Box args={[0.4, 0.5, 0.1]} position={[0, 0.25, 0]} castShadow><meshStandardMaterial color="#e63946" /></Box>
-          <Box args={[0.4, 0.6, 0.1]} position={[0, 0.3, 0.12]} castShadow><meshStandardMaterial color="#457b9d" /></Box>
-          <Box args={[0.4, 0.55, 0.1]} position={[0, 0.275, 0.24]} castShadow><meshStandardMaterial color="#f4a261" /></Box>
+      {/* dev shelf / mini server rack */}
+      <group position={[-3.75, 0, 0.1]}>
+        <Box args={[0.72, 3.4, 2.4]} position={[0, 1.7, 0]} castShadow receiveShadow>
+          <meshStandardMaterial color={palette.shelfBody} roughness={0.85} />
+        </Box>
+        <Box args={[0.76, 0.06, 2.34]} position={[0, 0.72, 0]} castShadow><meshStandardMaterial color={palette.shelfLayer} /></Box>
+        <Box args={[0.76, 0.06, 2.34]} position={[0, 1.55, 0]} castShadow><meshStandardMaterial color={palette.shelfLayer} /></Box>
+        <Box args={[0.76, 0.06, 2.34]} position={[0, 2.38, 0]} castShadow><meshStandardMaterial color={palette.shelfLayer} /></Box>
+        <Box args={[0.76, 0.06, 2.34]} position={[0, 3.2, 0]} castShadow><meshStandardMaterial color={palette.shelfLayer} /></Box>
+
+        <group position={[0, 0.78, -0.72]}>
+          <Box args={[0.56, 0.18, 0.28]} castShadow><meshStandardMaterial color={palette.cream} /></Box>
+          <mesh position={[-0.16, 0.02, 0.145]}>
+            <planeGeometry args={[0.08, 0.04]} />
+            <meshBasicMaterial color={palette.accentC} />
+          </mesh>
+          <mesh position={[0, 0.02, 0.145]}>
+            <planeGeometry args={[0.08, 0.04]} />
+            <meshBasicMaterial color={palette.accentC} />
+          </mesh>
+          <mesh position={[0.16, 0.02, 0.145]}>
+            <planeGeometry args={[0.08, 0.04]} />
+            <meshBasicMaterial color={palette.accentC} />
+          </mesh>
         </group>
-        <group position={[0, 2.05, 0.2]}>
-          <Box args={[0.4, 0.4, 0.1]} position={[0, 0.2, 0]} castShadow><meshStandardMaterial color="#2a9d8f" /></Box>
-          <Box args={[0.4, 0.4, 0.1]} position={[0, 0.2, 0.12]} castShadow><meshStandardMaterial color="#e9c46a" /></Box>
+        <group position={[0, 1.62, 0.1]}>
+          <Box args={[0.56, 0.18, 0.28]} castShadow><meshStandardMaterial color={palette.cream} /></Box>
+          <mesh position={[0, 0.02, 0.145]}>
+            <planeGeometry args={[0.3, 0.05]} />
+            <meshBasicMaterial color={palette.accentB} />
+          </mesh>
         </group>
-        
-        <group position={[0, 3.05, -0.6]}>
-          <Cylinder args={[0.15, 0.1, 0.2]} position={[0, 0.1, 0]} castShadow><meshStandardMaterial color="#fff" /></Cylinder>
-          <Sphere args={[0.2]} position={[0, 0.3, 0]} castShadow><meshStandardMaterial color="#84a59d" /></Sphere>
+        <group position={[0, 2.45, -0.3]}>
+          <Box args={[0.56, 0.18, 0.28]} castShadow><meshStandardMaterial color={palette.cream} /></Box>
+          <mesh position={[0, 0.02, 0.145]}>
+            <planeGeometry args={[0.32, 0.05]} />
+            <meshBasicMaterial color={palette.accentC} />
+          </mesh>
         </group>
       </group>
     </group>
@@ -808,7 +985,7 @@ function SceneContents({ reducedMotion = false, activeZone = "all", onZoneClick 
       <DioramaRoom reducedMotion={reducedMotion} activeZone={activeZone} onZoneClick={onZoneClick} isLaptopMode={isLaptopMode} hasArrived={hasArrived} />
       
       <group position={[0, -1, 0]}>
-        <MainAvatar activeZone={activeZone} reducedMotion={reducedMotion} onArrival={handleArrival} />
+        <MainAvatar activeZone={activeZone} reducedMotion={reducedMotion} onArrival={handleArrival} showSpeech={hasArrived} />
       </group>
       
       {/* 바닥 그림자도 아주 연하게 */}
