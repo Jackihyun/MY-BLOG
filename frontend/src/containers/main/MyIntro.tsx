@@ -61,10 +61,9 @@ export default function MyIntro() {
             글로 남기며 정리하는 개발자 Jack입니다.
           </h1>
           <p className="text-base leading-7 text-zinc-600 dark:text-zinc-400 md:text-lg">
-            이 블로그는 프론트엔드 개발을 중심으로, 직접 부딪히며 배운 것과
-            구현 과정에서 얻은 감각을 차분히 쌓아두는 공간입니다. 빠르게
-            소비되는 정보보다, 나중에 다시 꺼내 봐도 도움이 되는 기록을
-            남기고 싶습니다.
+            이 블로그는 프론트엔드 개발을 중심으로, 직접 부딪히며 배운 것과 구현
+            과정에서 얻은 감각을 차분히 쌓아두는 공간입니다. 빠르게 소비되는
+            정보보다, 나중에 다시 꺼내 봐도 도움이 되는 기록을 남기고 싶습니다.
           </p>
           <div className="flex flex-wrap gap-3 pt-2">
             <Link
@@ -207,7 +206,7 @@ export default function MyIntro() {
                 GitHub
               </a>
               <a
-                href="https://jackihyun.me"
+                href="https://jackihyun.com"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="inline-flex items-center rounded-2xl border border-white/20 px-4 py-2.5 text-sm font-bold text-white transition-colors hover:bg-white/10 dark:border-zinc-300 dark:text-zinc-900 dark:hover:bg-zinc-100"
