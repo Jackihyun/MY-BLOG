@@ -62,6 +62,7 @@ const stackGroups = [
 
 export default function AboutShowcase() {
   const prefersReducedMotion = useReducedMotion();
+  const reducedMotion = prefersReducedMotion ?? false;
   const [activeZone, setActiveZone] = useState<ActiveZone>("all");
 
   return (
@@ -72,23 +73,28 @@ export default function AboutShowcase() {
         {/* Background Gradients */}
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(245,158,11,0.03),transparent_60%)] dark:bg-[radial-gradient(circle_at_50%_50%,rgba(245,158,11,0.08),transparent_60%)]" />
         <div className="absolute inset-0 bg-[linear-gradient(rgba(148,163,184,0.03)_1px,transparent_1px),linear-gradient(90deg,rgba(148,163,184,0.03)_1px,transparent_1px)] bg-[size:32px_32px]" />
-        
+
         {/* 3D Canvas Container */}
         <div className="absolute inset-0 w-full h-full">
-          <AboutScene reducedMotion={prefersReducedMotion} activeZone={activeZone} onZoneClick={setActiveZone} />
+          <AboutScene
+            reducedMotion={reducedMotion}
+            activeZone={activeZone}
+            onZoneClick={setActiveZone}
+          />
         </div>
-        
+
         <div className="absolute left-6 top-6 lg:left-10 lg:top-10 pointer-events-none z-10">
           <p className="text-[10px] font-bold uppercase tracking-[0.3em] text-zinc-500 dark:text-zinc-400">
             Interactive Room
           </p>
-          <p className="text-xs text-zinc-400 mt-1">방 안의 구역을 클릭해보세요.</p>
+          <p className="text-xs text-zinc-400 mt-1">
+            손흔들기/코딩/쇼파/운동 지점을 클릭해보세요.
+          </p>
         </div>
       </div>
 
       {/* Right Column: Scrollable Content */}
       <div className="w-full lg:w-1/2 px-6 py-16 md:px-12 lg:px-20 lg:py-32 space-y-32">
-        
         {/* Hero Section */}
         <motion.section
           initial={{ opacity: 0, y: prefersReducedMotion ? 0 : 20 }}
@@ -97,21 +103,17 @@ export default function AboutShowcase() {
           transition={{ duration: 0.7 }}
           className="space-y-8"
         >
-          <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-zinc-100/50 dark:bg-zinc-900/50 border border-zinc-200/50 dark:border-zinc-800/50 text-xs font-semibold text-zinc-700 dark:text-zinc-300 backdrop-blur-sm">
-            <span className="w-2 h-2 rounded-full bg-amber-500 animate-pulse"></span>
-            About Jack
-          </div>
-
           <h1 className="text-[2.5rem] md:text-[3.5rem] lg:text-[4rem] font-black leading-[1.1] tracking-tight text-zinc-900 dark:text-zinc-50">
-            안녕하세요,<br />
+            안녕하세요,
+            <br />
             Jack입니다.
           </h1>
-          
+
           <p className="text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            화면을 설계하고 다듬는 일을 좋아합니다. 기능만 되는 것보다
-            읽기 쉽고, 흐름이 자연스럽고, 다시 손대기 좋은 구조를 더
-            좋아합니다. 이 페이지는 저를 소개하는 공간이지만, 동시에 제가
-            화면을 다루는 방식이 자연스럽게 보이도록 만든 About이기도 합니다.
+            화면을 설계하고 다듬는 일을 좋아합니다. 기능만 되는 것보다 읽기
+            쉽고, 흐름이 자연스럽고, 다시 손대기 좋은 구조를 더 좋아합니다. 이
+            페이지는 저를 소개하는 공간이지만, 동시에 제가 화면을 다루는 방식이
+            자연스럽게 보이도록 만든 About이기도 합니다.
           </p>
 
           <div className="flex flex-wrap gap-3 pt-4">
@@ -132,49 +134,6 @@ export default function AboutShowcase() {
           </div>
         </motion.section>
 
-        {/* Interactive Routine Section */}
-        <motion.section
-          initial={{ opacity: 0, y: prefersReducedMotion ? 0 : 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.7 }}
-          className="space-y-6"
-        >
-          <h2 className="text-2xl font-bold tracking-tight text-zinc-900 dark:text-zinc-50">
-            나의 루틴 살펴보기
-          </h2>
-          <p className="text-sm text-zinc-500 dark:text-zinc-400 mb-4">
-            아래 카드를 클릭하면 왼쪽 방의 시점이 이동합니다.
-          </p>
-          <div className="grid gap-4 sm:grid-cols-3">
-            {[
-              { id: "laptop", label: "💻 코딩/작업" },
-              { id: "reading", label: "📚 독서/휴식" },
-              { id: "exercising", label: "🏋️ 운동" },
-            ].map((btn) => (
-              <button
-                key={btn.id}
-                onClick={() => setActiveZone(btn.id as ActiveZone)}
-                className={`px-4 py-4 rounded-2xl border text-sm font-semibold transition-all text-left ${
-                  activeZone === btn.id
-                    ? "bg-amber-500/10 border-amber-500/50 text-amber-700 dark:text-amber-400 scale-[1.02]"
-                    : "bg-white/50 dark:bg-zinc-900/50 border-zinc-200/50 dark:border-zinc-800/50 text-zinc-600 dark:text-zinc-400 hover:bg-white dark:hover:bg-zinc-800"
-                } backdrop-blur-sm`}
-              >
-                {btn.label}
-              </button>
-            ))}
-          </div>
-          {activeZone !== "all" && (
-            <button 
-              onClick={() => setActiveZone("all")}
-              className="text-xs text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-300 underline underline-offset-4"
-            >
-              전체 방 보기
-            </button>
-          )}
-        </motion.section>
-
         {/* Highlights Section */}
         <motion.section
           initial={{ opacity: 0, y: prefersReducedMotion ? 0 : 20 }}
@@ -188,7 +147,10 @@ export default function AboutShowcase() {
           </h2>
           <div className="grid gap-6">
             {profileHighlights.map((card, index) => (
-              <div key={card.title} className="group relative bg-white/40 dark:bg-zinc-900/40 backdrop-blur-md border border-zinc-200/50 dark:border-zinc-800/50 rounded-2xl p-6 md:p-8 transition-colors hover:bg-white/80 dark:hover:bg-zinc-900/80">
+              <div
+                key={card.title}
+                className="group relative bg-white/40 dark:bg-zinc-900/40 backdrop-blur-md border border-zinc-200/50 dark:border-zinc-800/50 rounded-2xl p-6 md:p-8 transition-colors hover:bg-white/80 dark:hover:bg-zinc-900/80"
+              >
                 <p className="text-[11px] font-bold uppercase tracking-[0.2em] text-amber-500 mb-4">
                   {card.index}
                 </p>
@@ -216,7 +178,10 @@ export default function AboutShowcase() {
           </h2>
           <div className="grid gap-6 sm:grid-cols-2">
             {stackGroups.map((group) => (
-              <div key={group.title} className="bg-white/40 dark:bg-zinc-900/40 backdrop-blur-md border border-zinc-200/50 dark:border-zinc-800/50 rounded-2xl p-6">
+              <div
+                key={group.title}
+                className="bg-white/40 dark:bg-zinc-900/40 backdrop-blur-md border border-zinc-200/50 dark:border-zinc-800/50 rounded-2xl p-6"
+              >
                 <h3 className="text-sm font-bold tracking-tight text-zinc-900 dark:text-zinc-100 mb-4">
                   {group.title}
                 </h3>
@@ -262,7 +227,6 @@ export default function AboutShowcase() {
             ))}
           </div>
         </motion.section>
-
       </div>
     </div>
   );

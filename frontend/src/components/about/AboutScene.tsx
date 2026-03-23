@@ -62,15 +62,67 @@ function MainAvatar({
   
   const hasArrived = useRef(false);
   const currentZone = useRef<ActiveZone>("all");
-  
+  /** reading 상태: 앞 지점으로 걷고, 도착 시 좌석 자세로 즉시 스냅 */
+  const readingNavRef = useRef<"front" | "seat">("front");
+  /** laptop 상태: 의자 앞 지점으로 걷고, 도착 시 좌석 위치로 즉시 스냅 */
+  const laptopNavRef = useRef<"front" | "seat">("front");
+
   const [isExercising, setIsExercising] = useState(false);
 
+  /** 천천히 걷는 느낌을 위해 이동/회전 보정 속도를 낮춤 */
+  const MOVE_LERP = 0.028;
+  const IDLE_LERP = 0.07;
+  const ROT_TO_MOVE_DIR = 0.09;
+
+  const SOFA_FRONT_X = 2.5;
+  const SOFA_FRONT_Z = -1.95;
+  const SOFA_SEAT_X = 2.48;
+  const SOFA_SEAT_Y = 0.64;
+  const SOFA_SEAT_Z = -2.3;
+  const EXERCISE_FRONT_X = 0.82;
+  const EXERCISE_FRONT_Z = 2.35;
+  const CHAIR_FRONT_X = -2.5;
+  const CHAIR_FRONT_Z = -1.1;
+  const CHAIR_SEAT_X = -2.5;
+  const CHAIR_SEAT_Y = 0.5;
+  const CHAIR_SEAT_Z = -1.7;
+  const currentXZ = useMemo(() => new Vector3(), []);
+  const targetXZ = useMemo(() => new Vector3(), []);
+  const moveTarget = useMemo(() => new Vector3(), []);
+
   useFrame((state) => {
-    if (!groupRef.current || reducedMotion) return;
-    const t = state.clock.elapsedTime;
+    if (!groupRef.current) return;
+    const t = reducedMotion ? 0 : state.clock.elapsedTime;
+    const moveLerp = reducedMotion ? 1 : MOVE_LERP;
+    const idleLerp = reducedMotion ? 1 : IDLE_LERP;
+    const rotToMoveDir = reducedMotion ? 1 : ROT_TO_MOVE_DIR;
 
     if (currentZone.current !== activeZone) {
+      const prev = currentZone.current;
       hasArrived.current = false;
+      if (prev === "reading" && activeZone !== "reading") {
+        // reading 이탈 시 내려오는 애니메이션 없이 즉시 앞 지점으로 배치
+        if (readingNavRef.current === "seat") {
+          groupRef.current.position.set(SOFA_FRONT_X, 0, SOFA_FRONT_Z);
+          groupRef.current.rotation.x = 0;
+        }
+        readingNavRef.current = "front";
+      }
+      if (prev === "laptop" && activeZone !== "laptop") {
+        // laptop 이탈 시도 동일한 앞 지점으로 즉시 내려와 일관된 출입 경로 유지
+        if (laptopNavRef.current === "seat") {
+          groupRef.current.position.set(CHAIR_FRONT_X, 0, CHAIR_FRONT_Z);
+          groupRef.current.rotation.x = 0;
+        }
+        laptopNavRef.current = "front";
+      }
+      if (activeZone === "reading") {
+        // 소파를 통과하지 않도록 먼저 앞 지점으로 접근한 뒤 좌석으로 이동
+        readingNavRef.current = "front";
+      }
+      if (activeZone === "laptop") {
+        laptopNavRef.current = "front";
+      }
       currentZone.current = activeZone;
       setIsExercising(false);
     }
@@ -79,68 +131,109 @@ function MainAvatar({
       targetPos.set(0, 0, 0);
       targetRot.current = Math.PI / 4;
     } else if (activeZone === "laptop") {
-      const isClose = groupRef.current.position.distanceTo(new Vector3(-2.5, groupRef.current.position.y, -1.8)) < 0.2;
-      // 책상에 더 가까이 붙으면서도 의자 위에 정확히 앉도록 Y축과 Z축을 미세 조정
-      targetPos.set(-2.5, isClose ? 0.5 : 0, -1.7);
+      if (laptopNavRef.current === "seat") {
+        targetPos.set(CHAIR_SEAT_X, CHAIR_SEAT_Y, CHAIR_SEAT_Z);
+      } else {
+        targetPos.set(CHAIR_FRONT_X, 0, CHAIR_FRONT_Z);
+        const dxFront = groupRef.current.position.x - CHAIR_FRONT_X;
+        const dzFront = groupRef.current.position.z - CHAIR_FRONT_Z;
+        if (Math.hypot(dxFront, dzFront) <= 0.2) {
+          // 의자 위로 올라가는 이동 없이 좌석 위치로 스냅
+          laptopNavRef.current = "seat";
+          groupRef.current.position.set(CHAIR_SEAT_X, CHAIR_SEAT_Y, CHAIR_SEAT_Z);
+        }
+      }
       targetRot.current = Math.PI;
     } else if (activeZone === "reading") {
-      // 소파에 겹치지 않게 가기 위해, 도착 지점(소파 위)과 거리가 멀 때는 소파 앞쪽(Z=-1.5)을 먼저 경유하도록 처리
-      const distanceToSofa = groupRef.current.position.distanceTo(new Vector3(2.5, groupRef.current.position.y, -2.6));
-      const isClose = distanceToSofa < 0.3;
-      
-      if (!isClose) {
-        // 아직 멀었으면 소파 앞쪽 바닥으로 이동
-        targetPos.set(2.5, 0, -1.5);
+      if (readingNavRef.current === "seat") {
+        targetPos.set(SOFA_SEAT_X, SOFA_SEAT_Y, SOFA_SEAT_Z);
       } else {
-        // 소파 앞에 도착했으면 소파 위로 올라감
-        targetPos.set(2.5, 0.55, -2.6);
+        targetPos.set(SOFA_FRONT_X, 0, SOFA_FRONT_Z);
+        const dxFront = groupRef.current.position.x - SOFA_FRONT_X;
+        const dzFront = groupRef.current.position.z - SOFA_FRONT_Z;
+        if (Math.hypot(dxFront, dzFront) <= 0.22) {
+          // 올라타는 이동 없이 즉시 소파 좌석 위치로 스냅
+          readingNavRef.current = "seat";
+          groupRef.current.position.set(SOFA_SEAT_X, SOFA_SEAT_Y, SOFA_SEAT_Z);
+        }
       }
       targetRot.current = -Math.PI / 6;
     } else if (activeZone === "exercising") {
-      targetPos.set(1.5, 0, 2);
-      targetRot.current = -Math.PI / 4;
+      // 아령 앞 바닥 지점으로 이동
+      targetPos.set(EXERCISE_FRONT_X, 0, EXERCISE_FRONT_Z);
+      targetRot.current = Math.PI / 3;
     }
 
-    const currentPosXZ = new Vector3(groupRef.current.position.x, 0, groupRef.current.position.z);
-    const targetPosXZ = new Vector3(targetPos.x, 0, targetPos.z);
-    
-    // 소파로 갈 때는 거리를 조금 더 여유롭게 판단
-    const distanceThreshold = activeZone === "reading" ? 0.2 : 0.1;
-    const distanceXZ = currentPosXZ.distanceTo(targetPosXZ);
-    
-    // 현재 향하고 있는 목표(targetPos)에 도착했는지 여부
-    const reachedCurrentTarget = distanceXZ <= distanceThreshold;
-    
-    // 최종 목적지에 도착했는지 여부 (reading 모드일 때는 Z가 -2.6이어야 최종 도착)
-    const isFinalDestination = activeZone === "reading" ? targetPos.z === -2.6 && reachedCurrentTarget : reachedCurrentTarget;
-    const isMoving = !isFinalDestination;
-    
-    if (!isMoving && !hasArrived.current) {
-      hasArrived.current = true;
-      if (activeZone === "exercising") {
-        setIsExercising(true);
+    currentXZ.set(groupRef.current.position.x, 0, groupRef.current.position.z);
+    targetXZ.set(targetPos.x, 0, targetPos.z);
+
+    const distanceThreshold = activeZone === "reading" ? 0.18 : 0.08;
+    const distanceXZ = currentXZ.distanceTo(targetXZ);
+    const isSofaSeatApproach = activeZone === "reading" && readingNavRef.current === "seat";
+    const isLaptopSeatApproach = activeZone === "laptop" && laptopNavRef.current === "seat";
+    const isSeatApproach = isSofaSeatApproach || isLaptopSeatApproach;
+    const distance3D = groupRef.current.position.distanceTo(targetPos);
+    const reachedCurrentTarget = isSeatApproach ? distance3D <= 0.11 : distanceXZ <= distanceThreshold;
+
+    const isMoving = !reachedCurrentTarget;
+    const poseStopThreshold = isSeatApproach ? 0.22 : 0.18;
+    const shouldStopWalkPose = isSeatApproach ? distance3D <= poseStopThreshold : distanceXZ <= poseStopThreshold;
+
+    const lieBackX = -0.3;
+    const poseMoving = reducedMotion ? false : (isMoving && !shouldStopWalkPose);
+
+    if (!poseMoving && !hasArrived.current) {
+      const isReadyForArrival =
+        (activeZone === "reading" && readingNavRef.current === "seat") ||
+        (activeZone === "laptop" && laptopNavRef.current === "seat") ||
+        (activeZone !== "reading" && activeZone !== "laptop");
+      if (isReadyForArrival) {
+        hasArrived.current = true;
+        if (activeZone === "exercising") {
+          setIsExercising(true);
+        }
+        if (onArrival) onArrival(activeZone);
       }
-      if (onArrival) onArrival(activeZone);
     }
-    
+
     if (isMoving) {
       const dx = targetPos.x - groupRef.current.position.x;
       const dz = targetPos.z - groupRef.current.position.z;
       const moveRot = Math.atan2(dx, dz);
-      
-      let diff = moveRot - groupRef.current.rotation.y;
-      while (diff < -Math.PI) diff += Math.PI * 2;
-      while (diff > Math.PI) diff -= Math.PI * 2;
-      groupRef.current.rotation.y += diff * 0.1;
-      
-      groupRef.current.position.lerp(new Vector3(targetPos.x, 0, targetPos.z), 0.05);
+      const shouldSnapExerciseFacing = activeZone === "exercising";
+
+      if (shouldSnapExerciseFacing) {
+        groupRef.current.rotation.y = targetRot.current;
+      } else {
+        let diff = moveRot - groupRef.current.rotation.y;
+        while (diff < -Math.PI) diff += Math.PI * 2;
+        while (diff > Math.PI) diff -= Math.PI * 2;
+        groupRef.current.rotation.y += diff * rotToMoveDir;
+      }
+
+      moveTarget.set(targetPos.x, isSeatApproach ? targetPos.y : 0, targetPos.z);
+      groupRef.current.position.lerp(moveTarget, moveLerp);
     } else {
       let diff = targetRot.current - groupRef.current.rotation.y;
       while (diff < -Math.PI) diff += Math.PI * 2;
       while (diff > Math.PI) diff -= Math.PI * 2;
-      groupRef.current.rotation.y += diff * 0.1;
-      
-      groupRef.current.position.lerp(targetPos, 0.1);
+      groupRef.current.rotation.y += diff * rotToMoveDir;
+
+      groupRef.current.position.lerp(targetPos, idleLerp);
+    }
+
+    const canLieOnSofa =
+      activeZone === "reading" &&
+      readingNavRef.current === "seat" &&
+      !isMoving &&
+      groupRef.current.position.y > 0.42;
+
+    if (reducedMotion) {
+      groupRef.current.rotation.x = 0;
+    } else if (canLieOnSofa) {
+      groupRef.current.rotation.x += (lieBackX - groupRef.current.rotation.x) * 0.35;
+    } else {
+      groupRef.current.rotation.x += (0 - groupRef.current.rotation.x) * 0.12;
     }
 
     if (headRef.current) headRef.current.rotation.set(0, 0, 0);
@@ -155,12 +248,12 @@ function MainAvatar({
       bodyRef.current.rotation.set(0, 0, 0);
     }
 
-    if (isMoving) {
-      if (bodyRef.current) bodyRef.current.position.y = 0.25 + Math.abs(Math.sin(t * 15)) * 0.05;
-      if (leftArmRef.current) leftArmRef.current.rotation.x = Math.sin(t * 15) * 0.6;
-      if (rightArmRef.current) rightArmRef.current.rotation.x = -Math.sin(t * 15) * 0.6;
-      if (leftLegRef.current) leftLegRef.current.rotation.x = -Math.sin(t * 15) * 0.6;
-      if (rightLegRef.current) rightLegRef.current.rotation.x = Math.sin(t * 15) * 0.6;
+    if (poseMoving) {
+      if (bodyRef.current) bodyRef.current.position.y = 0.25 + Math.abs(Math.sin(t * 8)) * 0.04;
+      if (leftArmRef.current) leftArmRef.current.rotation.x = Math.sin(t * 8) * 0.45;
+      if (rightArmRef.current) rightArmRef.current.rotation.x = -Math.sin(t * 8) * 0.45;
+      if (leftLegRef.current) leftLegRef.current.rotation.x = -Math.sin(t * 8) * 0.5;
+      if (rightLegRef.current) rightLegRef.current.rotation.x = Math.sin(t * 8) * 0.5;
     } else {
       if (activeZone === "all") {
         if (rightArmRef.current) {
@@ -187,39 +280,56 @@ function MainAvatar({
         }
         if (headRef.current) headRef.current.rotation.y = Math.sin(t * 2) * 0.05;
       } else if (activeZone === "reading") {
-        // 소파에 자연스럽게 눕는 자세 (등받이에 기대는 느낌)
-        if (bodyRef.current) {
-          bodyRef.current.rotation.x = -0.6; // 너무 눕지 않고 등받이 각도(약 35도)에 맞춤
-          bodyRef.current.position.y = 0.15; // 높이 살짝 낮춤
-          bodyRef.current.position.z = 0.1; // 뒤로 살짝 뺌
-        }
-        
-        // 다리는 소파 밖으로 자연스럽게 떨어지도록 (무릎을 살짝 굽힘)
-        if (leftLegRef.current) leftLegRef.current.rotation.x = -Math.PI / 2.2;
-        if (rightLegRef.current) rightLegRef.current.rotation.x = -Math.PI / 2.2;
-        if (leftKneeRef.current) leftKneeRef.current.rotation.x = 0.5; // 무릎이 아래로 떨어지게
-        if (rightKneeRef.current) rightKneeRef.current.rotation.x = 0.5;
-        
-        // 팔은 배 위에 편안하게 모음
-        if (leftArmRef.current) {
-          leftArmRef.current.rotation.x = -0.8;
-          leftArmRef.current.rotation.z = 0.6;
-        }
-        if (rightArmRef.current) {
-          rightArmRef.current.rotation.x = -0.8;
-          rightArmRef.current.rotation.z = -0.6;
-        }
-        
-        if (headRef.current) {
-          headRef.current.rotation.x = 0.2; // 정면을 살짝 응시
-          headRef.current.rotation.y = Math.sin(t * 0.5) * 0.05;
+        const onSeatLying =
+          readingNavRef.current === "seat" && groupRef.current.position.y > 0.42;
+
+        if (readingNavRef.current === "front" && !poseMoving) {
+          if (leftArmRef.current) {
+            leftArmRef.current.rotation.x = -0.15;
+            leftArmRef.current.rotation.z = 0.08;
+          }
+          if (rightArmRef.current) {
+            rightArmRef.current.rotation.x = -0.15;
+            rightArmRef.current.rotation.z = -0.08;
+          }
+          if (headRef.current) {
+            headRef.current.rotation.x = 0.06;
+            headRef.current.rotation.y = Math.sin(t * 0.8) * 0.04;
+          }
+        } else if (onSeatLying && !poseMoving) {
+          if (bodyRef.current) {
+            bodyRef.current.rotation.x = -0.36;
+            bodyRef.current.position.y = 0.12;
+            bodyRef.current.position.z = 0.2;
+          }
+
+          if (leftLegRef.current) leftLegRef.current.rotation.x = -0.28;
+          if (rightLegRef.current) rightLegRef.current.rotation.x = -0.24;
+          if (leftKneeRef.current) leftKneeRef.current.rotation.x = 0.78;
+          if (rightKneeRef.current) rightKneeRef.current.rotation.x = 0.72;
+
+          if (leftArmRef.current) {
+            leftArmRef.current.rotation.x = -0.42;
+            leftArmRef.current.rotation.z = 0.26;
+          }
+          if (rightArmRef.current) {
+            rightArmRef.current.rotation.x = -0.36;
+            rightArmRef.current.rotation.z = -0.22;
+          }
+
+          if (headRef.current) {
+            headRef.current.rotation.x = 0.26;
+            headRef.current.rotation.y = Math.sin(t * 0.2) * 0.015;
+          }
+        } else if (!poseMoving) {
+          if (headRef.current) headRef.current.rotation.y = Math.sin(t * 0.8) * 0.03;
         }
       } else if (activeZone === "exercising") {
         if (leftLegRef.current) leftLegRef.current.rotation.x = -0.1;
         if (rightLegRef.current) rightLegRef.current.rotation.x = -0.1;
-        
+
         const curl = (Math.sin(t * 3) + 1) / 2;
-        
+
         if (leftArmRef.current) {
           leftArmRef.current.rotation.x = -0.2 - (curl * 1.5);
           leftArmRef.current.rotation.z = 0.2;
@@ -228,7 +338,7 @@ function MainAvatar({
           rightArmRef.current.rotation.x = -0.2 - (curl * 1.5);
           rightArmRef.current.rotation.z = -0.2;
         }
-        
+
         if (bodyRef.current) {
           bodyRef.current.position.y = 0.25 + (Math.sin(t * 3) * 0.02);
         }
@@ -375,6 +485,15 @@ function InteractiveZone({
 function OutdoorEnvironment({ timeOfDay }: { timeOfDay: "day" | "sunset" | "night" }) {
   const skyColor = useRef(new Color());
   const groundColor = useRef(new Color());
+  const treePositions = useMemo(
+    () =>
+      Array.from({ length: 5 }, (_, i) => [
+        (i - 2) * 4 + Math.random() * 2,
+        0,
+        Math.random() * -5,
+      ] as [number, number, number]),
+    [],
+  );
   
   useFrame(() => {
     let targetSky, targetGround;
@@ -413,8 +532,8 @@ function OutdoorEnvironment({ timeOfDay }: { timeOfDay: "day" | "sunset" | "nigh
       </mesh>
       
       <group position={[0, -1, -10]}>
-        {[...Array(5)].map((_, i) => (
-          <group key={i} position={[(i - 2) * 4 + Math.random() * 2, 0, Math.random() * -5]}>
+        {treePositions.map((position, i) => (
+          <group key={i} position={position}>
             <Cylinder args={[0.2, 0.3, 3]} position={[0, 1.5, 0]}>
               <meshBasicMaterial color={timeOfDay === "night" ? "#2c2826" : "#5d4037"} />
             </Cylinder>
@@ -537,6 +656,12 @@ function DioramaRoom({ reducedMotion = false, activeZone = "all", onZoneClick, i
             <Cylinder args={[0.15, 0.15, 0.1]} position={[0.15, 0, 0]} rotation={[0, 0, Math.PI / 2]} castShadow><meshStandardMaterial color="#111" /></Cylinder>
           </group>
         </group>
+      </InteractiveZone>
+
+      <InteractiveZone position={[0, 0, 0]} zone="all" onClick={handleZoneClick}>
+        <Cylinder args={[0.45, 0.45, 0.03, 32]} position={[0, 0.03, 0]} receiveShadow>
+          <meshStandardMaterial color={activeZone === "all" ? "#fde68a" : "#f8fafc"} opacity={0.7} transparent />
+        </Cylinder>
       </InteractiveZone>
       
       <group position={[-3.2, 0, 2.5]}>
@@ -703,7 +828,7 @@ function SceneContents({ reducedMotion = false, activeZone = "all", onZoneClick 
 
 export default function AboutScene({ reducedMotion = false, activeZone = "all", onZoneClick }: AboutSceneProps) {
   return (
-    <div className="absolute inset-0 cursor-pointer" onClick={() => onZoneClick?.("all")}>
+    <div className="absolute inset-0 cursor-pointer">
       <Canvas
         dpr={[1, 1.5]}
         camera={{ position: [8, 7, 10], fov: 45 }}
