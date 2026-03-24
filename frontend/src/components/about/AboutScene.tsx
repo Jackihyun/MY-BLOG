@@ -13,6 +13,8 @@ interface AboutSceneProps {
   onZoneClick?: (zone: ActiveZone) => void;
 }
 
+type QualityMode = "high" | "low";
+
 const SPEECH_MESSAGES: Record<ActiveZone, string> = {
   all: "안녕하세요, 제 방에 오신 걸 환영해요.",
   laptop: "집중 모드로 작업하고 있어요.",
@@ -565,7 +567,7 @@ function InteractiveZone({
   );
 }
 
-function OutdoorEnvironment({ timeOfDay }: { timeOfDay: "day" | "sunset" | "night" }) {
+function OutdoorEnvironment({ timeOfDay, qualityMode = "high" }: { timeOfDay: "day" | "sunset" | "night"; qualityMode?: QualityMode }) {
   const skyColor = useRef(new Color());
   const groundColor = useRef(new Color());
   const treePositions = useMemo(
@@ -599,7 +601,15 @@ function OutdoorEnvironment({ timeOfDay }: { timeOfDay: "day" | "sunset" | "nigh
   return (
     <group>
       {timeOfDay === "night" ? (
-        <Stars radius={50} depth={50} count={1000} factor={3} saturation={0.5} fade speed={1} />
+        <Stars
+          radius={50}
+          depth={50}
+          count={qualityMode === "low" ? 450 : 1000}
+          factor={qualityMode === "low" ? 2 : 3}
+          saturation={0.5}
+          fade
+          speed={qualityMode === "low" ? 0.6 : 1}
+        />
       ) : (
         <Sky 
           distance={450000} 
@@ -877,7 +887,12 @@ function DioramaRoom({ reducedMotion = false, activeZone = "all", onZoneClick, i
   );
 }
 
-function SceneContents({ reducedMotion = false, activeZone = "all", onZoneClick }: AboutSceneProps) {
+function SceneContents({
+  reducedMotion = false,
+  activeZone = "all",
+  onZoneClick,
+  qualityMode = "high",
+}: AboutSceneProps & { qualityMode?: QualityMode }) {
   const [isLaptopMode, setIsLaptopMode] = useState(false);
   const [hasArrived, setHasArrived] = useState(false);
   const [timeOfDay, setTimeOfDay] = useState<"day" | "sunset" | "night">("day");
@@ -956,7 +971,7 @@ function SceneContents({ reducedMotion = false, activeZone = "all", onZoneClick 
     <>
       {/* 그림자를 아주 연하게 만들기 위해 SoftShadows 제거 (기본 그림자만 사용) */}
       
-      <OutdoorEnvironment timeOfDay={isLaptopMode ? "night" : timeOfDay} />
+      <OutdoorEnvironment timeOfDay={isLaptopMode ? "night" : timeOfDay} qualityMode={qualityMode} />
       
       {/* 환경광: 방 전체의 기본 밝기를 결정 (그림자 진 곳을 밝혀줌) */}
       <ambientLight intensity={lights.ambientIntensity} color={lights.ambientColor} />
@@ -967,8 +982,8 @@ function SceneContents({ reducedMotion = false, activeZone = "all", onZoneClick 
         position={[10, 15, -10]}
         intensity={lights.dirIntensity}
         color={lights.dirColor}
-        shadow-mapSize-width={1024}
-        shadow-mapSize-height={1024}
+        shadow-mapSize-width={qualityMode === "low" ? 512 : 1024}
+        shadow-mapSize-height={qualityMode === "low" ? 512 : 1024}
         shadow-camera-near={0.5}
         shadow-camera-far={50}
         shadow-camera-left={-15}
@@ -993,9 +1008,9 @@ function SceneContents({ reducedMotion = false, activeZone = "all", onZoneClick 
         position={[0, -1.05, 0]}
         opacity={0.2}
         scale={25}
-        blur={2.5}
+        blur={qualityMode === "low" ? 2 : 2.5}
         far={4}
-        resolution={1024}
+        resolution={qualityMode === "low" ? 512 : 1024}
         color="#000000"
       />
       <CameraRig reducedMotion={reducedMotion} />
@@ -1004,16 +1019,32 @@ function SceneContents({ reducedMotion = false, activeZone = "all", onZoneClick 
 }
 
 export default function AboutScene({ reducedMotion = false, activeZone = "all", onZoneClick }: AboutSceneProps) {
+  const [qualityMode, setQualityMode] = useState<QualityMode>("high");
+
+  useEffect(() => {
+    if (typeof navigator === "undefined") return;
+    const nav = navigator as Navigator & { deviceMemory?: number };
+    const memory = nav.deviceMemory ?? 8;
+    const cores = nav.hardwareConcurrency ?? 8;
+    const isLikelyLowEnd = memory <= 4 || cores <= 4;
+    setQualityMode(isLikelyLowEnd ? "low" : "high");
+  }, []);
+
   return (
     <div className="absolute inset-0 cursor-pointer">
       <Canvas
-        dpr={[1, 1.5]}
+        dpr={qualityMode === "low" ? [1, 1.2] : [1, 1.5]}
         camera={{ position: [8, 7, 10], fov: 45 }}
         shadows
         gl={{ antialias: true, alpha: true }}
       >
         <Suspense fallback={null}>
-          <SceneContents reducedMotion={reducedMotion} activeZone={activeZone} onZoneClick={onZoneClick} />
+          <SceneContents
+            reducedMotion={reducedMotion}
+            activeZone={activeZone}
+            onZoneClick={onZoneClick}
+            qualityMode={qualityMode}
+          />
         </Suspense>
       </Canvas>
     </div>
