@@ -1,4 +1,5 @@
 "use client";
+import hljs from "highlight.js/lib/common";
 
 function toDisplayLanguageName(language: string): string {
   const normalized = language.toLowerCase();
@@ -58,6 +59,32 @@ export function enhanceCodeBlocks(
 
     const language = extractCodeLanguage(code as HTMLElement);
     pre.dataset.codeLanguage = language;
+
+    const codeElement = code as HTMLElement;
+    if (!codeElement.dataset.highlighted) {
+      const rawCode = codeElement.textContent || "";
+      const canHighlight =
+        language !== "plaintext" && language !== "text" && hljs.getLanguage(language);
+
+      try {
+        if (canHighlight) {
+          codeElement.innerHTML = hljs.highlight(rawCode, {
+            language,
+            ignoreIllegals: true,
+          }).value;
+        } else if (language !== "plaintext" && language !== "text") {
+          codeElement.innerHTML = hljs.highlightAuto(rawCode).value;
+        } else {
+          codeElement.textContent = rawCode;
+        }
+      } catch (error) {
+        console.error("Failed to highlight code block:", error);
+        codeElement.textContent = rawCode;
+      }
+
+      codeElement.classList.add("hljs");
+      codeElement.dataset.highlighted = "true";
+    }
 
     let toolbar = pre.querySelector(".code-block-toolbar") as HTMLDivElement | null;
     if (!toolbar) {
