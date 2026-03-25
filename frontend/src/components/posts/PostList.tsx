@@ -762,13 +762,7 @@ function PostsList({ allPostsData }: { allPostsData: PostData[] }) {
     const queryCategory = searchParams.get("category");
 
     if (!queryCategory) {
-      if (selectedCategoryId !== "all") {
-        setSelectedCategoryId("all");
-      }
-      return;
-    }
-
-    if (queryCategory === selectedCategoryId) {
+      setSelectedCategoryId("all");
       return;
     }
 
@@ -783,7 +777,7 @@ function PostsList({ allPostsData }: { allPostsData: PostData[] }) {
     }
 
     setSelectedCategoryId("all");
-  }, [categoryById, categoryNodes.length, searchParams, selectedCategoryId]);
+  }, [categoryById, categoryNodes.length, searchParams]);
 
   const applyCategoryFilter = useCallback(
     (categoryId: string) => {
@@ -798,11 +792,12 @@ function PostsList({ allPostsData }: { allPostsData: PostData[] }) {
       nextParams.delete("page");
 
       const nextQuery = nextParams.toString();
-      router.replace(nextQuery ? `${pathname}?${nextQuery}` : pathname, {
-        scroll: false,
-      });
+      if (typeof window !== "undefined") {
+        const nextUrl = nextQuery ? `${pathname}?${nextQuery}` : pathname;
+        window.history.replaceState(window.history.state, "", nextUrl);
+      }
     },
-    [pathname, router, searchParams],
+    [pathname, searchParams],
   );
 
   useEffect(() => {
@@ -1524,9 +1519,9 @@ function PostsList({ allPostsData }: { allPostsData: PostData[] }) {
                 return (
                   <motion.article
                     key={id}
-                    initial={{ opacity: 0, y: 20 }}
+                    initial={false}
                     animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.3, delay: index * 0.05 }}
+                    transition={{ duration: 0.18, delay: Math.min(index * 0.02, 0.08) }}
                   >
                     <Link href={`/posts/${id}`} onClick={handlePostClick}>
                       <div
