@@ -1,7 +1,7 @@
 "use client";
 
 import { Canvas, useFrame, useThree } from "@react-three/fiber";
-import { ContactShadows, Environment, RoundedBox, Sphere, Cylinder, Box, Float, SoftShadows, Stars, Sky, Billboard } from "@react-three/drei";
+import { ContactShadows, Environment, RoundedBox, Sphere, Cylinder, Box, Float, Stars, Sky, Billboard } from "@react-three/drei";
 import { Suspense, useRef, useState, useMemo, useEffect } from "react";
 import { Group, Mesh, Vector3, MathUtils, Color, CanvasTexture, LinearFilter } from "three";
 
@@ -13,7 +13,7 @@ interface AboutSceneProps {
   onZoneClick?: (zone: ActiveZone) => void;
 }
 
-type QualityMode = "high" | "low";
+type QualityMode = "high" | "low" | "ultra";
 
 const SPEECH_MESSAGES: Record<ActiveZone, string> = {
   all: "안녕하세요, 제 방에 오신 걸 환영해요.",
@@ -101,19 +101,27 @@ function AvatarSpeechBubble({ activeZone, visible }: { activeZone: ActiveZone; v
 }
 
 // 카메라를 고정(전체 화면)으로 유지
-function CameraRig({ reducedMotion = false }: { reducedMotion?: boolean }) {
+function CameraRig({
+  reducedMotion = false,
+  qualityMode = "high",
+}: {
+  reducedMotion?: boolean;
+  qualityMode?: QualityMode;
+}) {
   const { camera, pointer } = useThree();
   const currentLookAt = useRef(new Vector3(0, 0.5, 0));
   const targetLookAt = new Vector3(0, 0.5, 0);
   const targetPos = new Vector3();
 
   useFrame(() => {
-    const pointerX = reducedMotion ? 0 : pointer.x * 2;
-    const pointerY = reducedMotion ? 0 : pointer.y * 2;
+    const pointerScale = qualityMode === "ultra" ? 0.8 : qualityMode === "low" ? 1.2 : 2;
+    const pointerX = reducedMotion ? 0 : pointer.x * pointerScale;
+    const pointerY = reducedMotion ? 0 : pointer.y * pointerScale;
     targetPos.set(7.5 + pointerX, 6 + pointerY, 9);
 
-    camera.position.lerp(targetPos, 0.04);
-    currentLookAt.current.lerp(targetLookAt, 0.04);
+    const damping = qualityMode === "ultra" ? 0.025 : 0.04;
+    camera.position.lerp(targetPos, damping);
+    currentLookAt.current.lerp(targetLookAt, damping);
     camera.lookAt(currentLookAt.current);
   });
 
@@ -581,6 +589,8 @@ function OutdoorEnvironment({ timeOfDay, qualityMode = "high" }: { timeOfDay: "d
   );
   
   useFrame(() => {
+    if (qualityMode === "ultra") return;
+
     let targetSky, targetGround;
     
     if (timeOfDay === "night") {
@@ -600,6 +610,8 @@ function OutdoorEnvironment({ timeOfDay, qualityMode = "high" }: { timeOfDay: "d
 
   return (
     <group>
+      {qualityMode !== "ultra" && (
+        <>
       {timeOfDay === "night" ? (
         <Stars
           radius={50}
@@ -639,6 +651,8 @@ function OutdoorEnvironment({ timeOfDay, qualityMode = "high" }: { timeOfDay: "d
           </group>
         ))}
       </group>
+        </>
+      )}
     </group>
   );
 }
@@ -893,6 +907,8 @@ function SceneContents({
   onZoneClick,
   qualityMode = "high",
 }: AboutSceneProps & { qualityMode?: QualityMode }) {
+  const isLowOrBelow = qualityMode !== "high";
+  const isUltra = qualityMode === "ultra";
   const [isLaptopMode, setIsLaptopMode] = useState(false);
   const [hasArrived, setHasArrived] = useState(false);
   const [timeOfDay, setTimeOfDay] = useState<"day" | "sunset" | "night">("day");
@@ -978,12 +994,12 @@ function SceneContents({
       
       {/* 메인 방향광: 그림자를 생성하는 빛 */}
       <directionalLight
-        castShadow
+        castShadow={!isLowOrBelow}
         position={[10, 15, -10]}
         intensity={lights.dirIntensity}
         color={lights.dirColor}
-        shadow-mapSize-width={qualityMode === "low" ? 512 : 1024}
-        shadow-mapSize-height={qualityMode === "low" ? 512 : 1024}
+        shadow-mapSize-width={qualityMode === "high" ? 1024 : 512}
+        shadow-mapSize-height={qualityMode === "high" ? 1024 : 512}
         shadow-camera-near={0.5}
         shadow-camera-far={50}
         shadow-camera-left={-15}
@@ -1000,20 +1016,26 @@ function SceneContents({
       <DioramaRoom reducedMotion={reducedMotion} activeZone={activeZone} onZoneClick={onZoneClick} isLaptopMode={isLaptopMode} hasArrived={hasArrived} />
       
       <group position={[0, -1, 0]}>
-        <MainAvatar activeZone={activeZone} reducedMotion={reducedMotion} onArrival={handleArrival} showSpeech={hasArrived} />
+        <MainAvatar
+          activeZone={activeZone}
+          reducedMotion={reducedMotion}
+          onArrival={handleArrival}
+          showSpeech={!isLowOrBelow && hasArrived}
+        />
       </group>
       
-      {/* 바닥 그림자도 아주 연하게 */}
-      <ContactShadows
-        position={[0, -1.05, 0]}
-        opacity={0.2}
-        scale={25}
-        blur={qualityMode === "low" ? 2 : 2.5}
-        far={4}
-        resolution={qualityMode === "low" ? 512 : 1024}
-        color="#000000"
-      />
-      <CameraRig reducedMotion={reducedMotion} />
+      {!isUltra && (
+        <ContactShadows
+          position={[0, -1.05, 0]}
+          opacity={qualityMode === "high" ? 0.2 : 0.14}
+          scale={25}
+          blur={qualityMode === "high" ? 2.5 : 1.8}
+          far={4}
+          resolution={qualityMode === "high" ? 512 : 256}
+          color="#000000"
+        />
+      )}
+      <CameraRig reducedMotion={reducedMotion} qualityMode={qualityMode} />
     </>
   );
 }
@@ -1026,17 +1048,37 @@ export default function AboutScene({ reducedMotion = false, activeZone = "all", 
     const nav = navigator as Navigator & { deviceMemory?: number };
     const memory = nav.deviceMemory ?? 8;
     const cores = nav.hardwareConcurrency ?? 8;
-    const isLikelyLowEnd = memory <= 4 || cores <= 4;
-    setQualityMode(isLikelyLowEnd ? "low" : "high");
+    const ua = navigator.userAgent.toLowerCase();
+    const isWindows = ua.includes("windows");
+    const dpr = Math.min(window.devicePixelRatio || 1, 2);
+    const isLikelyUltraLow = memory <= 4 || cores <= 4;
+    const isLikelyLow = memory <= 8 || cores <= 8 || (isWindows && dpr > 1.25);
+
+    if (isLikelyUltraLow) {
+      setQualityMode("ultra");
+      return;
+    }
+
+    setQualityMode(isLikelyLow ? "low" : "high");
   }, []);
 
   return (
     <div className="absolute inset-0 cursor-pointer">
       <Canvas
-        dpr={qualityMode === "low" ? [1, 1.2] : [1, 1.5]}
+        dpr={
+          qualityMode === "ultra"
+            ? [0.75, 0.9]
+            : qualityMode === "low"
+              ? [0.9, 1.1]
+              : [1, 1.25]
+        }
         camera={{ position: [8, 7, 10], fov: 45 }}
-        shadows
-        gl={{ antialias: true, alpha: true }}
+        shadows={qualityMode === "high"}
+        gl={{
+          antialias: qualityMode === "high",
+          alpha: true,
+          powerPreference: "high-performance",
+        }}
       >
         <Suspense fallback={null}>
           <SceneContents
