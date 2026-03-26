@@ -992,6 +992,18 @@ function AboutSceneFallback({ unavailable = false }: { unavailable?: boolean }) 
             ? "현재 브라우저 환경에서는 WebGL 컨텍스트를 만들 수 없어 3D 장면 대신 경량 모드로 전환되었습니다."
             : "3D 장면을 불러오는 중입니다. 잠시 후 자동으로 전환됩니다."}
         </p>
+        {unavailable && (
+          <div className="mt-4 rounded-xl border border-amber-200/70 bg-amber-50/70 p-4 text-sm text-zinc-700">
+            <p className="font-semibold text-zinc-800">
+              Chrome에서 하드웨어 가속을 켜면 3D 장면을 볼 수 있어요.
+            </p>
+            <ol className="mt-2 list-decimal space-y-1 pl-5">
+              <li><code>Chrome 설정 &gt; 시스템</code>으로 이동</li>
+              <li><code>가능한 경우 그래픽 가속 사용</code>을 켜기</li>
+              <li>브라우저 재시작 후 About 페이지 다시 열기</li>
+            </ol>
+          </div>
+        )}
         <div className="mt-5 grid grid-cols-3 gap-2">
           <div className="h-14 rounded-lg bg-zinc-200/80" />
           <div className="h-14 rounded-lg bg-zinc-200/80" />
