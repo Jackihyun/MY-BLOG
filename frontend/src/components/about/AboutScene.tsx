@@ -22,35 +22,53 @@ const SPEECH_MESSAGES: Record<ActiveZone, string> = {
   exercising: "짧게 운동하고 다시 시작할게요.",
 };
 
-function AvatarSpeechBubble({ activeZone, visible }: { activeZone: ActiveZone; visible: boolean }) {
+function AvatarSpeechBubble({
+  activeZone,
+  visible,
+  qualityMode = "high",
+}: {
+  activeZone: ActiveZone;
+  visible: boolean;
+  qualityMode?: QualityMode;
+}) {
   const bubbleX = activeZone === "reading" ? -1.85 : 0.8;
   const bubbleScale = activeZone === "exercising" ? 0.72 : 1;
   const message = SPEECH_MESSAGES[activeZone];
   const textTexture = useMemo(() => {
     if (typeof document === "undefined") return null;
-    const dpr = Math.min(window.devicePixelRatio || 1, 2);
-    const w = Math.floor(1200 * dpr);
-    const h = Math.floor(280 * dpr);
+    const dprCap = qualityMode === "high" ? 2 : 1;
+    const baseWidth = qualityMode === "high" ? 1200 : 760;
+    const baseHeight = qualityMode === "high" ? 280 : 200;
+    const dpr = Math.min(window.devicePixelRatio || 1, dprCap);
+    const w = Math.floor(baseWidth * dpr);
+    const h = Math.floor(baseHeight * dpr);
     const canvas = document.createElement("canvas");
     canvas.width = w;
     canvas.height = h;
     const ctx = canvas.getContext("2d");
     if (!ctx) return null;
     ctx.scale(dpr, dpr);
-    ctx.clearRect(0, 0, 1200, 280);
+    ctx.clearRect(0, 0, baseWidth, baseHeight);
     ctx.fillStyle = "#3f3f46";
     ctx.textAlign = "center";
     ctx.textBaseline = "middle";
-    const fontSize = message.length > 18 ? 66 : 74;
+    const fontSize =
+      qualityMode === "high"
+        ? message.length > 18
+          ? 66
+          : 74
+        : message.length > 18
+          ? 42
+          : 48;
     ctx.font = `700 ${fontSize}px 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif`;
-    ctx.fillText(message, 600, 140);
+    ctx.fillText(message, baseWidth / 2, baseHeight / 2);
     const texture = new CanvasTexture(canvas);
     texture.generateMipmaps = false;
     texture.minFilter = LinearFilter;
     texture.magFilter = LinearFilter;
     texture.needsUpdate = true;
     return texture;
-  }, [message]);
+  }, [message, qualityMode]);
 
   useEffect(() => {
     return () => {
@@ -133,11 +151,13 @@ function MainAvatar({
   reducedMotion = false,
   onArrival,
   showSpeech = false,
+  qualityMode = "high",
 }: { 
   activeZone: ActiveZone;
   reducedMotion?: boolean;
   onArrival?: (zone: ActiveZone) => void;
   showSpeech?: boolean;
+  qualityMode?: QualityMode;
 }) {
   const groupRef = useRef<Group>(null);
   const headRef = useRef<Group>(null);
@@ -440,7 +460,7 @@ function MainAvatar({
 
   return (
     <group ref={groupRef}>
-      <AvatarSpeechBubble activeZone={activeZone} visible={showSpeech} />
+      <AvatarSpeechBubble activeZone={activeZone} visible={showSpeech} qualityMode={qualityMode} />
       <group ref={bodyRef}>
         <group ref={headRef} position={[0, 0.65, 0]}>
           <Cylinder args={[0.06, 0.08, 0.1]} position={[0, -0.15, 0]} castShadow>
@@ -1020,7 +1040,8 @@ function SceneContents({
           activeZone={activeZone}
           reducedMotion={reducedMotion}
           onArrival={handleArrival}
-          showSpeech={!isLowOrBelow && hasArrived}
+          showSpeech={hasArrived}
+          qualityMode={qualityMode}
         />
       </group>
       
@@ -1040,8 +1061,65 @@ function SceneContents({
   );
 }
 
+function AboutSceneFallback({ unavailable = false }: { unavailable?: boolean }) {
+  return (
+    <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-[#f6ede0] via-[#efe0cc] to-[#e4cfb4] p-6">
+      <div className="w-full max-w-[520px] rounded-2xl border border-white/70 bg-white/55 p-6 backdrop-blur-sm">
+        <p className="text-xs font-semibold uppercase tracking-[0.22em] text-zinc-500">
+          About Room
+        </p>
+        <h3 className="mt-3 text-2xl font-bold text-zinc-900">
+          3D Room Preview
+        </h3>
+        <p className="mt-3 text-sm leading-7 text-zinc-700">
+          {unavailable
+            ? "현재 브라우저 환경에서는 WebGL 컨텍스트를 만들 수 없어 3D 장면 대신 경량 모드로 전환되었습니다."
+            : "3D 장면을 불러오는 중입니다. 잠시 후 자동으로 전환됩니다."}
+        </p>
+        <div className="mt-5 grid grid-cols-3 gap-2">
+          <div className="h-14 rounded-lg bg-zinc-200/80" />
+          <div className="h-14 rounded-lg bg-zinc-200/80" />
+          <div className="h-14 rounded-lg bg-zinc-200/80" />
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export default function AboutScene({ reducedMotion = false, activeZone = "all", onZoneClick }: AboutSceneProps) {
   const [qualityMode, setQualityMode] = useState<QualityMode>("high");
+  const [webglChecked, setWebglChecked] = useState(false);
+  const [webglAvailable, setWebglAvailable] = useState(true);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+
+    let available = false;
+    try {
+      const canvas = document.createElement("canvas");
+      const contextAttributes: WebGLContextAttributes = {
+        alpha: true,
+        antialias: false,
+        depth: true,
+        stencil: false,
+        failIfMajorPerformanceCaveat: true,
+        powerPreference: "high-performance",
+      };
+
+      const gl2 = canvas.getContext("webgl2", contextAttributes);
+      const gl =
+        gl2 ??
+        canvas.getContext("webgl", contextAttributes) ??
+        canvas.getContext("experimental-webgl");
+
+      available = Boolean(gl);
+    } catch {
+      available = false;
+    }
+
+    setWebglAvailable(available);
+    setWebglChecked(true);
+  }, []);
 
   useEffect(() => {
     if (typeof navigator === "undefined") return;
@@ -1062,6 +1140,14 @@ export default function AboutScene({ reducedMotion = false, activeZone = "all", 
     setQualityMode(isLikelyLow ? "low" : "high");
   }, []);
 
+  if (!webglChecked) {
+    return <AboutSceneFallback />;
+  }
+
+  if (!webglAvailable) {
+    return <AboutSceneFallback unavailable />;
+  }
+
   return (
     <div className="absolute inset-0 cursor-pointer">
       <Canvas
@@ -1079,6 +1165,7 @@ export default function AboutScene({ reducedMotion = false, activeZone = "all", 
           alpha: true,
           powerPreference: "high-performance",
         }}
+        fallback={<AboutSceneFallback unavailable />}
       >
         <Suspense fallback={null}>
           <SceneContents
