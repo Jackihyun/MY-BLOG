@@ -1,9 +1,9 @@
 "use client";
 
 import { Canvas, useFrame, useThree } from "@react-three/fiber";
-import { ContactShadows, Environment, RoundedBox, Sphere, Cylinder, Box, Float, Stars, Sky, Billboard } from "@react-three/drei";
+import { ContactShadows, RoundedBox, Sphere, Cylinder, Box, Float, Billboard } from "@react-three/drei";
 import { Suspense, useRef, useState, useMemo, useEffect } from "react";
-import { Group, Mesh, Vector3, MathUtils, Color, CanvasTexture, LinearFilter } from "three";
+import { Group, Mesh, Vector3, MathUtils, CanvasTexture, LinearFilter } from "three";
 
 export type ActiveZone = "all" | "laptop" | "reading" | "exercising";
 
@@ -595,88 +595,6 @@ function InteractiveZone({
   );
 }
 
-function OutdoorEnvironment({ timeOfDay, qualityMode = "high" }: { timeOfDay: "day" | "sunset" | "night"; qualityMode?: QualityMode }) {
-  const skyColor = useRef(new Color());
-  const groundColor = useRef(new Color());
-  const treePositions = useMemo(
-    () =>
-      Array.from({ length: 5 }, (_, i) => [
-        (i - 2) * 4 + Math.random() * 2,
-        0,
-        Math.random() * -5,
-      ] as [number, number, number]),
-    [],
-  );
-  
-  useFrame(() => {
-    if (qualityMode === "ultra") return;
-
-    let targetSky, targetGround;
-    
-    if (timeOfDay === "night") {
-      targetSky = new Color("#1e1b4b");
-      targetGround = new Color("#0f172a");
-    } else if (timeOfDay === "sunset") {
-      targetSky = new Color("#fb923c");
-      targetGround = new Color("#d97706");
-    } else {
-      targetSky = new Color("#60a5fa");
-      targetGround = new Color("#4ade80");
-    }
-    
-    skyColor.current.lerp(targetSky, 0.02);
-    groundColor.current.lerp(targetGround, 0.02);
-  });
-
-  return (
-    <group>
-      {qualityMode !== "ultra" && (
-        <>
-      {timeOfDay === "night" ? (
-        <Stars
-          radius={50}
-          depth={50}
-          count={qualityMode === "low" ? 450 : 1000}
-          factor={qualityMode === "low" ? 2 : 3}
-          saturation={0.5}
-          fade
-          speed={qualityMode === "low" ? 0.6 : 1}
-        />
-      ) : (
-        <Sky 
-          distance={450000} 
-          sunPosition={timeOfDay === "sunset" ? [10, 2, -10] : [10, 20, -10]} 
-          inclination={timeOfDay === "sunset" ? 0.49 : 0.2} 
-          azimuth={0.25} 
-        />
-      )}
-      
-      <mesh position={[0, -2, 0]} rotation={[-Math.PI / 2, 0, 0]}>
-        <planeGeometry args={[200, 200]} />
-        <meshBasicMaterial color={timeOfDay === "night" ? "#1a1816" : (timeOfDay === "sunset" ? "#7c9a6c" : "#86efac")} />
-      </mesh>
-      
-      <group position={[0, -1, -10]}>
-        {treePositions.map((position, i) => (
-          <group key={i} position={position}>
-            <Cylinder args={[0.2, 0.3, 3]} position={[0, 1.5, 0]}>
-              <meshBasicMaterial color={timeOfDay === "night" ? "#2c2826" : "#5d4037"} />
-            </Cylinder>
-            <Sphere args={[1.5, 16, 16]} position={[0, 3.5, 0]}>
-              <meshBasicMaterial color={timeOfDay === "night" ? "#1a1816" : "#386641"} />
-            </Sphere>
-            <Sphere args={[1.2, 16, 16]} position={[0.8, 3, 0.5]}>
-              <meshBasicMaterial color={timeOfDay === "night" ? "#1a1816" : "#2a5934"} />
-            </Sphere>
-          </group>
-        ))}
-      </group>
-        </>
-      )}
-    </group>
-  );
-}
-
 function DioramaRoom({ reducedMotion = false, activeZone = "all", onZoneClick, isLaptopMode, hasArrived }: AboutSceneProps & { isLaptopMode: boolean; hasArrived: boolean }) {
   const handleZoneClick = (zone: ActiveZone) => {
     if (onZoneClick) onZoneClick(zone);
@@ -1006,8 +924,6 @@ function SceneContents({
   return (
     <>
       {/* 그림자를 아주 연하게 만들기 위해 SoftShadows 제거 (기본 그림자만 사용) */}
-      
-      <OutdoorEnvironment timeOfDay={isLaptopMode ? "night" : timeOfDay} qualityMode={qualityMode} />
       
       {/* 환경광: 방 전체의 기본 밝기를 결정 (그림자 진 곳을 밝혀줌) */}
       <ambientLight intensity={lights.ambientIntensity} color={lights.ambientColor} />
