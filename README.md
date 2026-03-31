@@ -136,11 +136,12 @@ flowchart LR
 - SEO 구조 고려
 
 3. 관리자 에디터
-<p align="center"> <img src="https://github.com/user-attachments/assets/8be478bb-b024-4b53-9dca-e5a342182426" width="600"/> </p>
+<p align="center"> <img src="https://github.com/user-attachments/assets/af249792-1394-43e8-97b9-259df3127527" width="600"/> </p>
 
 - 콘텐츠 작성을 위한 관리자 전용 에디터
 - 마크다운 기반 작성 환경
 - 게시글 CRUD 기능 구현
+- 이미지 삽입 기능(썸네일 없으면, 첫 사진이 썸네일로 적용), 코드 블럭 구현
 
 ---
 
