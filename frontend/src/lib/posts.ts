@@ -5,6 +5,7 @@ import { remark } from "remark";
 import html from "remark-html";
 import { PostData } from "@/types";
 import { resolveThumbnail } from "@/lib/post-thumbnail";
+import { getPostCategories } from "@/lib/utils";
 
 export type { PostData };
 
@@ -90,6 +91,7 @@ function apiPostToPostData(apiPost: {
   publishedAt?: string;
   createdAt?: string;
   category: string;
+  categories?: string[];
   contentHtml?: string;
   excerpt?: string;
   readingTime?: number;
@@ -113,13 +115,16 @@ function apiPostToPostData(apiPost: {
   const normalizedExcerpt = sanitizeExcerpt(
     apiPost.excerpt || apiPost.contentHtml
   );
+  const categories = getPostCategories(apiPost);
+  const primaryCategory = categories[0] || apiPost.category;
 
   return {
     id: apiPost.slug,
     slug: apiPost.slug,
     title: apiPost.title,
     date: dateStr,
-    category: apiPost.category,
+    category: primaryCategory,
+    categories,
     contentHtml: apiPost.contentHtml || "",
     excerpt: normalizedExcerpt || "요약이 아직 등록되지 않았습니다.",
     readingTime: apiPost.readingTime,
@@ -132,7 +137,7 @@ function apiPostToPostData(apiPost: {
       thumbnail: apiPost.thumbnail,
       contentHtml: apiPost.contentHtml,
       title: apiPost.title,
-      category: apiPost.category,
+      category: primaryCategory,
       excerpt: normalizedExcerpt,
     }),
   };
@@ -155,6 +160,11 @@ async function getPostDataFromFile(id: string): Promise<PostData> {
   const contentHtml = processedContent.toString();
 
   const normalizedExcerpt = sanitizeExcerpt(contentHtml);
+  const categories = getPostCategories({
+    category: matterResult.data.category as string | undefined,
+    categories: matterResult.data.categories as string[] | undefined,
+  });
+  const primaryCategory = categories[0] || (matterResult.data.category as string) || "미분류";
 
   return {
     id,
@@ -165,10 +175,12 @@ async function getPostDataFromFile(id: string): Promise<PostData> {
       thumbnail: matterResult.data.thumbnail as string | undefined,
       contentHtml,
       title: matterResult.data.title as string,
-      category: matterResult.data.category as string,
+      category: primaryCategory,
       excerpt: normalizedExcerpt,
     }),
     ...(matterResult.data as { title: string; date: string; category: string }),
+    category: primaryCategory,
+    categories,
   };
 }
 
@@ -212,6 +224,7 @@ interface ApiPostResponse {
   title: string;
   publishedAt: string;
   category: string;
+  categories?: string[];
   contentHtml?: string;
   excerpt?: string;
   readingTime?: number;
@@ -340,7 +353,9 @@ export async function searchPosts(query: string): Promise<PostData[]> {
     (post) =>
       post.title.toLowerCase().includes(lowerQuery) ||
       post.contentHtml.toLowerCase().includes(lowerQuery) ||
-      post.category.toLowerCase().includes(lowerQuery)
+      getPostCategories(post).some((category) =>
+        category.toLowerCase().includes(lowerQuery)
+      )
   );
 }
 
@@ -359,7 +374,9 @@ export async function getCategories(): Promise<string[]> {
   if (ENABLE_LEGACY_FILE_POSTS) {
     try {
       const allFilePosts = await getSortedPostsDataFromFile();
-      allFilePosts.forEach((post) => categories.add(post.category));
+      allFilePosts.forEach((post) =>
+        getPostCategories(post).forEach((category) => categories.add(category))
+      );
     } catch (error) {
       console.error("Failed to read categories from file system:", error);
     }
@@ -389,7 +406,8 @@ export async function getPostsByCategory(
       const filePosts = await getSortedPostsDataFromFile();
       const existingSlugs = new Set(posts.map((p) => p.slug));
       const filteredFilePosts = filePosts.filter(
-        (post) => post.category === category && !existingSlugs.has(post.slug)
+        (post) =>
+          getPostCategories(post).includes(category) && !existingSlugs.has(post.slug)
       );
       posts = [...posts, ...filteredFilePosts];
     } catch (error) {

@@ -12,9 +12,9 @@ import { CommentSkeletonList } from "@/components/skeletons/CommentSkeleton";
 import { Skeleton } from "@/components/ui/Skeleton";
 import { incrementViewCount } from "@/lib/api";
 import { enhanceCodeBlocks } from "@/lib/code-blocks";
+import { getPostCategories } from "@/lib/utils";
 import { motion } from "framer-motion";
 import { toast } from "sonner";
-import { useAuth } from "@/hooks/useAuth";
 
 const ReactionBar = dynamic(
   () => import("@/components/reactions/ReactionBar"),
@@ -66,8 +66,6 @@ export default function PostDetailClient({
   previousPost,
   nextPost,
 }: PostDetailClientProps) {
-  const { isAuthenticated, isHydrated } = useAuth();
-  const canSeeViews = isHydrated && isAuthenticated;
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
   const [lightboxZoom, setLightboxZoom] = useState(1);
   const [isSharing, setIsSharing] = useState(false);
@@ -114,6 +112,7 @@ export default function PostDetailClient({
     () => postData.excerpt || `${postData.category} 글을 읽어보세요.`,
     [postData.category, postData.excerpt]
   );
+  const categoryLabels = useMemo(() => getPostCategories(postData), [postData]);
 
   useEffect(() => {
     if (!lightboxImage) return;
@@ -271,9 +270,16 @@ export default function PostDetailClient({
             animate={{ opacity: 1, x: 0 }}
             transition={{ delay: 0.2 }}
           >
-            <span className="inline-block px-3 py-1 rounded-full bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400 text-xs font-bold uppercase tracking-wider mb-4">
-              {postData.category}
-            </span>
+            <div className="mb-4 flex flex-wrap gap-2">
+              {categoryLabels.map((category) => (
+                <span
+                  key={`${postData.slug}-${category}`}
+                  className="inline-block px-3 py-1 rounded-full bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400 text-xs font-bold uppercase tracking-wider"
+                >
+                  {category}
+                </span>
+              ))}
+            </div>
           </motion.div>
           
           <h1 className="text-2xl md:text-4xl lg:text-[2.8rem] font-bold text-zinc-900 dark:text-zinc-50 mb-5 md:mb-6 leading-tight">
@@ -295,7 +301,7 @@ export default function PostDetailClient({
               />
             </div>
 
-            {canSeeViews && viewCount > 0 && (
+            {viewCount > 0 && (
               <div className="flex items-center gap-1.5">
                 <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />

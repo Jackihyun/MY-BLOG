@@ -9,6 +9,7 @@ import lombok.*;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Entity
 @Table(name = "post")
@@ -43,6 +44,12 @@ public class Post {
 
     @Column(nullable = false, length = 100)
     private String category;
+
+    @ElementCollection(fetch = FetchType.EAGER)
+    @CollectionTable(name = "post_categories", joinColumns = @JoinColumn(name = "post_id"))
+    @Column(name = "category_name", nullable = false, length = 100)
+    @Builder.Default
+    private List<String> categories = new ArrayList<>();
 
     @Column(name = "reading_time")
     private Integer readingTime;
@@ -102,13 +109,16 @@ public class Post {
     }
 
     public void updateContent(String title, String content, String contentHtml, String excerpt,
-                              String thumbnail, String category, Integer readingTime) {
+                              String thumbnail, List<String> categories, Integer readingTime) {
         this.title = title;
         this.content = content;
         this.contentHtml = contentHtml;
         this.excerpt = excerpt;
         this.thumbnail = thumbnail;
-        this.category = category;
+        this.categories = categories == null
+            ? new ArrayList<>()
+            : categories.stream().collect(Collectors.toCollection(ArrayList::new));
+        this.category = this.categories.isEmpty() ? null : this.categories.get(0);
         this.readingTime = readingTime;
     }
 }

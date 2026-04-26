@@ -8,6 +8,7 @@ import lombok.NoArgsConstructor;
 import org.springframework.util.StringUtils;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Getter
 @Builder
@@ -22,6 +23,7 @@ public class PostDetailResponse {
     private String excerpt;
     private String thumbnail;
     private String category;
+    private List<String> categories;
     private Integer readingTime;
     private Integer viewCount;
     private Boolean isPublished;
@@ -51,7 +53,20 @@ public class PostDetailResponse {
         return null;
     }
 
+    private static List<String> resolveCategories(Post post) {
+        if (post.getCategories() != null && !post.getCategories().isEmpty()) {
+            return List.copyOf(post.getCategories());
+        }
+
+        if (StringUtils.hasText(post.getCategory())) {
+            return List.of(post.getCategory().trim());
+        }
+
+        return List.of();
+    }
+
     public static PostDetailResponse from(Post post, long commentCount, long likeCount) {
+        List<String> categories = resolveCategories(post);
         return PostDetailResponse.builder()
             .id(post.getId())
             .slug(post.getSlug())
@@ -60,7 +75,8 @@ public class PostDetailResponse {
             .contentHtml(post.getContentHtml())
             .excerpt(post.getExcerpt())
             .thumbnail(resolveThumbnail(post))
-            .category(post.getCategory())
+            .category(categories.isEmpty() ? post.getCategory() : categories.get(0))
+            .categories(categories)
             .readingTime(post.getReadingTime())
             .viewCount(post.getViewCount())
             .isPublished(post.getIsPublished())

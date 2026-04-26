@@ -1,280 +1,392 @@
 "use client";
 
-import { motion, useReducedMotion } from "framer-motion";
+import { motion, useReducedMotion, useScroll, useTransform } from "framer-motion";
 import Link from "next/link";
-import { useState } from "react";
-import AboutScene, { ActiveZone } from "@/components/about/AboutScene";
+import { useRef, useState } from "react";
 
-const profileHighlights = [
+type StorySection = {
+  id: string;
+  kicker: string;
+  title: string;
+  body: string;
+  accent: string;
+  note: string;
+  metrics: string[];
+};
+
+const storySections: StorySection[] = [
   {
-    index: "01",
-    title: "프론트엔드를 좋아합니다",
-    description:
-      "단순히 예쁜 화면보다, 사용자가 자연스럽게 읽고 다음 행동으로 이어지게 만드는 인터페이스를 좋아합니다. 정보 구조, 타이포 리듬, 인터랙션 타이밍까지 한 흐름으로 설계하려고 합니다.",
+    id: "intro",
+    kicker: "About Me",
+    title: "화면을 읽기 쉽게 만들고, 흐름을 자연스럽게 다듬는 개발자입니다.",
+    body:
+      "프론트엔드를 가장 좋아하지만, 화면만 예쁘게 만드는 데서 끝내고 싶지는 않습니다. 어떤 정보가 먼저 보여야 하는지, 사용자가 어디서 망설이는지, 다시 수정하기 쉬운 구조인지까지 함께 봅니다.",
+    accent: "#2563eb",
+    note: "복잡한 기능도 사용자는 자연스럽게 느끼게 만드는 걸 좋아합니다.",
+    metrics: ["React", "Next.js", "TypeScript"],
   },
   {
-    index: "02",
-    title: "만들면서 배우는 편입니다",
-    description:
-      "문서를 읽는 것에서 멈추기보다, 실제 기능을 붙이고 실패를 기록하면서 익힙니다. 작게 만들고 빠르게 검증한 뒤 개선하는 방식이 제일 잘 맞아서, 실험적인 페이지를 자주 만들고 회고합니다.",
+    id: "work",
+    kicker: "How I Work",
+    title: "작게 만들고, 빠르게 검증하고, 더 명확하게 고칩니다.",
+    body:
+      "아이디어를 오래 붙잡기보다 먼저 작동하는 형태로 만들고 실제로 써봅니다. 그 다음에 정보 구조, 인터랙션 타이밍, 코드 분리 기준을 다듬으면서 화면과 구현이 함께 좋아지게 만듭니다.",
+    accent: "#f97316",
+    note: "보여줄 수 있는 프로토타입이 말보다 강하다고 믿습니다.",
+    metrics: ["Prototype", "Iteration", "Feedback"],
   },
   {
-    index: "03",
-    title: "배운 건 남겨두려고 합니다",
-    description:
-      "정리하지 않으면 금방 잊는 편이라, 글과 코드 조각으로 반드시 남깁니다. 나중에 다시 읽었을 때 바로 재사용할 수 있는 형태를 목표로 기록합니다.",
+    id: "focus",
+    kicker: "Current Focus",
+    title: "요즘은 블로그를 더 좋은 제품처럼 다듬는 데 집중하고 있습니다.",
+    body:
+      "콘텐츠 구조, 검색 경험, 성능, SEO, 운영 편의성까지 이어지는 흐름을 정리하고 있습니다. 글을 쌓는 공간이 아니라, 다시 방문해도 편하고 신뢰감 있는 개발 아카이브로 만들고 싶습니다.",
+    accent: "#14b8a6",
+    note: "콘텐츠도 결국 UX의 일부라고 생각합니다.",
+    metrics: ["Performance", "SEO", "Content System"],
   },
   {
-    index: "04",
-    title: "협업 가능한 코드가 목표입니다",
-    description:
-      "혼자만 이해하는 코드보다, 다음 사람이 이어서 고칠 수 있는 코드가 더 중요하다고 생각합니다. 네이밍, 분리 기준, 문서화, 예외 처리까지 팀 기준으로 맞추려 합니다.",
+    id: "outside",
+    kicker: "Beyond Code",
+    title: "배운 건 흘려보내지 않으려고 기록하고, 설명 가능한 형태로 남깁니다.",
+    body:
+      "새로운 기술을 익힐 때도 그냥 끝내지 않고 글이나 예제, 구조화된 메모로 남겨두는 편입니다. 그래서 이 블로그는 자기소개 페이지와 이어진, 저의 작업 방식 자체를 보여주는 공간이기도 합니다.",
+    accent: "#a855f7",
+    note: "혼자 이해하는 코드보다 다음 사람이 이해할 수 있는 구조를 지향합니다.",
+    metrics: ["Writing", "Documentation", "Maintainability"],
   },
 ];
 
-const introSections = [
+const principles = [
   {
-    label: "요즘의 저",
-    title:
-      "프론트엔드를 중심으로, 백엔드와 AI 활용까지 조금씩 넓혀가고 있습니다",
-    body: "가장 재미를 느끼는 영역은 여전히 프론트엔드입니다. React, Next.js, TypeScript를 중심으로 복잡한 화면 상태를 단순하게 다루는 방법에 관심이 많습니다. 동시에 Spring Boot와 API 설계도 함께 다뤄서 화면-서버-데이터 흐름을 한 번에 이해하려고 합니다. 최근에는 AI 도구를 단순 자동완성 수준이 아니라, 콘텐츠 정리·코드 리뷰·반복 작업 자동화까지 연결해 실제 생산성을 올리는 실험을 꾸준히 하고 있습니다.",
+    title: "읽히는 인터페이스",
+    body: "처음 보는 사람도 길을 잃지 않도록 정보 밀도와 흐름을 먼저 설계합니다.",
   },
   {
-    label: "블로그를 하는 이유",
-    title: "배운 걸 흘려보내지 않으려고 씁니다",
-    body: "배운 내용을 바로 정리하지 않으면 지식이 금방 끊긴다는 걸 자주 느꼈습니다. 그래서 기능 구현 과정에서 고민했던 선택 기준, 실패했던 접근, 최종적으로 채택한 구조까지 함께 기록합니다. 누군가에게 도움이 되면 가장 좋고, 동시에 미래의 제가 다시 참고할 수 있는 개발 노트 역할도 하도록 운영하고 있습니다.",
+    title: "설명 가능한 구현",
+    body: "왜 이렇게 만들었는지 말할 수 있는 구조를 선호합니다. 유지보수는 설계의 일부라고 봅니다.",
   },
   {
-    label: "중요하게 보는 것",
-    title: "읽기 쉽고, 자연스럽고, 오래 다듬을 수 있는 화면",
-    body: "처음 보는 사용자도 막히지 않는 흐름, 반복 사용해도 피로하지 않은 상호작용, 그리고 시간이 지나도 유지보수 가능한 구조를 중요하게 봅니다. 과한 장식보다 맥락이 전달되는 밀도와 균형을 더 우선합니다. 이 About 페이지도 3D를 단순한 시각 요소로 쓰지 않고, 글의 맥락과 움직임이 서로 어긋나지 않게 맞추는 데 초점을 두었습니다.",
+    title: "실제 사용 기준",
+    body: "예쁜 화면보다 실제 사용감이 중요합니다. 로딩, 빈 상태, 전환의 어색함을 먼저 챙깁니다.",
   },
 ];
 
-const stackGroups = [
-  {
-    title: "주로 쓰는 기술",
-    items: ["React", "Next.js(App Router)", "TypeScript", "Tailwind CSS", "TanStack Query"],
-  },
-  {
-    title: "표현을 더할 때",
-    items: ["Framer Motion", "Three.js", "R3F", "Shadcn/UI", "Tiptap"],
-  },
-  {
-    title: "함께 넓혀가는 영역",
-    items: ["Spring Boot", "JPA", "SQLite", "Performance", "SEO", "Web Vitals"],
-  },
+const timeline = [
+  "프론트엔드 중심으로 시작해 React와 Next.js에서 재미를 느꼈습니다.",
+  "백엔드와 데이터 흐름도 함께 이해하고 싶어서 Spring Boot와 API 설계도 계속 다루고 있습니다.",
+  "최근에는 AI 도구를 글 정리, 반복 작업 자동화, 코드 검토 보조까지 연결해 실전적으로 활용하고 있습니다.",
 ];
 
-const currentFocus = [
+const spotlightCards = [
   {
-    title: "UX 안정화",
-    body: "로딩/에러/빈 상태를 먼저 설계해서 화면이 흔들리지 않게 만드는 작업에 집중하고 있습니다.",
+    label: "Main Stack",
+    value: "React, Next.js, TypeScript",
   },
   {
-    title: "성능 개선",
-    body: "필요한 곳만 클라이언트 컴포넌트로 두고, 렌더 비용이 큰 인터랙션은 분리해 체감 속도를 개선하고 있습니다.",
+    label: "Interested In",
+    value: "UI architecture, motion, SEO, content systems",
   },
   {
-    title: "콘텐츠 시스템",
-    body: "글 작성, 썸네일, SEO 메타데이터를 일관되게 관리할 수 있게 블로그 파이프라인을 정리하고 있습니다.",
+    label: "Building Now",
+    value: "읽기 좋은 개발 블로그와 소개 경험",
   },
 ];
 
 export default function AboutShowcase() {
   const prefersReducedMotion = useReducedMotion();
   const reducedMotion = prefersReducedMotion ?? false;
-  const [activeZone, setActiveZone] = useState<ActiveZone>("all");
+  const containerRef = useRef<HTMLDivElement | null>(null);
+  const [activeSection, setActiveSection] = useState(0);
+
+  const { scrollYProgress } = useScroll({
+    target: containerRef,
+    offset: ["start start", "end end"],
+  });
+
+  const backgroundY = useTransform(scrollYProgress, [0, 1], reducedMotion ? [0, 0] : [-40, 80]);
+  const orbX = useTransform(scrollYProgress, [0, 1], reducedMotion ? [0, 0] : [-40, 120]);
+  const orbY = useTransform(scrollYProgress, [0, 1], reducedMotion ? [0, 0] : [0, 180]);
+  const progressScale = useTransform(scrollYProgress, [0, 1], [0, 1]);
+  const currentStory = storySections[activeSection];
 
   return (
-    <div className="flex flex-col lg:flex-row min-h-screen bg-transparent">
-      {/* Left Column: 3D Scene (Sticky) */}
-      {/* h-screen과 sticky를 사용하여 스크롤 시에도 완벽하게 고정되도록 수정 (상하 여백으로 인한 흔들림 방지) */}
-      <div className="relative w-full lg:w-1/2 h-[60vh] lg:h-screen lg:sticky lg:top-0 overflow-hidden border-b lg:border-b-0 lg:border-r border-zinc-200/50 dark:border-zinc-800/50 flex items-center justify-center">
-        {/* Background Gradients */}
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(245,158,11,0.03),transparent_60%)] dark:bg-[radial-gradient(circle_at_50%_50%,rgba(245,158,11,0.08),transparent_60%)]" />
-        <div className="absolute inset-0 bg-[linear-gradient(rgba(148,163,184,0.03)_1px,transparent_1px),linear-gradient(90deg,rgba(148,163,184,0.03)_1px,transparent_1px)] bg-[size:32px_32px]" />
+    <div
+      ref={containerRef}
+      className="relative left-1/2 w-screen -translate-x-1/2 -mt-20 -mb-20 overflow-hidden bg-[linear-gradient(180deg,#f7f3ec_0%,#f4efe7_30%,#f8fafc_70%,#fffdf8_100%)] text-zinc-900 dark:bg-[linear-gradient(180deg,#09090b_0%,#0f172a_35%,#111827_75%,#09090b_100%)] dark:text-zinc-50"
+    >
+      <motion.div
+        aria-hidden
+        style={{ y: backgroundY }}
+        className="pointer-events-none absolute inset-0 opacity-70"
+      >
+        <div className="absolute inset-0 bg-[linear-gradient(rgba(15,23,42,0.045)_1px,transparent_1px),linear-gradient(90deg,rgba(15,23,42,0.045)_1px,transparent_1px)] bg-[size:34px_34px] dark:bg-[linear-gradient(rgba(255,255,255,0.05)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.05)_1px,transparent_1px)]" />
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(255,255,255,0.72),transparent_52%)] dark:bg-[radial-gradient(circle_at_top,rgba(59,130,246,0.16),transparent_48%)]" />
+      </motion.div>
 
-        {/* 3D Canvas Container */}
-        <div className="absolute inset-0 w-full h-full">
-          <AboutScene
-            reducedMotion={reducedMotion}
-            activeZone={activeZone}
-            onZoneClick={setActiveZone}
-          />
+      <motion.div
+        aria-hidden
+        style={{ x: orbX, y: orbY, backgroundColor: currentStory.accent }}
+        className="pointer-events-none absolute right-[-8rem] top-24 h-80 w-80 rounded-full blur-3xl opacity-20 dark:opacity-25"
+      />
+
+      <div className="relative mx-auto grid min-h-screen max-w-7xl gap-12 px-6 pb-24 pt-20 md:px-10 lg:grid-cols-[minmax(0,0.95fr)_minmax(0,1.05fr)] lg:gap-16 lg:px-16 lg:pt-28">
+        <div className="lg:sticky lg:top-28 lg:h-[calc(100vh-9rem)]">
+          <div className="flex h-full flex-col rounded-[2rem] border border-white/60 bg-white/70 p-6 shadow-[0_20px_80px_rgba(15,23,42,0.08)] backdrop-blur-xl dark:border-white/10 dark:bg-white/5 dark:shadow-[0_20px_80px_rgba(2,6,23,0.45)] md:p-8">
+            <div className="flex items-center justify-between">
+              <p className="text-[11px] font-bold uppercase tracking-[0.32em] text-zinc-500 dark:text-zinc-400">
+                Personal Homepage
+              </p>
+              <div className="relative h-1.5 w-24 overflow-hidden rounded-full bg-zinc-200 dark:bg-zinc-800">
+                <motion.div
+                  style={{ scaleX: progressScale, originX: 0, backgroundColor: currentStory.accent }}
+                  className="h-full w-full rounded-full"
+                />
+              </div>
+            </div>
+
+            <div className="mt-10 space-y-6">
+              <motion.p
+                key={currentStory.kicker}
+                initial={{ opacity: 0, y: reducedMotion ? 0 : 12 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.45 }}
+                className="text-sm font-semibold uppercase tracking-[0.24em]"
+                style={{ color: currentStory.accent }}
+              >
+                {currentStory.kicker}
+              </motion.p>
+
+              <motion.h1
+                key={currentStory.title}
+                initial={{ opacity: 0, y: reducedMotion ? 0 : 18 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.55 }}
+                className="max-w-xl text-[2.6rem] font-black leading-[1.02] tracking-[-0.04em] text-zinc-950 dark:text-white md:text-[3.6rem]"
+              >
+                안녕하세요.
+                <br />
+                Jack을 소개하는
+                <br />
+                한 페이지입니다.
+              </motion.h1>
+
+              <motion.p
+                key={currentStory.body}
+                initial={{ opacity: 0, y: reducedMotion ? 0 : 16 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.55, delay: 0.05 }}
+                className="max-w-xl text-base leading-8 text-zinc-600 dark:text-zinc-300 md:text-lg"
+              >
+                {currentStory.body}
+              </motion.p>
+            </div>
+
+            <div className="mt-10 grid gap-3 md:grid-cols-3 lg:grid-cols-1">
+              {spotlightCards.map((item) => (
+                <div
+                  key={item.label}
+                  className="rounded-2xl border border-zinc-200/70 bg-white/85 p-4 dark:border-white/10 dark:bg-white/5"
+                >
+                  <p className="text-[11px] font-bold uppercase tracking-[0.22em] text-zinc-400 dark:text-zinc-500">
+                    {item.label}
+                  </p>
+                  <p className="mt-2 text-sm font-medium leading-6 text-zinc-700 dark:text-zinc-200">
+                    {item.value}
+                  </p>
+                </div>
+              ))}
+            </div>
+
+            <motion.div
+              style={{ borderColor: currentStory.accent }}
+              className="mt-auto rounded-[1.75rem] border bg-zinc-950 px-5 py-5 text-white dark:bg-white dark:text-zinc-950"
+            >
+              <p className="text-[11px] font-bold uppercase tracking-[0.24em] text-white/60 dark:text-zinc-500">
+                Active Section Note
+              </p>
+              <p className="mt-3 text-base leading-7 text-white/88 dark:text-zinc-800">
+                {currentStory.note}
+              </p>
+              <div className="mt-4 flex flex-wrap gap-2">
+                {currentStory.metrics.map((metric) => (
+                  <span
+                    key={metric}
+                    className="rounded-full border border-white/15 px-3 py-1 text-xs font-semibold uppercase tracking-[0.16em] text-white/80 dark:border-zinc-300 dark:text-zinc-700"
+                  >
+                    {metric}
+                  </span>
+                ))}
+              </div>
+            </motion.div>
+          </div>
         </div>
 
-        <div className="absolute left-6 top-6 lg:left-10 lg:top-10 pointer-events-none z-10">
-          <p className="text-[10px] font-bold uppercase tracking-[0.3em] text-zinc-500 dark:text-zinc-400">
-            Interactive Room
-          </p>
-          <p className="text-xs text-zinc-400 mt-1">
-            손흔들기/코딩/쇼파/운동 지점을 클릭해보세요.
-          </p>
-        </div>
-      </div>
+        <div className="space-y-16 lg:space-y-24">
+          <section className="grid min-h-[72vh] content-center gap-8 pb-8 pt-4 lg:min-h-[88vh]">
+            <div className="max-w-3xl space-y-7">
+              <p className="text-[11px] font-bold uppercase tracking-[0.32em] text-zinc-500 dark:text-zinc-400">
+                Scroll To Read
+              </p>
+              <h2 className="text-[3rem] font-black leading-[0.96] tracking-[-0.05em] text-zinc-950 dark:text-white md:text-[5.6rem]">
+                소개 페이지이지만,
+                <br />
+                그냥 이력 요약처럼
+                <br />
+                보이고 싶진 않았습니다.
+              </h2>
+              <p className="max-w-2xl text-lg leading-8 text-zinc-600 dark:text-zinc-300 md:text-xl">
+                스크롤하면서 제 작업 방식과 관심사가 천천히 드러나는 구조로 만들었습니다.
+                과한 장면 전환보다 읽기 흐름, 리듬, 분위기 변화를 우선했습니다.
+              </p>
+            </div>
 
-      {/* Right Column: Scrollable Content */}
-      <div className="w-full lg:w-1/2 px-6 py-16 md:px-12 lg:px-20 lg:py-32 space-y-32">
-        {/* Hero Section */}
-        <motion.section
-          initial={{ opacity: 0, y: prefersReducedMotion ? 0 : 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.7 }}
-          className="space-y-8"
-        >
-          <h1 className="text-[2.5rem] md:text-[3.5rem] lg:text-[4rem] font-black leading-[1.1] tracking-tight text-zinc-900 dark:text-zinc-50">
-            안녕하세요,
-            <br />
-            Jack입니다.
-          </h1>
+            <div className="grid gap-4 md:grid-cols-3">
+              {principles.map((principle, index) => (
+                <motion.div
+                  key={principle.title}
+                  initial={{ opacity: 0, y: reducedMotion ? 0 : 22 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true, amount: 0.4 }}
+                  transition={{ duration: 0.55, delay: reducedMotion ? 0 : index * 0.08 }}
+                  className="rounded-[1.75rem] border border-zinc-200/80 bg-white/70 p-6 backdrop-blur-sm dark:border-white/10 dark:bg-white/5"
+                >
+                  <p className="text-[11px] font-bold uppercase tracking-[0.24em] text-zinc-400 dark:text-zinc-500">
+                    0{index + 1}
+                  </p>
+                  <h3 className="mt-4 text-xl font-bold text-zinc-950 dark:text-white">
+                    {principle.title}
+                  </h3>
+                  <p className="mt-3 text-sm leading-7 text-zinc-600 dark:text-zinc-300">
+                    {principle.body}
+                  </p>
+                </motion.div>
+              ))}
+            </div>
+          </section>
 
-          <p className="text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            화면을 설계하고 다듬는 일을 좋아합니다. 기능만 되는 것보다 읽기
-            쉽고, 흐름이 자연스럽고, 다시 손대기 좋은 구조를 더 좋아합니다. 이
-            페이지는 저를 소개하는 공간이지만, 동시에 제가 화면을 다루는 방식이
-            자연스럽게 보이도록 만든 About이기도 합니다.
-          </p>
-
-          <div className="flex flex-wrap gap-3 pt-4">
-            <Link
-              href="/posts"
-              className="inline-flex items-center justify-center bg-zinc-900 px-6 py-3.5 text-sm font-semibold text-white transition-all hover:bg-zinc-800 hover:scale-[1.02] dark:bg-white dark:text-zinc-900 dark:hover:bg-zinc-200 rounded-xl shadow-sm"
+          {storySections.map((section, index) => (
+            <motion.section
+              key={section.id}
+              onViewportEnter={() => setActiveSection(index)}
+              viewport={{ amount: 0.55 }}
+              className="grid min-h-[72vh] content-center gap-6 rounded-[2rem] border border-zinc-200/70 bg-white/58 p-7 shadow-[0_10px_40px_rgba(15,23,42,0.04)] backdrop-blur-md dark:border-white/10 dark:bg-white/5 md:p-10 lg:min-h-[82vh]"
             >
-              글 보러가기
-            </Link>
-            <a
-              href="https://github.com/jackihyun"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center justify-center bg-white/50 dark:bg-zinc-900/50 backdrop-blur-sm border border-zinc-200/50 dark:border-zinc-800/50 px-6 py-3.5 text-sm font-semibold text-zinc-800 dark:text-zinc-200 transition-all hover:bg-white dark:hover:bg-zinc-800 hover:scale-[1.02] rounded-xl shadow-sm"
-            >
-              GitHub
-            </a>
-          </div>
-        </motion.section>
-
-        <motion.section
-          initial={{ opacity: 0, y: prefersReducedMotion ? 0 : 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.7 }}
-          className="space-y-6"
-        >
-          <h2 className="text-2xl font-bold tracking-tight text-zinc-900 dark:text-zinc-50">
-            요즘 집중하는 것
-          </h2>
-          <div className="grid gap-4 md:grid-cols-3">
-            {currentFocus.map((focus) => (
-              <div
-                key={focus.title}
-                className="bg-white/50 dark:bg-zinc-900/50 border border-zinc-200/60 dark:border-zinc-800/60 rounded-2xl p-5"
+              <p
+                className="text-[11px] font-bold uppercase tracking-[0.32em]"
+                style={{ color: section.accent }}
               >
-                <h3 className="text-sm font-bold text-zinc-900 dark:text-zinc-100 mb-2">
-                  {focus.title}
-                </h3>
-                <p className="text-sm leading-6 text-zinc-600 dark:text-zinc-400">
-                  {focus.body}
+                {section.kicker}
+              </p>
+              <h3 className="max-w-3xl text-[2.2rem] font-black leading-[1.02] tracking-[-0.04em] text-zinc-950 dark:text-white md:text-[3.5rem]">
+                {section.title}
+              </h3>
+              <div className="grid gap-8 lg:grid-cols-[minmax(0,1.2fr)_minmax(0,0.8fr)]">
+                <p className="text-base leading-8 text-zinc-600 dark:text-zinc-300 md:text-lg">
+                  {section.body}
                 </p>
-              </div>
-            ))}
-          </div>
-        </motion.section>
-
-        {/* Highlights Section */}
-        <motion.section
-          initial={{ opacity: 0, y: prefersReducedMotion ? 0 : 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.7 }}
-          className="space-y-10"
-        >
-          <h2 className="text-2xl font-bold tracking-tight text-zinc-900 dark:text-zinc-50">
-            제가 일하는 방식
-          </h2>
-          <div className="grid gap-6">
-            {profileHighlights.map((card, index) => (
-              <div
-                key={card.title}
-                className="group relative bg-white/40 dark:bg-zinc-900/40 backdrop-blur-md border border-zinc-200/50 dark:border-zinc-800/50 rounded-2xl p-6 md:p-8 transition-colors hover:bg-white/80 dark:hover:bg-zinc-900/80"
-              >
-                <p className="text-[11px] font-bold uppercase tracking-[0.2em] text-amber-500 mb-4">
-                  {card.index}
-                </p>
-                <h3 className="text-xl font-bold text-zinc-900 dark:text-zinc-50 mb-3">
-                  {card.title}
-                </h3>
-                <p className="text-zinc-600 dark:text-zinc-400 leading-relaxed">
-                  {card.description}
-                </p>
-              </div>
-            ))}
-          </div>
-        </motion.section>
-
-        {/* Tech Stack Section */}
-        <motion.section
-          initial={{ opacity: 0, y: prefersReducedMotion ? 0 : 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.7 }}
-          className="space-y-10"
-        >
-          <h2 className="text-2xl font-bold tracking-tight text-zinc-900 dark:text-zinc-50">
-            주로 다루는 기술
-          </h2>
-          <div className="grid gap-6 sm:grid-cols-2">
-            {stackGroups.map((group) => (
-              <div
-                key={group.title}
-                className="bg-white/40 dark:bg-zinc-900/40 backdrop-blur-md border border-zinc-200/50 dark:border-zinc-800/50 rounded-2xl p-6"
-              >
-                <h3 className="text-sm font-bold tracking-tight text-zinc-900 dark:text-zinc-100 mb-4">
-                  {group.title}
-                </h3>
-                <div className="flex flex-wrap gap-2">
-                  {group.items.map((item) => (
-                    <span
-                      key={item}
-                      className="bg-white dark:bg-zinc-800 border border-zinc-200/50 dark:border-zinc-700/50 px-3 py-1.5 text-xs font-medium text-zinc-700 dark:text-zinc-300 rounded-lg shadow-sm"
-                    >
-                      {item}
-                    </span>
-                  ))}
+                <div className="rounded-[1.5rem] border border-zinc-200/80 bg-zinc-50/85 p-5 dark:border-white/10 dark:bg-zinc-950/40">
+                  <p className="text-[11px] font-bold uppercase tracking-[0.22em] text-zinc-400 dark:text-zinc-500">
+                    Keywords
+                  </p>
+                  <div className="mt-4 flex flex-wrap gap-2">
+                    {section.metrics.map((metric) => (
+                      <motion.span
+                        key={metric}
+                        whileHover={reducedMotion ? undefined : { y: -2 }}
+                        className="rounded-full border border-zinc-200 bg-white px-3 py-1.5 text-xs font-semibold uppercase tracking-[0.16em] text-zinc-700 dark:border-white/10 dark:bg-white/5 dark:text-zinc-200"
+                      >
+                        {metric}
+                      </motion.span>
+                    ))}
+                  </div>
+                  <div
+                    className="mt-5 rounded-2xl p-4 text-sm font-medium leading-7 text-zinc-700 dark:text-zinc-200"
+                    style={{
+                      backgroundColor: `${section.accent}14`,
+                      border: `1px solid ${section.accent}33`,
+                    }}
+                  >
+                    {section.note}
+                  </div>
                 </div>
               </div>
-            ))}
-          </div>
-        </motion.section>
+            </motion.section>
+          ))}
 
-        {/* Detailed Intro Section */}
-        <motion.section
-          initial={{ opacity: 0, y: prefersReducedMotion ? 0 : 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.7 }}
-          className="space-y-10 border-t border-zinc-200/50 dark:border-zinc-800/50 pt-16"
-        >
-          <h2 className="text-2xl font-bold tracking-tight text-zinc-900 dark:text-zinc-50">
-            조금 더 깊은 이야기
-          </h2>
-          <div className="space-y-12">
-            {introSections.map((point) => (
-              <div key={point.title} className="space-y-3">
-                <p className="text-[12px] font-bold uppercase tracking-[0.2em] text-zinc-400 dark:text-zinc-500">
-                  {point.label}
-                </p>
-                <h3 className="text-xl font-bold text-zinc-900 dark:text-zinc-50">
-                  {point.title}
-                </h3>
-                <p className="text-base leading-8 text-zinc-600 dark:text-zinc-400">
-                  {point.body}
-                </p>
-              </div>
-            ))}
-          </div>
-        </motion.section>
+          <section className="grid gap-6 rounded-[2rem] border border-zinc-200/80 bg-white/68 p-7 backdrop-blur-md dark:border-white/10 dark:bg-white/5 md:p-10">
+            <div className="max-w-3xl space-y-4">
+              <p className="text-[11px] font-bold uppercase tracking-[0.32em] text-zinc-500 dark:text-zinc-400">
+                Journey
+              </p>
+              <h3 className="text-[2rem] font-black leading-[1.05] tracking-[-0.04em] text-zinc-950 dark:text-white md:text-[3rem]">
+                지금은 한 가지 역할보다,
+                <br />
+                화면과 콘텐츠를 함께 설계하는 사람에 가깝습니다.
+              </h3>
+            </div>
+
+            <div className="space-y-4">
+              {timeline.map((item, index) => (
+                <motion.div
+                  key={item}
+                  initial={{ opacity: 0, x: reducedMotion ? 0 : 24 }}
+                  whileInView={{ opacity: 1, x: 0 }}
+                  viewport={{ once: true, amount: 0.45 }}
+                  transition={{ duration: 0.5, delay: reducedMotion ? 0 : index * 0.08 }}
+                  className="grid gap-3 rounded-[1.5rem] border border-zinc-200/70 bg-white/90 p-5 dark:border-white/10 dark:bg-zinc-950/35 md:grid-cols-[80px_minmax(0,1fr)]"
+                >
+                  <p className="text-sm font-black tracking-[-0.03em] text-zinc-400 dark:text-zinc-500">
+                    0{index + 1}
+                  </p>
+                  <p className="text-sm leading-7 text-zinc-700 dark:text-zinc-200 md:text-base">
+                    {item}
+                  </p>
+                </motion.div>
+              ))}
+            </div>
+          </section>
+
+          <section className="grid gap-8 rounded-[2rem] bg-zinc-950 p-7 text-white shadow-[0_24px_80px_rgba(15,23,42,0.24)] dark:bg-white dark:text-zinc-950 md:p-10">
+            <div className="max-w-3xl space-y-4">
+              <p className="text-[11px] font-bold uppercase tracking-[0.32em] text-white/55 dark:text-zinc-500">
+                Final Section
+              </p>
+              <h3 className="text-[2rem] font-black leading-[1.05] tracking-[-0.04em] md:text-[3rem]">
+                블로그와 GitHub도 결국,
+                <br />
+                제가 어떻게 배우고 만드는지 보여주는 기록입니다.
+              </h3>
+              <p className="text-base leading-8 text-white/75 dark:text-zinc-700 md:text-lg">
+                더 보고 싶다면 글을 읽어보셔도 좋고, GitHub에서 작업 흔적을 보는 것도 좋습니다.
+                소개 페이지는 여기서 끝나지만, 저는 계속 만들고 정리하고 개선하는 중입니다.
+              </p>
+            </div>
+
+            <div className="flex flex-wrap gap-3">
+              <Link
+                href="/posts"
+                className="inline-flex items-center justify-center rounded-full bg-white px-6 py-3 text-sm font-bold text-zinc-950 transition-transform hover:scale-[1.02] dark:bg-zinc-950 dark:text-white"
+              >
+                글 보러가기
+              </Link>
+              <a
+                href="https://github.com/jackihyun"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center justify-center rounded-full border border-white/20 px-6 py-3 text-sm font-bold text-white transition-transform hover:scale-[1.02] dark:border-zinc-300 dark:text-zinc-900"
+              >
+                GitHub
+              </a>
+              <a
+                href={`mailto:${process.env.NEXT_PUBLIC_CONTACT_EMAIL || "your@email.com"}`}
+                className="inline-flex items-center justify-center rounded-full border border-white/20 px-6 py-3 text-sm font-bold text-white/88 transition-transform hover:scale-[1.02] dark:border-zinc-300 dark:text-zinc-900"
+              >
+                Contact
+              </a>
+            </div>
+          </section>
+        </div>
       </div>
     </div>
   );

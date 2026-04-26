@@ -47,7 +47,8 @@ export default function PostEditor({ slug, mode }: PostEditorProps) {
 
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
-  const [category, setCategory] = useState("");
+  const [categoryInput, setCategoryInput] = useState("");
+  const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
   const [thumbnail, setThumbnail] = useState("");
   const [publishedAt, setPublishedAt] = useState("");
   const [customSlug, setCustomSlug] = useState("");
@@ -120,7 +121,8 @@ export default function PostEditor({ slug, mode }: PostEditorProps) {
       ...categoryTreeNodes.map(node => node.name),
       ...existingCategories,
       ...defaultCategories,
-      ...(category ? [category] : [])
+      ...selectedCategories,
+      ...(categoryInput ? [categoryInput] : [])
     ])
   );
 
@@ -129,8 +131,20 @@ export default function PostEditor({ slug, mode }: PostEditorProps) {
       ...categoryTreeNodes.map(node => node.name),
       ...existingCategories,
       ...defaultCategories,
+      ...selectedCategories,
     ])
   );
+
+  const applySelectedCategories = (categories: string[]) => {
+    const normalized = Array.from(
+      new Set(categories.map((category) => category.trim()).filter(Boolean))
+    ).slice(0, 3);
+
+    setSelectedCategories(normalized);
+    setExistingCategories((prev) =>
+      Array.from(new Set([...prev, ...normalized]))
+    );
+  };
 
   const createExcerptFromContent = (html: string) => {
     const excerptLimit = 160;
@@ -188,7 +202,8 @@ export default function PostEditor({ slug, mode }: PostEditorProps) {
         .then((post) => {
           setTitle(post.title);
           setContent(post.contentHtml || post.content);
-          setCategory(post.category);
+          applySelectedCategories(post.categories?.length ? post.categories : [post.category]);
+          setCategoryInput("");
           setThumbnail(normalizeThumbnailUrl(post.thumbnail || ""));
           setPublishedAt(toDatetimeLocalValue(post.publishedAt));
           setPublishStatus(post.isPublished ? "published" : "draft");
@@ -207,7 +222,8 @@ export default function PostEditor({ slug, mode }: PostEditorProps) {
             const legacyPost = await fetchLegacyPost(slug);
             setTitle(legacyPost.title);
             setContent(legacyPost.contentHtml);
-            setCategory(legacyPost.category);
+            applySelectedCategories([legacyPost.category]);
+            setCategoryInput("");
             setPublishedAt("");
             setPublishStatus("draft");
             setIsLegacySource(true);
@@ -226,9 +242,23 @@ export default function PostEditor({ slug, mode }: PostEditorProps) {
     const normalized = nextCategory.trim();
     if (!normalized) return;
 
-    setCategory(normalized);
-    setExistingCategories((prev) =>
-      prev.includes(normalized) ? prev : [...prev, normalized]
+    if (selectedCategories.includes(normalized)) {
+      setCategoryInput("");
+      return;
+    }
+
+    if (selectedCategories.length >= 3) {
+      toast.error("카테고리는 최대 3개까지 선택할 수 있습니다.");
+      return;
+    }
+
+    applySelectedCategories([...selectedCategories, normalized]);
+    setCategoryInput("");
+  };
+
+  const removeCategoryOption = (categoryToRemove: string) => {
+    setSelectedCategories((prev) =>
+      prev.filter((category) => category !== categoryToRemove)
     );
   };
 
@@ -257,8 +287,13 @@ export default function PostEditor({ slug, mode }: PostEditorProps) {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!title.trim() || !content.trim() || !category.trim()) {
+    if (!title.trim() || !content.trim() || selectedCategories.length === 0) {
       toast.error("제목, 내용, 카테고리는 필수입니다.");
+      return;
+    }
+
+    if (selectedCategories.length > 3) {
+      toast.error("카테고리는 최대 3개까지 선택할 수 있습니다.");
       return;
     }
 
@@ -284,7 +319,8 @@ export default function PostEditor({ slug, mode }: PostEditorProps) {
           {
             title,
             content,
-            category,
+            category: selectedCategories[0],
+            categories: selectedCategories,
             thumbnail: effectiveThumbnail,
             excerpt: excerpt || undefined,
             slug: customSlug || undefined,
@@ -301,7 +337,8 @@ export default function PostEditor({ slug, mode }: PostEditorProps) {
         const payload = {
           title,
           content,
-          category,
+          category: selectedCategories[0],
+          categories: selectedCategories,
           thumbnail: effectiveThumbnail,
           excerpt: excerpt || undefined,
           publish: true,
@@ -369,7 +406,7 @@ export default function PostEditor({ slug, mode }: PostEditorProps) {
     thumbnail,
     contentHtml: content,
     title: title || "새 글",
-    category: category || "미분류",
+    category: selectedCategories[0] || "미분류",
     excerpt: createExcerptFromContent(content),
   });
 
@@ -440,21 +477,20 @@ export default function PostEditor({ slug, mode }: PostEditorProps) {
               <div className="relative">
                 <input
                   type="text"
-                  value={category}
+                  value={categoryInput}
                   onChange={(e) => {
-                    setCategory(e.target.value);
+                    setCategoryInput(e.target.value);
                     setIsCategoryDropdownOpen(true);
                   }}
                   onFocus={() => setIsCategoryDropdownOpen(true)}
                   onBlur={() => {
-                    // 드롭다운 클릭을 처리하기 위해 약간의 지연 후 닫기
                     setTimeout(() => setIsCategoryDropdownOpen(false), 200);
-                    addCategoryOption(category);
+                    addCategoryOption(categoryInput);
                   }}
                   onKeyDown={(e) => {
                     if (e.key === "Enter") {
                       e.preventDefault();
-                      addCategoryOption(category);
+                      addCategoryOption(categoryInput);
                       setIsCategoryDropdownOpen(false);
                     }
                   }}
@@ -462,18 +498,18 @@ export default function PostEditor({ slug, mode }: PostEditorProps) {
                               bg-white dark:bg-[#1e1e1e] text-gray-900 dark:text-gray-100
                               focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent
                               transition-all"
-                  placeholder="카테고리를 선택하거나 새로 입력하세요"
+                  placeholder="카테고리를 선택하거나 새로 입력하세요 (최대 3개)"
                 />
                 {isCategoryDropdownOpen && categoryDisplayOptions.length > 0 && (
                   <div className="absolute left-0 right-0 top-full mt-1 z-50 max-h-60 overflow-y-auto rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-[#1e1e1e] shadow-xl">
                     {categoryDisplayOptions
-                      .filter(cat => cat.toLowerCase().includes(category.toLowerCase()))
+                      .filter(cat => cat.toLowerCase().includes(categoryInput.toLowerCase()))
                       .map((cat) => (
                         <button
                           key={cat}
                           type="button"
                           onClick={() => {
-                            setCategory(cat);
+                            addCategoryOption(cat);
                             setIsCategoryDropdownOpen(false);
                           }}
                           className="w-full px-4 py-2.5 text-left text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
@@ -484,6 +520,27 @@ export default function PostEditor({ slug, mode }: PostEditorProps) {
                   </div>
                 )}
               </div>
+              <p className="mt-2 text-xs text-gray-400 dark:text-gray-500">
+                선택된 카테고리가 글 목록과 상세에서 함께 표시됩니다.
+              </p>
+              <div className="mt-2 flex flex-wrap gap-2">
+                {selectedCategories.map((cat) => (
+                  <span
+                    key={cat}
+                    className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-blue-50 border border-blue-200 text-blue-700 dark:bg-blue-900/30 dark:border-blue-700 dark:text-blue-300"
+                  >
+                    {cat}
+                    <button
+                      type="button"
+                      onClick={() => removeCategoryOption(cat)}
+                      className="text-current/70 hover:text-current"
+                      aria-label={`${cat} 제거`}
+                    >
+                      ×
+                    </button>
+                  </span>
+                ))}
+              </div>
               <div className="mt-2 flex flex-wrap gap-2">
                 {categoryDisplayOptions.map((cat) => (
                   <button
@@ -491,7 +548,7 @@ export default function PostEditor({ slug, mode }: PostEditorProps) {
                     type="button"
                     onClick={() => addCategoryOption(cat)}
                     className={`px-2.5 py-1 rounded-full text-xs font-semibold border transition-colors ${
-                      category === cat
+                      selectedCategories.includes(cat)
                         ? "bg-blue-50 border-blue-200 text-blue-700 dark:bg-blue-900/30 dark:border-blue-700 dark:text-blue-300"
                         : "bg-zinc-50 border-zinc-200 text-zinc-600 hover:bg-zinc-100 dark:bg-zinc-900 dark:border-zinc-700 dark:text-zinc-300 dark:hover:bg-zinc-800"
                     }`}
