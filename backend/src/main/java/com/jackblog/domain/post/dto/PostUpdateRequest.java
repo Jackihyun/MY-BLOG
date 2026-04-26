@@ -6,6 +6,8 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+import java.util.List;
+
 @Getter
 @Builder
 @NoArgsConstructor
@@ -26,6 +28,9 @@ public class PostUpdateRequest {
 
     @Size(max = 100, message = "Category must be less than 100 characters")
     private String category;
+
+    @Size(max = 3, message = "You can select up to 3 categories")
+    private List<String> categories;
 
     private Boolean publish;
 

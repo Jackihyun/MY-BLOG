@@ -22,6 +22,7 @@ export interface PostResponse {
   title: string;
   excerpt: string;
   category: string;
+  categories: string[];
   readingTime: number;
   viewCount: number;
   commentCount: number;
@@ -45,7 +46,8 @@ export interface PostCreateRequest {
   title: string;
   content: string;
   excerpt?: string;
-  category: string;
+  category?: string;
+  categories?: string[];
   thumbnail?: string;
   publish?: boolean;
   publishedAt?: string;
@@ -56,6 +58,7 @@ export interface PostUpdateRequest {
   content?: string;
   excerpt?: string;
   category?: string;
+  categories?: string[];
   thumbnail?: string;
   publish?: boolean;
   publishedAt?: string;
@@ -156,6 +159,7 @@ export interface PostData {
   title: string;
   date: string;
   category: string;
+  categories?: string[];
   contentHtml: string;
   excerpt?: string;
   readingTime?: number;

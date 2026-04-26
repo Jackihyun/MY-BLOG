@@ -8,7 +8,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import PostEngagementStats from "@/components/ui/PostEngagementStats";
 import SmartImage from "@/components/ui/SmartImage";
 import { getDisplayImageUrl } from "@/lib/api";
-import { getPostPreview } from "@/lib/utils";
+import { getPostCategories, getPostPreview } from "@/lib/utils";
 import { useAuth } from "@/hooks/useAuth";
 
 interface RecentPostsProps {
@@ -16,8 +16,7 @@ interface RecentPostsProps {
 }
 
 export default function RecentPosts({ posts }: RecentPostsProps) {
-  const { isAuthenticated, isHydrated } = useAuth();
-  const canSeeViews = isHydrated && isAuthenticated;
+  const { isAuthenticated } = useAuth();
 
   return (
     <section className="space-y-6">
@@ -58,6 +57,7 @@ export default function RecentPosts({ posts }: RecentPostsProps) {
         <div className="grid gap-4 md:grid-cols-2">
           {posts.map((post, index) => {
             const imageSrc = getDisplayImageUrl(post.thumbnail);
+            const categoryLabels = getPostCategories(post);
 
             return (
               <motion.div
@@ -90,9 +90,11 @@ export default function RecentPosts({ posts }: RecentPostsProps) {
                   <CardHeader className="pb-3">
                     <div className="flex items-start justify-between gap-2">
                       <div className="flex items-center gap-2">
-                        <Badge variant="secondary" className="text-xs bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400 border-none">
-                          {post.category}
-                        </Badge>
+                        {categoryLabels.map((category) => (
+                          <Badge key={`${post.slug}-${category}`} variant="secondary" className="text-xs bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400 border-none">
+                            {category}
+                          </Badge>
+                        ))}
                         {isAuthenticated && (
                           <span
                             className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[10px] font-bold ${
@@ -123,7 +125,6 @@ export default function RecentPosts({ posts }: RecentPostsProps) {
                     <PostEngagementStats
                       className="mt-4"
                       compact
-                      showViews={canSeeViews}
                       viewCount={post.viewCount}
                       likeCount={post.likeCount}
                       commentCount={post.commentCount}

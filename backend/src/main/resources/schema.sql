@@ -19,6 +19,11 @@ CREATE TABLE IF NOT EXISTS post (
     published_at TIMESTAMP
 );
 
+CREATE TABLE IF NOT EXISTS post_categories (
+    post_id INTEGER NOT NULL REFERENCES post(id) ON DELETE CASCADE,
+    category_name VARCHAR(100) NOT NULL
+);
+
 -- Comment 테이블 (계층형)
 CREATE TABLE IF NOT EXISTS comment (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -74,6 +79,8 @@ CREATE TABLE IF NOT EXISTS category_tree_config (
 -- 인덱스 생성
 CREATE INDEX IF NOT EXISTS idx_post_slug ON post(slug);
 CREATE INDEX IF NOT EXISTS idx_post_category ON post(category);
+CREATE INDEX IF NOT EXISTS idx_post_categories_post_id ON post_categories(post_id);
+CREATE INDEX IF NOT EXISTS idx_post_categories_name ON post_categories(category_name);
 CREATE INDEX IF NOT EXISTS idx_post_published ON post(is_published);
 CREATE INDEX IF NOT EXISTS idx_comment_post_id ON comment(post_id);
 CREATE INDEX IF NOT EXISTS idx_comment_parent_id ON comment(parent_id);

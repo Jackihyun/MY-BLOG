@@ -23,8 +23,11 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
 import java.time.format.DateTimeParseException;
+import java.util.ArrayList;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Locale;
+import java.util.Objects;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
@@ -47,7 +50,7 @@ public class PostService {
 
         Page<Post> posts;
         if (StringUtils.hasText(category)) {
-            posts = postRepository.findByIsPublishedTrueAndCategoryOrderByPublishedAtDesc(category, pageable);
+            posts = postRepository.findPublishedByCategory(category.trim(), pageable);
         } else {
             posts = postRepository.findByIsPublishedTrueOrderByPublishedAtDesc(pageable);
         }
@@ -106,6 +109,7 @@ public class PostService {
             ? request.getExcerpt()
             : generateExcerpt(request.getContent());
         String thumbnail = resolveThumbnail(request.getThumbnail(), contentHtml);
+        List<String> categories = resolveCategories(request.getCategories(), request.getCategory(), true);
 
         Post post = Post.builder()
             .slug(slug)
@@ -114,7 +118,8 @@ public class PostService {
             .contentHtml(contentHtml)
             .excerpt(excerpt)
             .thumbnail(thumbnail)
-            .category(request.getCategory())
+            .category(categories.get(0))
+            .categories(new ArrayList<>(categories))
             .readingTime(readingTime)
             .build();
 
@@ -144,12 +149,16 @@ public class PostService {
         String thumbnail = request.getThumbnail() != null
             ? resolveThumbnail(request.getThumbnail(), contentHtml)
             : resolveThumbnail(post.getThumbnail(), contentHtml);
-        String category = StringUtils.hasText(request.getCategory()) ? request.getCategory() : post.getCategory();
+        List<String> categories = resolveCategories(
+            request.getCategories(),
+            request.getCategory(),
+            resolveCategories(post.getCategories(), post.getCategory(), true)
+        );
         int readingTime = StringUtils.hasText(request.getContent())
             ? calculateReadingTime(request.getContent())
             : post.getReadingTime();
 
-        post.updateContent(title, content, contentHtml, excerpt, thumbnail, category, readingTime);
+        post.updateContent(title, content, contentHtml, excerpt, thumbnail, categories, readingTime);
 
         if (request.getPublish() != null) {
             if (request.getPublish()) {
@@ -213,6 +222,49 @@ public class PostService {
             .stream()
             .map(this::toPostResponseWithCounts)
             .collect(Collectors.toList());
+    }
+
+    private List<String> resolveCategories(List<String> requestedCategories, String legacyCategory, boolean required) {
+        List<String> normalized = normalizeCategories(requestedCategories, legacyCategory);
+        if (required && normalized.isEmpty()) {
+            throw new BadRequestException("At least one category is required");
+        }
+        return normalized;
+    }
+
+    private List<String> resolveCategories(List<String> requestedCategories, String legacyCategory, List<String> fallbackCategories) {
+        List<String> normalized = normalizeCategories(requestedCategories, legacyCategory);
+        return normalized.isEmpty() ? fallbackCategories : normalized;
+    }
+
+    private List<String> normalizeCategories(List<String> requestedCategories, String legacyCategory) {
+        List<String> rawCategories = new ArrayList<>();
+
+        if (requestedCategories != null) {
+            rawCategories.addAll(requestedCategories);
+        }
+
+        if (rawCategories.isEmpty() && StringUtils.hasText(legacyCategory)) {
+            rawCategories.add(legacyCategory);
+        }
+
+        LinkedHashSet<String> uniqueCategories = rawCategories.stream()
+            .filter(Objects::nonNull)
+            .map(String::trim)
+            .filter(StringUtils::hasText)
+            .collect(Collectors.toCollection(LinkedHashSet::new));
+
+        if (uniqueCategories.size() > 3) {
+            throw new BadRequestException("You can select up to 3 categories");
+        }
+
+        for (String category : uniqueCategories) {
+            if (category.length() > 100) {
+                throw new BadRequestException("Category must be less than 100 characters");
+            }
+        }
+
+        return new ArrayList<>(uniqueCategories);
     }
 
     private PostResponse toPostResponseWithCounts(Post post) {

@@ -9,7 +9,7 @@ import { useAuth } from "@/hooks/useAuth";
 import SmartImage from "@/components/ui/SmartImage";
 import PostEngagementStats from "@/components/ui/PostEngagementStats";
 import { getDisplayImageUrl } from "@/lib/api";
-import { getPostPreview } from "@/lib/utils";
+import { getPostCategories, getPostPreview } from "@/lib/utils";
 import {
   useVisitorStatsQuery,
   useVisitorSummaryQuery,
@@ -53,7 +53,7 @@ function getUniqueCategoryId(baseName: string, existingIds: Set<string>) {
 
 function buildDefaultNodes(posts: PostData[]): CategoryNode[] {
   const uniqueNames = Array.from(
-    new Set(posts.map((post) => post.category)),
+    new Set(posts.flatMap((post) => getPostCategories(post))),
   ).sort();
 
   const existingIds = new Set<string>();
@@ -633,8 +633,7 @@ function PostsList({ allPostsData }: { allPostsData: PostData[] }) {
   const [isAtBottom, setIsAtBottom] = useState(false);
   const mobileCategoryPopupRef = useRef<HTMLDivElement | null>(null);
 
-  const { isAuthenticated, isHydrated, token } = useAuth();
-  const canSeeViews = isHydrated && isAuthenticated;
+  const { isAuthenticated, token } = useAuth();
   const { data: visitorSummary } = useVisitorSummaryQuery();
   const { data: categoryTreeData } = useCategoryTreeQuery();
   const updateCategoryTreeMutation = useUpdateCategoryTreeMutation();
@@ -731,19 +730,18 @@ function PostsList({ allPostsData }: { allPostsData: PostData[] }) {
     return map;
   }, [categoryNodes]);
 
-  const getPostCategoryId = useCallback(
+  const getPostCategoryIds = useCallback(
     (post: PostData) => {
       const overriddenId = postCategoryOverrides[post.id];
+      const mappedIds = getPostCategories(post)
+        .map((categoryName) => categoryIdByName.get(categoryName) ?? "")
+        .filter((categoryId): categoryId is string => Boolean(categoryId));
+
       if (overriddenId && categoryById.has(overriddenId)) {
-        return overriddenId;
+        return Array.from(new Set([overriddenId, ...mappedIds]));
       }
 
-      const mappedId = categoryIdByName.get(post.category);
-      if (mappedId) {
-        return mappedId;
-      }
-
-      return "";
+      return Array.from(new Set(mappedIds));
     },
     [categoryById, categoryIdByName, postCategoryOverrides],
   );
@@ -864,11 +862,9 @@ function PostsList({ allPostsData }: { allPostsData: PostData[] }) {
     const childrenMap = new Map<string, string[]>();
 
     for (const post of allPostsData) {
-      const categoryId = getPostCategoryId(post);
-      if (!categoryId) {
-        continue;
+      for (const categoryId of getPostCategoryIds(post)) {
+        directCounts.set(categoryId, (directCounts.get(categoryId) ?? 0) + 1);
       }
-      directCounts.set(categoryId, (directCounts.get(categoryId) ?? 0) + 1);
     }
 
     for (const node of categoryNodes) {
@@ -899,7 +895,7 @@ function PostsList({ allPostsData }: { allPostsData: PostData[] }) {
     }
 
     return totals;
-  }, [allPostsData, categoryNodes, getPostCategoryId]);
+  }, [allPostsData, categoryNodes, getPostCategoryIds]);
 
   const visibleCategoryRows = useMemo(() => {
     return flattenTree(categoryNodes).filter(
@@ -913,9 +909,9 @@ function PostsList({ allPostsData }: { allPostsData: PostData[] }) {
     }
 
     return allPostsData.filter((post) =>
-      selectedCategoryIds.has(getPostCategoryId(post)),
+      getPostCategoryIds(post).some((categoryId) => selectedCategoryIds.has(categoryId)),
     );
-  }, [allPostsData, getPostCategoryId, selectedCategoryIds]);
+  }, [allPostsData, getPostCategoryIds, selectedCategoryIds]);
 
   const pageSize = useMemo(() => {
     const sizeParam = Number(searchParams.get("size") ?? "5");
@@ -983,7 +979,7 @@ function PostsList({ allPostsData }: { allPostsData: PostData[] }) {
 
   const deleteCategory = (categoryId: string) => {
     const postsToReassign = allPostsData
-      .filter((post) => getPostCategoryId(post) === categoryId)
+      .filter((post) => getPostCategoryIds(post).includes(categoryId))
       .map((post) => post.id);
 
     setCategoryNodes((prev) => {
@@ -1512,9 +1508,12 @@ function PostsList({ allPostsData }: { allPostsData: PostData[] }) {
                 } =
                   post;
                 const imageSrc = getDisplayImageUrl(thumbnail);
-                const categoryId = getPostCategoryId(post);
-                const categoryName =
-                  categoryById.get(categoryId)?.name ?? post.category;
+                const categoryNames = getPostCategoryIds(post)
+                  .map((categoryId) => categoryById.get(categoryId)?.name)
+                  .filter((categoryName): categoryName is string => Boolean(categoryName));
+                const fallbackCategoryNames = getPostCategories(post);
+                const displayCategoryNames =
+                  categoryNames.length > 0 ? categoryNames : fallbackCategoryNames;
 
                 return (
                   <motion.article
@@ -1553,9 +1552,16 @@ function PostsList({ allPostsData }: { allPostsData: PostData[] }) {
                             </p>
                             <div className="mt-5 flex flex-wrap items-center justify-between gap-x-3 gap-y-2">
                               <div className="flex min-w-0 items-center gap-3">
-                                <span className="px-2.5 py-1 text-xs font-bold rounded-full bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400">
-                                  {categoryName}
-                                </span>
+                                <div className="flex min-w-0 flex-wrap items-center gap-2">
+                                  {displayCategoryNames.map((categoryName) => (
+                                    <span
+                                      key={`${post.slug}-${categoryName}`}
+                                      className="px-2.5 py-1 text-xs font-bold rounded-full bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400"
+                                    >
+                                      {categoryName}
+                                    </span>
+                                  ))}
+                                </div>
                                 <span className="text-xs text-zinc-400 dark:text-zinc-500 font-medium">
                                   {date}
                                 </span>
@@ -1565,7 +1571,6 @@ function PostsList({ allPostsData }: { allPostsData: PostData[] }) {
                                 itemClassName="gap-1 min-w-0 justify-end"
                                 iconClassName="h-3.5 w-3.5"
                                 compact
-                                showViews={canSeeViews}
                                 viewCount={viewCount}
                                 likeCount={likeCount}
                                 commentCount={commentCount}
