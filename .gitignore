@@ -58,3 +58,4 @@ local.env
 
 # Windows artifacts
 nul
+.omx/
