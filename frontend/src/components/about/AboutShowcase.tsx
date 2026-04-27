@@ -138,9 +138,7 @@ export default function AboutShowcase() {
   };
 
   return (
-    <div
-      className="relative min-h-screen overflow-hidden bg-[#fbfaf7] text-zinc-950 dark:bg-[#050505] dark:text-zinc-50"
-    >
+    <div className="relative min-h-screen overflow-hidden bg-[#fbfaf7] text-zinc-950 dark:bg-[#050505] dark:text-zinc-50">
       <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(rgba(24,24,27,0.045)_1px,transparent_1px),linear-gradient(90deg,rgba(24,24,27,0.035)_1px,transparent_1px)] bg-[size:44px_44px] dark:bg-[linear-gradient(rgba(244,244,245,0.045)_1px,transparent_1px),linear-gradient(90deg,rgba(244,244,245,0.035)_1px,transparent_1px)]" />
       <div className="pointer-events-none absolute inset-x-0 top-0 h-[720px] bg-[radial-gradient(circle_at_18%_20%,rgba(99,102,241,0.18),transparent_34%),radial-gradient(circle_at_82%_12%,rgba(16,185,129,0.13),transparent_30%),radial-gradient(circle_at_58%_42%,rgba(245,158,11,0.12),transparent_36%)] dark:bg-[radial-gradient(circle_at_18%_20%,rgba(99,102,241,0.22),transparent_34%),radial-gradient(circle_at_82%_12%,rgba(20,184,166,0.16),transparent_30%),radial-gradient(circle_at_58%_42%,rgba(245,158,11,0.12),transparent_36%)]" />
 
@@ -215,7 +213,9 @@ export default function AboutShowcase() {
             </h1>
 
             <p className="mt-8 max-w-2xl text-lg leading-8 text-zinc-600 dark:text-zinc-300">
-              안녕하세요, Jack입니다. 프론트엔드를 중심으로 화면의 구조와 감각을 함께 고민합니다. 이 페이지는 제 소개를 담는 동시에, 제가 좋아하는 인터랙션과 정리 방식을 보여주는 작은 포트폴리오처럼 만들었습니다.
+              안녕하세요, Jack입니다. 프론트엔드를 중심으로 화면의 구조와 감각을
+              함께 고민합니다. 이 페이지는 제 소개를 담는 동시에, 제가 좋아하는
+              인터랙션과 정리 방식을 보여주는 작은 포트폴리오처럼 만들었습니다.
             </p>
 
             <div className="mt-9 flex flex-wrap gap-3">
@@ -323,7 +323,8 @@ export default function AboutShowcase() {
                 요즘 집중하는 것
               </h2>
               <p className="mt-5 text-base leading-8 text-zinc-600 dark:text-zinc-400">
-                실제로 운영하는 블로그를 바탕으로, 보기 좋은 화면과 계속 고칠 수 있는 구조 사이의 균형을 연습하고 있습니다.
+                실제로 운영하는 블로그를 바탕으로, 보기 좋은 화면과 계속 고칠 수
+                있는 구조 사이의 균형을 연습하고 있습니다.
               </p>
             </div>
             <div className="space-y-3">
@@ -372,9 +373,15 @@ export default function AboutShowcase() {
                   className="rounded-[8px] border border-zinc-200 bg-white/72 p-5 backdrop-blur dark:border-zinc-800 dark:bg-zinc-950/72"
                 >
                   <h3 className="mb-4 flex items-center gap-2 text-sm font-bold text-zinc-950 dark:text-white">
-                    {group.label === "Frontend" && <TerminalSquare className="h-4 w-4 text-indigo-500" />}
-                    {group.label === "Interaction" && <Dumbbell className="h-4 w-4 text-emerald-500" />}
-                    {group.label === "Backend + Ops" && <BookOpenText className="h-4 w-4 text-amber-500" />}
+                    {group.label === "Frontend" && (
+                      <TerminalSquare className="h-4 w-4 text-indigo-500" />
+                    )}
+                    {group.label === "Interaction" && (
+                      <Dumbbell className="h-4 w-4 text-emerald-500" />
+                    )}
+                    {group.label === "Backend + Ops" && (
+                      <BookOpenText className="h-4 w-4 text-amber-500" />
+                    )}
                     {group.label}
                   </h3>
                   <div className="flex flex-wrap gap-2">
@@ -431,7 +438,6 @@ export default function AboutShowcase() {
           </motion.section>
         </div>
       </div>
-
     </div>
   );
 }
