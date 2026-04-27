@@ -121,6 +121,23 @@ input:checked + svg .line-top-bottom {
 
 
 @layer components {
+  @media (min-width: 1024px) {
+    .about-grid {
+      grid-template-columns: minmax(420px, 48vw) 1fr;
+    }
+
+    .about-scene-panel,
+    .about-scroll-pane {
+      height: 100vh;
+    }
+
+    .about-scroll-pane {
+      overflow-y: auto;
+      overscroll-behavior: contain;
+      scrollbar-width: thin;
+    }
+  }
+
   .prose pre {
     @apply relative overflow-x-auto max-w-full rounded-xl border p-4 shadow-sm;
     background-color: #f7f6f3;

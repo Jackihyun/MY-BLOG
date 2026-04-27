@@ -1,391 +1,441 @@
 "use client";
 
-import { motion, useReducedMotion, useScroll, useTransform } from "framer-motion";
+import AboutScene, { ActiveZone } from "@/components/about/AboutScene";
+import {
+  ArrowUpRight,
+  BookOpenText,
+  Braces,
+  Dumbbell,
+  Github,
+  Layers3,
+  PenLine,
+  Sparkles,
+  TerminalSquare,
+} from "lucide-react";
+import { motion, useReducedMotion } from "framer-motion";
 import Link from "next/link";
+import type { UIEvent } from "react";
 import { useRef, useState } from "react";
 
-type StorySection = {
-  id: string;
-  kicker: string;
+const sceneSteps: {
+  zone: ActiveZone;
+  eyebrow: string;
   title: string;
   body: string;
-  accent: string;
-  note: string;
-  metrics: string[];
-};
-
-const storySections: StorySection[] = [
+}[] = [
   {
-    id: "intro",
-    kicker: "About Me",
-    title: "화면을 읽기 쉽게 만들고, 흐름을 자연스럽게 다듬는 개발자입니다.",
-    body:
-      "프론트엔드를 가장 좋아하지만, 화면만 예쁘게 만드는 데서 끝내고 싶지는 않습니다. 어떤 정보가 먼저 보여야 하는지, 사용자가 어디서 망설이는지, 다시 수정하기 쉬운 구조인지까지 함께 봅니다.",
-    accent: "#2563eb",
-    note: "복잡한 기능도 사용자는 자연스럽게 느끼게 만드는 걸 좋아합니다.",
-    metrics: ["React", "Next.js", "TypeScript"],
+    zone: "all",
+    eyebrow: "Hello",
+    title: "화면을 설계하고, 배운 것을 기록하는 사람",
+    body: "이 페이지의 문장은 나중에 편하게 바꿀 수 있도록 분리해 두었습니다. 지금은 Jack이라는 사람이 어떤 결로 만들고 기록하는지, 스크롤의 리듬과 인터랙션으로 먼저 느껴지게 구성했습니다.",
   },
   {
-    id: "work",
-    kicker: "How I Work",
-    title: "작게 만들고, 빠르게 검증하고, 더 명확하게 고칩니다.",
-    body:
-      "아이디어를 오래 붙잡기보다 먼저 작동하는 형태로 만들고 실제로 써봅니다. 그 다음에 정보 구조, 인터랙션 타이밍, 코드 분리 기준을 다듬으면서 화면과 구현이 함께 좋아지게 만듭니다.",
-    accent: "#f97316",
-    note: "보여줄 수 있는 프로토타입이 말보다 강하다고 믿습니다.",
-    metrics: ["Prototype", "Iteration", "Feedback"],
+    zone: "laptop",
+    eyebrow: "Build",
+    title: "기능을 구현할 때는 흐름부터 봅니다",
+    body: "React, Next.js, TypeScript를 중심으로 사용자가 실제로 지나가는 길을 먼저 그립니다. 상태, 로딩, 오류, 빈 화면까지 한 화면의 일부로 보고 안정적인 경험을 만드는 쪽을 좋아합니다.",
   },
   {
-    id: "focus",
-    kicker: "Current Focus",
-    title: "요즘은 블로그를 더 좋은 제품처럼 다듬는 데 집중하고 있습니다.",
-    body:
-      "콘텐츠 구조, 검색 경험, 성능, SEO, 운영 편의성까지 이어지는 흐름을 정리하고 있습니다. 글을 쌓는 공간이 아니라, 다시 방문해도 편하고 신뢰감 있는 개발 아카이브로 만들고 싶습니다.",
-    accent: "#14b8a6",
-    note: "콘텐츠도 결국 UX의 일부라고 생각합니다.",
-    metrics: ["Performance", "SEO", "Content System"],
+    zone: "reading",
+    eyebrow: "Reflect",
+    title: "배운 것은 다시 꺼낼 수 있게 남깁니다",
+    body: "블로그는 완성된 답을 전시하는 곳이라기보다, 선택의 이유와 실패한 경로를 같이 보관하는 작업실에 가깝습니다. 미래의 제가 다시 읽어도 쓸 수 있는 글을 목표로 씁니다.",
   },
   {
-    id: "outside",
-    kicker: "Beyond Code",
-    title: "배운 건 흘려보내지 않으려고 기록하고, 설명 가능한 형태로 남깁니다.",
-    body:
-      "새로운 기술을 익힐 때도 그냥 끝내지 않고 글이나 예제, 구조화된 메모로 남겨두는 편입니다. 그래서 이 블로그는 자기소개 페이지와 이어진, 저의 작업 방식 자체를 보여주는 공간이기도 합니다.",
-    accent: "#a855f7",
-    note: "혼자 이해하는 코드보다 다음 사람이 이해할 수 있는 구조를 지향합니다.",
-    metrics: ["Writing", "Documentation", "Maintainability"],
+    zone: "exercising",
+    eyebrow: "Rhythm",
+    title: "오래 갈 수 있는 루틴을 중요하게 봅니다",
+    body: "새로운 기술을 빠르게 따라가는 것도 좋지만, 결국 남는 것은 꾸준히 만들고 다듬는 힘이라고 생각합니다. 작게 실험하고, 검증하고, 다시 정리하는 리듬을 계속 키우고 있습니다.",
   },
 ];
 
-const principles = [
+const profileCards = [
   {
-    title: "읽히는 인터페이스",
-    body: "처음 보는 사람도 길을 잃지 않도록 정보 밀도와 흐름을 먼저 설계합니다.",
+    icon: Layers3,
+    title: "구조",
+    body: "컴포넌트 경계와 데이터 흐름을 먼저 정리해서, 나중에 손대기 쉬운 화면을 만듭니다.",
   },
   {
-    title: "설명 가능한 구현",
-    body: "왜 이렇게 만들었는지 말할 수 있는 구조를 선호합니다. 유지보수는 설계의 일부라고 봅니다.",
+    icon: Sparkles,
+    title: "감각",
+    body: "과한 장식보다 읽는 속도, 여백, 움직임의 타이밍이 맞는 인터페이스를 좋아합니다.",
   },
   {
-    title: "실제 사용 기준",
-    body: "예쁜 화면보다 실제 사용감이 중요합니다. 로딩, 빈 상태, 전환의 어색함을 먼저 챙깁니다.",
+    icon: PenLine,
+    title: "기록",
+    body: "구현 과정의 판단과 시행착오를 글로 남겨 다시 꺼내 쓸 수 있는 지식으로 바꿉니다.",
+  },
+];
+
+const focusItems = [
+  "Next.js App Router 기반 블로그 경험 고도화",
+  "React 상태 관리와 서버 데이터 흐름 단순화",
+  "Spring Boot API와 프론트엔드 연결 품질 개선",
+  "AI 도구를 활용한 반복 작업 자동화와 리뷰 루틴",
+];
+
+const stackGroups = [
+  {
+    label: "Frontend",
+    items: ["React", "Next.js", "TypeScript", "Tailwind CSS", "TanStack Query"],
+  },
+  {
+    label: "Interaction",
+    items: ["Framer Motion", "Three.js", "R3F", "Shadcn/UI", "Tiptap"],
+  },
+  {
+    label: "Backend + Ops",
+    items: ["Spring Boot", "JPA", "SQLite", "SEO", "Performance"],
   },
 ];
 
 const timeline = [
-  "프론트엔드 중심으로 시작해 React와 Next.js에서 재미를 느꼈습니다.",
-  "백엔드와 데이터 흐름도 함께 이해하고 싶어서 Spring Boot와 API 설계도 계속 다루고 있습니다.",
-  "최근에는 AI 도구를 글 정리, 반복 작업 자동화, 코드 검토 보조까지 연결해 실전적으로 활용하고 있습니다.",
+  {
+    year: "Now",
+    title: "블로그를 하나의 제품처럼 다듬는 중",
+    body: "글 목록, 검색, 반응, 댓글, SEO, 관리자 작성 흐름까지 실제 운영 경험을 기준으로 계속 개선하고 있습니다.",
+  },
+  {
+    year: "Next",
+    title: "더 나은 기록 시스템 만들기",
+    body: "마크다운 콘텐츠와 에디터 경험을 연결해, 생각을 빠르게 남기고 보기 좋게 발행하는 구조를 만들고 싶습니다.",
+  },
+  {
+    year: "Always",
+    title: "사용자에게 설명하지 않아도 되는 화면",
+    body: "버튼, 상태, 피드백, 이동 흐름이 자연스러워서 별도 설명 없이도 사용할 수 있는 화면을 계속 연습합니다.",
+  },
 ];
 
-const spotlightCards = [
-  {
-    label: "Main Stack",
-    value: "React, Next.js, TypeScript",
-  },
-  {
-    label: "Interested In",
-    value: "UI architecture, motion, SEO, content systems",
-  },
-  {
-    label: "Building Now",
-    value: "읽기 좋은 개발 블로그와 소개 경험",
-  },
-];
+const fadeUp = {
+  hidden: { opacity: 0, y: 28 },
+  show: { opacity: 1, y: 0 },
+};
+
+function getZoneFromProgress(progress: number): ActiveZone {
+  if (progress < 0.24) {
+    return "all";
+  }
+  if (progress < 0.5) {
+    return "laptop";
+  }
+  if (progress < 0.76) {
+    return "reading";
+  }
+  return "exercising";
+}
 
 export default function AboutShowcase() {
+  const scrollPaneRef = useRef<HTMLDivElement | null>(null);
   const prefersReducedMotion = useReducedMotion();
   const reducedMotion = prefersReducedMotion ?? false;
-  const containerRef = useRef<HTMLDivElement | null>(null);
-  const [activeSection, setActiveSection] = useState(0);
+  const [activeZone, setActiveZone] = useState<ActiveZone>("all");
 
-  const { scrollYProgress } = useScroll({
-    target: containerRef,
-    offset: ["start start", "end end"],
-  });
-
-  const backgroundY = useTransform(scrollYProgress, [0, 1], reducedMotion ? [0, 0] : [-40, 80]);
-  const orbX = useTransform(scrollYProgress, [0, 1], reducedMotion ? [0, 0] : [-40, 120]);
-  const orbY = useTransform(scrollYProgress, [0, 1], reducedMotion ? [0, 0] : [0, 180]);
-  const progressScale = useTransform(scrollYProgress, [0, 1], [0, 1]);
-  const currentStory = storySections[activeSection];
+  const handleScroll = (event: UIEvent<HTMLDivElement>) => {
+    const { scrollTop, scrollHeight, clientHeight } = event.currentTarget;
+    const maxScroll = Math.max(scrollHeight - clientHeight, 1);
+    setActiveZone(getZoneFromProgress(scrollTop / maxScroll));
+  };
 
   return (
-    <div
-      ref={containerRef}
-      className="relative left-1/2 w-screen -translate-x-1/2 -mt-20 -mb-20 overflow-hidden bg-[linear-gradient(180deg,#f7f3ec_0%,#f4efe7_30%,#f8fafc_70%,#fffdf8_100%)] text-zinc-900 dark:bg-[linear-gradient(180deg,#09090b_0%,#0f172a_35%,#111827_75%,#09090b_100%)] dark:text-zinc-50"
-    >
-      <motion.div
-        aria-hidden
-        style={{ y: backgroundY }}
-        className="pointer-events-none absolute inset-0 opacity-70"
-      >
-        <div className="absolute inset-0 bg-[linear-gradient(rgba(15,23,42,0.045)_1px,transparent_1px),linear-gradient(90deg,rgba(15,23,42,0.045)_1px,transparent_1px)] bg-[size:34px_34px] dark:bg-[linear-gradient(rgba(255,255,255,0.05)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.05)_1px,transparent_1px)]" />
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(255,255,255,0.72),transparent_52%)] dark:bg-[radial-gradient(circle_at_top,rgba(59,130,246,0.16),transparent_48%)]" />
-      </motion.div>
+    <div className="relative min-h-screen overflow-hidden bg-[#fbfaf7] text-zinc-950 dark:bg-[#050505] dark:text-zinc-50">
+      <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(rgba(24,24,27,0.045)_1px,transparent_1px),linear-gradient(90deg,rgba(24,24,27,0.035)_1px,transparent_1px)] bg-[size:44px_44px] dark:bg-[linear-gradient(rgba(244,244,245,0.045)_1px,transparent_1px),linear-gradient(90deg,rgba(244,244,245,0.035)_1px,transparent_1px)]" />
+      <div className="pointer-events-none absolute inset-x-0 top-0 h-[720px] bg-[radial-gradient(circle_at_18%_20%,rgba(99,102,241,0.18),transparent_34%),radial-gradient(circle_at_82%_12%,rgba(16,185,129,0.13),transparent_30%),radial-gradient(circle_at_58%_42%,rgba(245,158,11,0.12),transparent_36%)] dark:bg-[radial-gradient(circle_at_18%_20%,rgba(99,102,241,0.22),transparent_34%),radial-gradient(circle_at_82%_12%,rgba(20,184,166,0.16),transparent_30%),radial-gradient(circle_at_58%_42%,rgba(245,158,11,0.12),transparent_36%)]" />
 
-      <motion.div
-        aria-hidden
-        style={{ x: orbX, y: orbY, backgroundColor: currentStory.accent }}
-        className="pointer-events-none absolute right-[-8rem] top-24 h-80 w-80 rounded-full blur-3xl opacity-20 dark:opacity-25"
-      />
+      <div className="about-grid relative grid min-h-screen lg:grid-cols-[minmax(420px,48vw)_1fr]">
+        <aside className="lg:sticky lg:top-0 lg:h-screen">
+          <div className="about-scene-panel relative h-[68vh] min-h-[520px] overflow-hidden border-b border-zinc-200/70 bg-white/35 dark:border-zinc-800/70 dark:bg-zinc-950/25 lg:h-screen lg:border-b-0 lg:border-r">
+            <div className="absolute inset-0">
+              <AboutScene
+                reducedMotion={reducedMotion}
+                activeZone={activeZone}
+                onZoneClick={setActiveZone}
+              />
+            </div>
 
-      <div className="relative mx-auto grid min-h-screen max-w-7xl gap-12 px-6 pb-24 pt-20 md:px-10 lg:grid-cols-[minmax(0,0.95fr)_minmax(0,1.05fr)] lg:gap-16 lg:px-16 lg:pt-28">
-        <div className="lg:sticky lg:top-28 lg:h-[calc(100vh-9rem)]">
-          <div className="flex h-full flex-col rounded-[2rem] border border-white/60 bg-white/70 p-6 shadow-[0_20px_80px_rgba(15,23,42,0.08)] backdrop-blur-xl dark:border-white/10 dark:bg-white/5 dark:shadow-[0_20px_80px_rgba(2,6,23,0.45)] md:p-8">
-            <div className="flex items-center justify-between">
-              <p className="text-[11px] font-bold uppercase tracking-[0.32em] text-zinc-500 dark:text-zinc-400">
-                Personal Homepage
-              </p>
-              <div className="relative h-1.5 w-24 overflow-hidden rounded-full bg-zinc-200 dark:bg-zinc-800">
-                <motion.div
-                  style={{ scaleX: progressScale, originX: 0, backgroundColor: currentStory.accent }}
-                  className="h-full w-full rounded-full"
-                />
+            <div className="pointer-events-none absolute left-5 right-5 top-24 z-10 flex items-center justify-between gap-4 md:left-10 md:right-10 lg:top-28">
+              <div>
+                <p className="text-[11px] font-bold uppercase tracking-[0.28em] text-zinc-500 dark:text-zinc-400">
+                  Jack&#39;s Room
+                </p>
+                <p className="mt-2 max-w-[280px] text-sm leading-6 text-zinc-600 dark:text-zinc-300">
+                  스크롤하면 방 안의 장면도 함께 바뀝니다.
+                </p>
+              </div>
+              <div className="hidden rounded-full border border-zinc-200/80 bg-white/70 px-4 py-2 text-xs font-bold text-zinc-600 shadow-sm backdrop-blur dark:border-zinc-800/80 dark:bg-zinc-950/70 dark:text-zinc-300 sm:block">
+                {activeZone.toUpperCase()}
               </div>
             </div>
 
-            <div className="mt-10 space-y-6">
-              <motion.p
-                key={currentStory.kicker}
-                initial={{ opacity: 0, y: reducedMotion ? 0 : 12 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.45 }}
-                className="text-sm font-semibold uppercase tracking-[0.24em]"
-                style={{ color: currentStory.accent }}
-              >
-                {currentStory.kicker}
-              </motion.p>
-
-              <motion.h1
-                key={currentStory.title}
-                initial={{ opacity: 0, y: reducedMotion ? 0 : 18 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.55 }}
-                className="max-w-xl text-[2.6rem] font-black leading-[1.02] tracking-[-0.04em] text-zinc-950 dark:text-white md:text-[3.6rem]"
-              >
-                안녕하세요.
-                <br />
-                Jack을 소개하는
-                <br />
-                한 페이지입니다.
-              </motion.h1>
-
-              <motion.p
-                key={currentStory.body}
-                initial={{ opacity: 0, y: reducedMotion ? 0 : 16 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.55, delay: 0.05 }}
-                className="max-w-xl text-base leading-8 text-zinc-600 dark:text-zinc-300 md:text-lg"
-              >
-                {currentStory.body}
-              </motion.p>
-            </div>
-
-            <div className="mt-10 grid gap-3 md:grid-cols-3 lg:grid-cols-1">
-              {spotlightCards.map((item) => (
-                <div
-                  key={item.label}
-                  className="rounded-2xl border border-zinc-200/70 bg-white/85 p-4 dark:border-white/10 dark:bg-white/5"
-                >
-                  <p className="text-[11px] font-bold uppercase tracking-[0.22em] text-zinc-400 dark:text-zinc-500">
-                    {item.label}
-                  </p>
-                  <p className="mt-2 text-sm font-medium leading-6 text-zinc-700 dark:text-zinc-200">
-                    {item.value}
-                  </p>
-                </div>
-              ))}
-            </div>
-
-            <motion.div
-              style={{ borderColor: currentStory.accent }}
-              className="mt-auto rounded-[1.75rem] border bg-zinc-950 px-5 py-5 text-white dark:bg-white dark:text-zinc-950"
-            >
-              <p className="text-[11px] font-bold uppercase tracking-[0.24em] text-white/60 dark:text-zinc-500">
-                Active Section Note
-              </p>
-              <p className="mt-3 text-base leading-7 text-white/88 dark:text-zinc-800">
-                {currentStory.note}
-              </p>
-              <div className="mt-4 flex flex-wrap gap-2">
-                {currentStory.metrics.map((metric) => (
-                  <span
-                    key={metric}
-                    className="rounded-full border border-white/15 px-3 py-1 text-xs font-semibold uppercase tracking-[0.16em] text-white/80 dark:border-zinc-300 dark:text-zinc-700"
-                  >
-                    {metric}
-                  </span>
+            <div className="absolute bottom-6 left-5 right-5 z-10 md:left-10 md:right-10">
+              <div className="grid grid-cols-4 gap-2 rounded-2xl border border-white/70 bg-white/70 p-2 shadow-xl shadow-zinc-900/5 backdrop-blur-xl dark:border-zinc-800/70 dark:bg-zinc-950/70 dark:shadow-black/25">
+                {sceneSteps.map((step) => (
+                  <button
+                    key={step.zone}
+                    type="button"
+                    onClick={() => setActiveZone(step.zone)}
+                    className={`h-2 rounded-full transition-all ${
+                      activeZone === step.zone
+                        ? "bg-zinc-950 dark:bg-white"
+                        : "bg-zinc-300 hover:bg-zinc-500 dark:bg-zinc-700 dark:hover:bg-zinc-500"
+                    }`}
+                    aria-label={`${step.eyebrow} 장면 보기`}
+                  />
                 ))}
               </div>
-            </motion.div>
+            </div>
           </div>
-        </div>
+        </aside>
 
-        <div className="space-y-16 lg:space-y-24">
-          <section className="grid min-h-[72vh] content-center gap-8 pb-8 pt-4 lg:min-h-[88vh]">
-            <div className="max-w-3xl space-y-7">
-              <p className="text-[11px] font-bold uppercase tracking-[0.32em] text-zinc-500 dark:text-zinc-400">
-                Scroll To Read
-              </p>
-              <h2 className="text-[3rem] font-black leading-[0.96] tracking-[-0.05em] text-zinc-950 dark:text-white md:text-[5.6rem]">
-                소개 페이지이지만,
-                <br />
-                그냥 이력 요약처럼
-                <br />
-                보이고 싶진 않았습니다.
-              </h2>
-              <p className="max-w-2xl text-lg leading-8 text-zinc-600 dark:text-zinc-300 md:text-xl">
-                스크롤하면서 제 작업 방식과 관심사가 천천히 드러나는 구조로 만들었습니다.
-                과한 장면 전환보다 읽기 흐름, 리듬, 분위기 변화를 우선했습니다.
-              </p>
+        <div
+          ref={scrollPaneRef}
+          onScroll={handleScroll}
+          className="about-scroll-pane relative px-6 pb-24 pt-20 md:px-10 lg:h-screen lg:overflow-y-auto lg:px-14 lg:pb-32 lg:pt-32 xl:px-20"
+        >
+          <motion.section
+            initial="hidden"
+            animate="show"
+            variants={fadeUp}
+            transition={{ duration: 0.7, ease: "easeOut" }}
+            className="min-h-[76vh] max-w-3xl"
+          >
+            <div className="inline-flex items-center gap-2 rounded-full border border-zinc-200 bg-white/70 px-4 py-2 text-xs font-bold uppercase tracking-[0.18em] text-zinc-600 shadow-sm backdrop-blur dark:border-zinc-800 dark:bg-zinc-950/70 dark:text-zinc-300">
+              <TerminalSquare className="h-4 w-4 text-indigo-500" />
+              About Jack
             </div>
 
-            <div className="grid gap-4 md:grid-cols-3">
-              {principles.map((principle, index) => (
-                <motion.div
-                  key={principle.title}
-                  initial={{ opacity: 0, y: reducedMotion ? 0 : 22 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true, amount: 0.4 }}
-                  transition={{ duration: 0.55, delay: reducedMotion ? 0 : index * 0.08 }}
-                  className="rounded-[1.75rem] border border-zinc-200/80 bg-white/70 p-6 backdrop-blur-sm dark:border-white/10 dark:bg-white/5"
-                >
-                  <p className="text-[11px] font-bold uppercase tracking-[0.24em] text-zinc-400 dark:text-zinc-500">
-                    0{index + 1}
-                  </p>
-                  <h3 className="mt-4 text-xl font-bold text-zinc-950 dark:text-white">
-                    {principle.title}
-                  </h3>
-                  <p className="mt-3 text-sm leading-7 text-zinc-600 dark:text-zinc-300">
-                    {principle.body}
-                  </p>
-                </motion.div>
-              ))}
-            </div>
-          </section>
+            <h1 className="mt-8 max-w-[780px] text-5xl font-extrabold leading-[1.08] text-zinc-950 dark:text-white md:text-7xl">
+              만들고,
+              <br />
+              기록하고,
+              <br />
+              다시 다듬습니다.
+            </h1>
 
-          {storySections.map((section, index) => (
-            <motion.section
-              key={section.id}
-              onViewportEnter={() => setActiveSection(index)}
-              viewport={{ amount: 0.55 }}
-              className="grid min-h-[72vh] content-center gap-6 rounded-[2rem] border border-zinc-200/70 bg-white/58 p-7 shadow-[0_10px_40px_rgba(15,23,42,0.04)] backdrop-blur-md dark:border-white/10 dark:bg-white/5 md:p-10 lg:min-h-[82vh]"
-            >
-              <p
-                className="text-[11px] font-bold uppercase tracking-[0.32em]"
-                style={{ color: section.accent }}
-              >
-                {section.kicker}
-              </p>
-              <h3 className="max-w-3xl text-[2.2rem] font-black leading-[1.02] tracking-[-0.04em] text-zinc-950 dark:text-white md:text-[3.5rem]">
-                {section.title}
-              </h3>
-              <div className="grid gap-8 lg:grid-cols-[minmax(0,1.2fr)_minmax(0,0.8fr)]">
-                <p className="text-base leading-8 text-zinc-600 dark:text-zinc-300 md:text-lg">
-                  {section.body}
-                </p>
-                <div className="rounded-[1.5rem] border border-zinc-200/80 bg-zinc-50/85 p-5 dark:border-white/10 dark:bg-zinc-950/40">
-                  <p className="text-[11px] font-bold uppercase tracking-[0.22em] text-zinc-400 dark:text-zinc-500">
-                    Keywords
-                  </p>
-                  <div className="mt-4 flex flex-wrap gap-2">
-                    {section.metrics.map((metric) => (
-                      <motion.span
-                        key={metric}
-                        whileHover={reducedMotion ? undefined : { y: -2 }}
-                        className="rounded-full border border-zinc-200 bg-white px-3 py-1.5 text-xs font-semibold uppercase tracking-[0.16em] text-zinc-700 dark:border-white/10 dark:bg-white/5 dark:text-zinc-200"
-                      >
-                        {metric}
-                      </motion.span>
-                    ))}
-                  </div>
-                  <div
-                    className="mt-5 rounded-2xl p-4 text-sm font-medium leading-7 text-zinc-700 dark:text-zinc-200"
-                    style={{
-                      backgroundColor: `${section.accent}14`,
-                      border: `1px solid ${section.accent}33`,
-                    }}
-                  >
-                    {section.note}
-                  </div>
-                </div>
-              </div>
-            </motion.section>
-          ))}
+            <p className="mt-8 max-w-2xl text-lg leading-8 text-zinc-600 dark:text-zinc-300">
+              안녕하세요, Jack입니다. 프론트엔드를 중심으로 화면의 구조와 감각을
+              함께 고민합니다. 이 페이지는 제 소개를 담는 동시에, 제가 좋아하는
+              인터랙션과 정리 방식을 보여주는 작은 포트폴리오처럼 만들었습니다.
+            </p>
 
-          <section className="grid gap-6 rounded-[2rem] border border-zinc-200/80 bg-white/68 p-7 backdrop-blur-md dark:border-white/10 dark:bg-white/5 md:p-10">
-            <div className="max-w-3xl space-y-4">
-              <p className="text-[11px] font-bold uppercase tracking-[0.32em] text-zinc-500 dark:text-zinc-400">
-                Journey
-              </p>
-              <h3 className="text-[2rem] font-black leading-[1.05] tracking-[-0.04em] text-zinc-950 dark:text-white md:text-[3rem]">
-                지금은 한 가지 역할보다,
-                <br />
-                화면과 콘텐츠를 함께 설계하는 사람에 가깝습니다.
-              </h3>
-            </div>
-
-            <div className="space-y-4">
-              {timeline.map((item, index) => (
-                <motion.div
-                  key={item}
-                  initial={{ opacity: 0, x: reducedMotion ? 0 : 24 }}
-                  whileInView={{ opacity: 1, x: 0 }}
-                  viewport={{ once: true, amount: 0.45 }}
-                  transition={{ duration: 0.5, delay: reducedMotion ? 0 : index * 0.08 }}
-                  className="grid gap-3 rounded-[1.5rem] border border-zinc-200/70 bg-white/90 p-5 dark:border-white/10 dark:bg-zinc-950/35 md:grid-cols-[80px_minmax(0,1fr)]"
-                >
-                  <p className="text-sm font-black tracking-[-0.03em] text-zinc-400 dark:text-zinc-500">
-                    0{index + 1}
-                  </p>
-                  <p className="text-sm leading-7 text-zinc-700 dark:text-zinc-200 md:text-base">
-                    {item}
-                  </p>
-                </motion.div>
-              ))}
-            </div>
-          </section>
-
-          <section className="grid gap-8 rounded-[2rem] bg-zinc-950 p-7 text-white shadow-[0_24px_80px_rgba(15,23,42,0.24)] dark:bg-white dark:text-zinc-950 md:p-10">
-            <div className="max-w-3xl space-y-4">
-              <p className="text-[11px] font-bold uppercase tracking-[0.32em] text-white/55 dark:text-zinc-500">
-                Final Section
-              </p>
-              <h3 className="text-[2rem] font-black leading-[1.05] tracking-[-0.04em] md:text-[3rem]">
-                블로그와 GitHub도 결국,
-                <br />
-                제가 어떻게 배우고 만드는지 보여주는 기록입니다.
-              </h3>
-              <p className="text-base leading-8 text-white/75 dark:text-zinc-700 md:text-lg">
-                더 보고 싶다면 글을 읽어보셔도 좋고, GitHub에서 작업 흔적을 보는 것도 좋습니다.
-                소개 페이지는 여기서 끝나지만, 저는 계속 만들고 정리하고 개선하는 중입니다.
-              </p>
-            </div>
-
-            <div className="flex flex-wrap gap-3">
+            <div className="mt-9 flex flex-wrap gap-3">
               <Link
                 href="/posts"
-                className="inline-flex items-center justify-center rounded-full bg-white px-6 py-3 text-sm font-bold text-zinc-950 transition-transform hover:scale-[1.02] dark:bg-zinc-950 dark:text-white"
+                className="inline-flex items-center gap-2 rounded-full bg-zinc-950 px-5 py-3 text-sm font-bold text-white shadow-lg shadow-zinc-900/10 transition hover:-translate-y-0.5 hover:bg-zinc-800 dark:bg-white dark:text-zinc-950 dark:hover:bg-zinc-200"
               >
                 글 보러가기
+                <ArrowUpRight className="h-4 w-4" />
               </Link>
               <a
                 href="https://github.com/jackihyun"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex items-center justify-center rounded-full border border-white/20 px-6 py-3 text-sm font-bold text-white transition-transform hover:scale-[1.02] dark:border-zinc-300 dark:text-zinc-900"
+                className="inline-flex items-center gap-2 rounded-full border border-zinc-200 bg-white/75 px-5 py-3 text-sm font-bold text-zinc-800 shadow-sm backdrop-blur transition hover:-translate-y-0.5 hover:bg-white dark:border-zinc-800 dark:bg-zinc-950/75 dark:text-zinc-100 dark:hover:bg-zinc-900"
               >
+                <Github className="h-4 w-4" />
                 GitHub
               </a>
-              <a
-                href={`mailto:${process.env.NEXT_PUBLIC_CONTACT_EMAIL || "your@email.com"}`}
-                className="inline-flex items-center justify-center rounded-full border border-white/20 px-6 py-3 text-sm font-bold text-white/88 transition-transform hover:scale-[1.02] dark:border-zinc-300 dark:text-zinc-900"
-              >
-                Contact
-              </a>
             </div>
+          </motion.section>
+
+          <section className="max-w-3xl space-y-28">
+            {sceneSteps.map((step, index) => (
+              <motion.article
+                key={step.zone}
+                initial="hidden"
+                whileInView="show"
+                viewport={{ amount: 0.55, margin: "-12% 0px -12% 0px" }}
+                variants={fadeUp}
+                transition={{ duration: 0.65, ease: "easeOut" }}
+                onViewportEnter={() => setActiveZone(step.zone)}
+                className="relative min-h-[58vh] border-l border-zinc-200 pl-6 dark:border-zinc-800 md:pl-9"
+              >
+                <span className="absolute -left-[7px] top-1 h-3.5 w-3.5 rounded-full border-4 border-[#fbfaf7] bg-zinc-950 dark:border-[#050505] dark:bg-white" />
+                <p className="text-xs font-bold uppercase tracking-[0.18em] text-indigo-500 dark:text-indigo-300">
+                  {String(index + 1).padStart(2, "0")} / {step.eyebrow}
+                </p>
+                <h2 className="mt-4 text-3xl font-extrabold leading-tight text-zinc-950 dark:text-white md:text-5xl">
+                  {step.title}
+                </h2>
+                <p className="mt-6 text-lg leading-9 text-zinc-600 dark:text-zinc-300">
+                  {step.body}
+                </p>
+              </motion.article>
+            ))}
           </section>
+
+          <motion.section
+            initial="hidden"
+            whileInView="show"
+            viewport={{ once: true, amount: 0.25 }}
+            variants={fadeUp}
+            transition={{ duration: 0.65, ease: "easeOut" }}
+            className="mt-8 max-w-4xl"
+          >
+            <div className="mb-8 flex items-end justify-between gap-6">
+              <div>
+                <p className="text-xs font-bold uppercase tracking-[0.18em] text-emerald-600 dark:text-emerald-300">
+                  Working Style
+                </p>
+                <h2 className="mt-3 text-3xl font-extrabold text-zinc-950 dark:text-white md:text-4xl">
+                  제가 화면을 볼 때 챙기는 것들
+                </h2>
+              </div>
+            </div>
+
+            <div className="grid gap-4 md:grid-cols-3">
+              {profileCards.map((card) => {
+                const Icon = card.icon;
+                return (
+                  <motion.div
+                    key={card.title}
+                    variants={fadeUp}
+                    className="rounded-[8px] border border-zinc-200 bg-white/78 p-6 shadow-sm backdrop-blur transition hover:-translate-y-1 hover:shadow-xl hover:shadow-zinc-900/5 dark:border-zinc-800 dark:bg-zinc-950/72 dark:hover:shadow-black/20"
+                  >
+                    <div className="mb-5 flex h-11 w-11 items-center justify-center rounded-full bg-zinc-950 text-white dark:bg-white dark:text-zinc-950">
+                      <Icon className="h-5 w-5" />
+                    </div>
+                    <h3 className="text-lg font-bold text-zinc-950 dark:text-white">
+                      {card.title}
+                    </h3>
+                    <p className="mt-3 text-sm leading-7 text-zinc-600 dark:text-zinc-400">
+                      {card.body}
+                    </p>
+                  </motion.div>
+                );
+              })}
+            </div>
+          </motion.section>
+
+          <motion.section
+            initial="hidden"
+            whileInView="show"
+            viewport={{ once: true, amount: 0.25 }}
+            variants={fadeUp}
+            transition={{ duration: 0.65, ease: "easeOut" }}
+            className="mt-28 grid max-w-5xl gap-10 lg:grid-cols-[0.9fr_1.1fr]"
+          >
+            <div>
+              <p className="text-xs font-bold uppercase tracking-[0.18em] text-amber-600 dark:text-amber-300">
+                Current Focus
+              </p>
+              <h2 className="mt-3 text-3xl font-extrabold text-zinc-950 dark:text-white md:text-4xl">
+                요즘 집중하는 것
+              </h2>
+              <p className="mt-5 text-base leading-8 text-zinc-600 dark:text-zinc-400">
+                실제로 운영하는 블로그를 바탕으로, 보기 좋은 화면과 계속 고칠 수
+                있는 구조 사이의 균형을 연습하고 있습니다.
+              </p>
+            </div>
+            <div className="space-y-3">
+              {focusItems.map((item, index) => (
+                <motion.div
+                  key={item}
+                  variants={fadeUp}
+                  className="flex items-start gap-4 rounded-[8px] border border-zinc-200 bg-white/72 p-4 backdrop-blur dark:border-zinc-800 dark:bg-zinc-950/72"
+                >
+                  <span className="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-indigo-500 text-xs font-bold text-white">
+                    {index + 1}
+                  </span>
+                  <p className="text-sm font-semibold leading-7 text-zinc-700 dark:text-zinc-200">
+                    {item}
+                  </p>
+                </motion.div>
+              ))}
+            </div>
+          </motion.section>
+
+          <motion.section
+            initial="hidden"
+            whileInView="show"
+            viewport={{ once: true, amount: 0.25 }}
+            variants={fadeUp}
+            transition={{ duration: 0.65, ease: "easeOut" }}
+            className="mt-28 max-w-5xl"
+          >
+            <div className="mb-8 flex flex-col justify-between gap-4 md:flex-row md:items-end">
+              <div>
+                <p className="text-xs font-bold uppercase tracking-[0.18em] text-indigo-500 dark:text-indigo-300">
+                  Tool Belt
+                </p>
+                <h2 className="mt-3 text-3xl font-extrabold text-zinc-950 dark:text-white md:text-4xl">
+                  주로 다루는 기술
+                </h2>
+              </div>
+              <Braces className="hidden h-10 w-10 text-zinc-300 dark:text-zinc-700 md:block" />
+            </div>
+
+            <div className="grid gap-4 md:grid-cols-3">
+              {stackGroups.map((group) => (
+                <motion.div
+                  key={group.label}
+                  variants={fadeUp}
+                  className="rounded-[8px] border border-zinc-200 bg-white/72 p-5 backdrop-blur dark:border-zinc-800 dark:bg-zinc-950/72"
+                >
+                  <h3 className="mb-4 flex items-center gap-2 text-sm font-bold text-zinc-950 dark:text-white">
+                    {group.label === "Frontend" && (
+                      <TerminalSquare className="h-4 w-4 text-indigo-500" />
+                    )}
+                    {group.label === "Interaction" && (
+                      <Dumbbell className="h-4 w-4 text-emerald-500" />
+                    )}
+                    {group.label === "Backend + Ops" && (
+                      <BookOpenText className="h-4 w-4 text-amber-500" />
+                    )}
+                    {group.label}
+                  </h3>
+                  <div className="flex flex-wrap gap-2">
+                    {group.items.map((item) => (
+                      <span
+                        key={item}
+                        className="rounded-full border border-zinc-200 bg-zinc-50 px-3 py-1.5 text-xs font-bold text-zinc-600 dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-300"
+                      >
+                        {item}
+                      </span>
+                    ))}
+                  </div>
+                </motion.div>
+              ))}
+            </div>
+          </motion.section>
+
+          <motion.section
+            initial="hidden"
+            whileInView="show"
+            viewport={{ once: true, amount: 0.2 }}
+            variants={fadeUp}
+            transition={{ duration: 0.65, ease: "easeOut" }}
+            className="mt-28 max-w-4xl pb-16"
+          >
+            <p className="text-xs font-bold uppercase tracking-[0.18em] text-emerald-600 dark:text-emerald-300">
+              Direction
+            </p>
+            <h2 className="mt-3 text-3xl font-extrabold text-zinc-950 dark:text-white md:text-4xl">
+              앞으로 더 선명하게 만들고 싶은 방향
+            </h2>
+
+            <div className="mt-8 divide-y divide-zinc-200 overflow-hidden rounded-[8px] border border-zinc-200 bg-white/78 backdrop-blur dark:divide-zinc-800 dark:border-zinc-800 dark:bg-zinc-950/72">
+              {timeline.map((item) => (
+                <motion.div
+                  key={item.title}
+                  variants={fadeUp}
+                  className="grid gap-3 p-6 md:grid-cols-[120px_1fr]"
+                >
+                  <p className="text-sm font-bold uppercase tracking-[0.14em] text-zinc-400">
+                    {item.year}
+                  </p>
+                  <div>
+                    <h3 className="text-lg font-bold text-zinc-950 dark:text-white">
+                      {item.title}
+                    </h3>
+                    <p className="mt-2 text-sm leading-7 text-zinc-600 dark:text-zinc-400">
+                      {item.body}
+                    </p>
+                  </div>
+                </motion.div>
+              ))}
+            </div>
+          </motion.section>
         </div>
       </div>
     </div>
