@@ -39,3 +39,14 @@ export function getPostPreview(excerpt: string | undefined, contentHtml: string 
   if (base.length <= maxLength) return base
   return `${base.slice(0, maxLength)}...`
 }
+
+export function getPostCategories(post: { category?: string | null; categories?: string[] | null }): string[] {
+  const rawCategories = post.categories?.length ? post.categories : post.category ? [post.category] : []
+  const uniqueCategories = new Set(
+    rawCategories
+      .map((category) => category?.trim())
+      .filter((category): category is string => Boolean(category))
+  )
+
+  return Array.from(uniqueCategories)
+}
