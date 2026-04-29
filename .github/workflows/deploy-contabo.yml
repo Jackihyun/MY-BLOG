@@ -25,6 +25,7 @@ jobs:
           passphrase: ${{ secrets.CONTABO_SSH_PASSPHRASE }}
           envs: APP_DIR
           script: |
+            bash -lc '
             set -euo pipefail
 
             APP_DIR="${APP_DIR:-/root/servers/MY-BLOG}"
@@ -50,3 +51,4 @@ jobs:
             cd "$APP_DIR"
             chmod +x scripts/deploy-check.sh
             ./scripts/deploy-check.sh blog.jackihyun.com
+            '
