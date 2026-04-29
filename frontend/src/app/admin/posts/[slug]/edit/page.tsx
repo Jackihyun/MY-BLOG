@@ -1,4 +1,13 @@
 import PostEditor from "@/components/admin/PostEditor";
+import { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "글 수정",
+  robots: {
+    index: false,
+    follow: false,
+  },
+};
 
 interface EditPostPageProps {
   params: {

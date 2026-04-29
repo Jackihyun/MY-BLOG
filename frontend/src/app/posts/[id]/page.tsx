@@ -1,5 +1,6 @@
-import { getPostData, getSortedPostsData } from "@/lib/posts";
+import { getPostData, getSortedPostsData, isIndexablePost } from "@/lib/posts";
 import { Metadata } from "next";
+import { notFound } from "next/navigation";
 import PostDetailClient from "./PostDetailClient";
 import { toAbsoluteThumbnailUrl } from "@/lib/post-thumbnail";
 
@@ -14,6 +15,15 @@ interface PostProps {
 
 export async function generateMetadata({ params }: PostProps): Promise<Metadata> {
   const postData = await getPostData(params.id);
+  if (!isIndexablePost(postData)) {
+    return {
+      title: "글을 찾을 수 없습니다",
+      robots: {
+        index: false,
+        follow: false,
+      },
+    };
+  }
   const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://blog.jackihyun.com";
   const ogUrl = `${siteUrl}/api/og?title=${encodeURIComponent(postData.title)}&category=${encodeURIComponent(postData.category)}`;
   const shareImage = postData.thumbnail
@@ -33,6 +43,7 @@ export async function generateMetadata({ params }: PostProps): Promise<Metadata>
       type: "article",
       url: `${siteUrl}/posts/${params.id}`,
       publishedTime: postData.date,
+      modifiedTime: postData.updatedAt || postData.publishedAt || postData.date,
       authors: ["Jackihyun"],
       images: [
         {
@@ -54,6 +65,9 @@ export async function generateMetadata({ params }: PostProps): Promise<Metadata>
 
 export default async function PostPage({ params }: PostProps) {
   const postData = await getPostData(params.id);
+  if (!isIndexablePost(postData)) {
+    notFound();
+  }
   const allPosts = await getSortedPostsData();
   const currentIndex = allPosts.findIndex((post) => post.slug === params.id);
 
@@ -68,14 +82,18 @@ export default async function PostPage({ params }: PostProps) {
     "@type": "BlogPosting",
     headline: postData.title,
     datePublished: postData.date,
-    dateModified: postData.date,
+    dateModified: postData.updatedAt || postData.publishedAt || postData.date,
     author: {
       "@type": "Person",
       name: "Jackihyun",
     },
     publisher: {
-      "@type": "Person",
-      name: "Jackihyun",
+      "@type": "Organization",
+      name: "Jack's Blog",
+      logo: {
+        "@type": "ImageObject",
+        url: `${process.env.NEXT_PUBLIC_SITE_URL || "https://blog.jackihyun.com"}/icon.svg`,
+      },
     },
     description: postData.excerpt || postData.title,
     image: postData.thumbnail

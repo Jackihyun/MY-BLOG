@@ -9,7 +9,7 @@ import { useAuth } from "@/hooks/useAuth";
 import SmartImage from "@/components/ui/SmartImage";
 import PostEngagementStats from "@/components/ui/PostEngagementStats";
 import { getDisplayImageUrl } from "@/lib/api";
-import { getPostCategories, getPostPreview } from "@/lib/utils";
+import { getPostCategories, getPostPreview, toPlainText } from "@/lib/utils";
 import {
   useVisitorStatsQuery,
   useVisitorSummaryQuery,
@@ -857,6 +857,11 @@ function PostsList({ allPostsData }: { allPostsData: PostData[] }) {
     return collectCategoryIds(categoryNodes, selectedCategoryId);
   }, [categoryNodes, selectedCategoryId]);
 
+  const urlSearchQuery = useMemo(
+    () => (searchParams.get("query") ?? "").trim().toLowerCase(),
+    [searchParams],
+  );
+
   const categoryCountMap = useMemo(() => {
     const directCounts = new Map<string, number>();
     const childrenMap = new Map<string, string[]>();
@@ -904,14 +909,37 @@ function PostsList({ allPostsData }: { allPostsData: PostData[] }) {
   }, [categoryCountMap, categoryNodes]);
 
   const categoryFilteredPosts = useMemo(() => {
-    if (!selectedCategoryIds) {
-      return allPostsData;
+    const postsByCategory = selectedCategoryIds
+      ? allPostsData.filter((post) =>
+          getPostCategoryIds(post).some((categoryId) =>
+            selectedCategoryIds.has(categoryId),
+          ),
+        )
+      : allPostsData;
+
+    if (!urlSearchQuery) {
+      return postsByCategory;
     }
 
-    return allPostsData.filter((post) =>
-      getPostCategoryIds(post).some((categoryId) => selectedCategoryIds.has(categoryId)),
-    );
-  }, [allPostsData, getPostCategoryIds, selectedCategoryIds]);
+    return postsByCategory.filter((post) => {
+      const searchableText = [
+        post.title,
+        post.excerpt,
+        toPlainText(post.contentHtml),
+        ...getPostCategories(post),
+      ]
+        .filter(Boolean)
+        .join(" ")
+        .toLowerCase();
+
+      return searchableText.includes(urlSearchQuery);
+    });
+  }, [
+    allPostsData,
+    getPostCategoryIds,
+    selectedCategoryIds,
+    urlSearchQuery,
+  ]);
 
   const pageSize = useMemo(() => {
     const sizeParam = Number(searchParams.get("size") ?? "5");
@@ -1140,7 +1168,9 @@ function PostsList({ allPostsData }: { allPostsData: PostData[] }) {
               Posts
             </h1>
             <p className="text-gray-500 dark:text-gray-400 mt-1">
-              {categoryFilteredPosts.length}개의 글
+              {urlSearchQuery
+                ? `"${urlSearchQuery}" 검색 결과 ${categoryFilteredPosts.length}개`
+                : `${categoryFilteredPosts.length}개의 글`}
             </p>
           </div>
 
