@@ -22,6 +22,7 @@ jobs:
           host: ${{ secrets.CONTABO_HOST }}
           username: ${{ secrets.CONTABO_USER }}
           key: ${{ secrets.CONTABO_SSH_KEY }}
+          passphrase: ${{ secrets.CONTABO_SSH_PASSPHRASE }}
           envs: APP_DIR
           script: |
             set -euo pipefail
