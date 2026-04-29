@@ -26,10 +26,17 @@ git pull --ff-only origin main
 
 sudo mkdir -p /opt/jackblog/backups
 TS=$(date +%Y%m%d-%H%M%S)
-cp /opt/jackblog/shared/jackblog.db "/opt/jackblog/backups/jackblog-before-slug-migration-${TS}.db"
 
-sqlite3 /opt/jackblog/shared/jackblog.db < scripts/seo-slug-migration.sql
-sqlite3 /opt/jackblog/shared/jackblog.db "select slug, title from post order by published_at desc;"
+DB_PATH="${DB_PATH:-/root/servers/MY-BLOG/backend/jackblog.db}"
+if [ ! -f "$DB_PATH" ]; then
+  DB_PATH="$(sudo find /root/servers/MY-BLOG /opt /app -name jackblog.db -type f 2>/dev/null | head -n 1)"
+fi
+test -n "$DB_PATH" && test -f "$DB_PATH"
+
+cp "$DB_PATH" "/opt/jackblog/backups/jackblog-before-slug-migration-${TS}.db"
+
+sqlite3 "$DB_PATH" < scripts/seo-slug-migration.sql
+sqlite3 "$DB_PATH" "select slug, title from post order by published_at desc;"
 
 sudo systemctl restart jackblog-api jackblog-frontend
 ./scripts/deploy-check.sh blog.jackihyun.com
