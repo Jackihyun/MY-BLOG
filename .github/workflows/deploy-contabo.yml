@@ -31,6 +31,7 @@ jobs:
             APP_DIR="${APP_DIR:-/root/servers/MY-BLOG}"
 
             cd "$APP_DIR"
+            git restore --source=HEAD --staged --worktree scripts/deploy-check.sh || true
             git pull --ff-only origin main
 
             cd "$APP_DIR/frontend"
