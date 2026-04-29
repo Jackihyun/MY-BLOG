@@ -168,5 +168,6 @@ export interface PostData {
   likeCount?: number;
   isPublished?: boolean;
   publishedAt?: string;
+  updatedAt?: string;
   thumbnail?: string;
 }

@@ -1,6 +1,9 @@
 # https://www.robotstxt.org/robotstxt.html
 User-agent: *
 Allow: /
+Disallow: /admin/
+Disallow: /api/
+Allow: /api/og
 
 # Sitemaps
 Sitemap: https://blog.jackihyun.com/sitemap.xml

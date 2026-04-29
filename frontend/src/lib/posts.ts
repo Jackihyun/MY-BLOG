@@ -100,6 +100,7 @@ function apiPostToPostData(apiPost: {
   likeCount?: number;
   isPublished?: boolean;
   thumbnail?: string;
+  updatedAt?: string;
 }): PostData {
   let dateStr = new Date().toISOString().split("T")[0];
   if (apiPost.publishedAt) {
@@ -133,6 +134,7 @@ function apiPostToPostData(apiPost: {
     likeCount: apiPost.likeCount,
     isPublished: apiPost.isPublished ?? true,
     publishedAt: apiPost.publishedAt,
+    updatedAt: apiPost.updatedAt,
     thumbnail: resolveThumbnail({
       thumbnail: apiPost.thumbnail,
       contentHtml: apiPost.contentHtml,
@@ -231,6 +233,19 @@ interface ApiPostResponse {
   viewCount?: number;
   isPublished?: boolean;
   thumbnail?: string;
+  updatedAt?: string;
+}
+
+export function isMissingPost(post: PostData): boolean {
+  return post.isPublished === false && post.title === "글을 찾을 수 없습니다";
+}
+
+export function isIndexablePost(post: PostData): boolean {
+  return (
+    post.slug !== "guestbook" &&
+    post.isPublished !== false &&
+    !isMissingPost(post)
+  );
 }
 
 export async function getSortedPostsData(): Promise<PostData[]> {
@@ -264,7 +279,7 @@ export async function getSortedPostsData(): Promise<PostData[]> {
 
   // 3. 날짜 기준 정렬 및 특수 페이지(방명록 등) 제외
   return allPosts
-    .filter((post) => post.slug !== "guestbook")
+    .filter(isIndexablePost)
     .sort((a, b) => (a.date < b.date ? 1 : -1));
 }
 
@@ -274,13 +289,13 @@ export async function getPopularPostsData(limit = 3): Promise<PostData[]> {
       `/posts/popular?limit=${limit}`
     );
     if (apiPosts && apiPosts.length > 0) {
-      return apiPosts.map(apiPostToPostData);
+      return apiPosts.map(apiPostToPostData).filter(isIndexablePost);
     }
   }
 
   const allPosts = await getSortedPostsData();
   return allPosts
-    .filter((post) => post.slug !== "guestbook" && (post.viewCount || 0) > 0)
+    .filter((post) => isIndexablePost(post) && (post.viewCount || 0) > 0)
     .sort((a, b) => (b.viewCount || 0) - (a.viewCount || 0))
     .slice(0, limit);
 }
@@ -338,7 +353,7 @@ export async function searchPosts(query: string): Promise<PostData[]> {
       `/posts/search?q=${encodeURIComponent(query)}`
     );
     if (apiPosts) {
-      return apiPosts.map(apiPostToPostData);
+      return apiPosts.map(apiPostToPostData).filter(isIndexablePost);
     }
   }
 
@@ -349,14 +364,19 @@ export async function searchPosts(query: string): Promise<PostData[]> {
   const allPosts = await getSortedPostsDataFromFile();
   const lowerQuery = query.toLowerCase();
 
-  return allPosts.filter(
-    (post) =>
+  return allPosts.filter((post) => {
+    if (!isIndexablePost(post)) {
+      return false;
+    }
+
+    return (
       post.title.toLowerCase().includes(lowerQuery) ||
       post.contentHtml.toLowerCase().includes(lowerQuery) ||
       getPostCategories(post).some((category) =>
         category.toLowerCase().includes(lowerQuery)
       )
-  );
+    );
+  });
 }
 
 // ============ Categories function ============
@@ -415,5 +435,7 @@ export async function getPostsByCategory(
     }
   }
 
-  return posts.sort((a, b) => (a.date < b.date ? 1 : -1));
+  return posts
+    .filter(isIndexablePost)
+    .sort((a, b) => (a.date < b.date ? 1 : -1));
 }

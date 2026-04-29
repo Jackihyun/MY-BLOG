@@ -7,7 +7,7 @@ export async function GET() {
 
   const rssItems = posts
     .map((post) => {
-      const pubDate = new Date(post.date).toUTCString();
+      const pubDate = new Date(post.publishedAt || post.date).toUTCString();
       const description = post.excerpt || post.title;
 
       return `
