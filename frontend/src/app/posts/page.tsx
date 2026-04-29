@@ -7,13 +7,16 @@ export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
 export const metadata: Metadata = {
-  title: "Posts",
+  title: "개발 글",
   description:
-    "Jack의 개발 블로그 게시글 목록입니다. 프론트엔드, 백엔드, AI 등 다양한 기술 주제를 다룹니다.",
+    "Jackihyun이 정리한 프론트엔드, React, Next.js, JavaScript 개발 글 모음입니다.",
+  alternates: {
+    canonical: "/posts",
+  },
   openGraph: {
-    title: "Posts | Jack's Blog",
+    title: "개발 글 | Jackihyun 개발 블로그",
     description:
-      "Jack의 개발 블로그 게시글 목록입니다. 프론트엔드, 백엔드, AI 등 다양한 기술 주제를 다룹니다.",
+      "Jackihyun이 정리한 프론트엔드, React, Next.js, JavaScript 개발 글 모음입니다.",
     type: "website",
   },
 };

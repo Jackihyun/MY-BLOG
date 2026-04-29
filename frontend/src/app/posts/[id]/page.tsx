@@ -1,4 +1,9 @@
-import { getPostData, getSortedPostsData, isIndexablePost } from "@/lib/posts";
+import {
+  getPostData,
+  getSortedPostsData,
+  isIndexablePost,
+  isSearchIndexablePost,
+} from "@/lib/posts";
 import { Metadata } from "next";
 import { notFound } from "next/navigation";
 import PostDetailClient from "./PostDetailClient";
@@ -29,11 +34,16 @@ export async function generateMetadata({ params }: PostProps): Promise<Metadata>
   const shareImage = postData.thumbnail
     ? toAbsoluteThumbnailUrl(postData.thumbnail, siteUrl)
     : ogUrl;
+  const shouldIndex = isSearchIndexablePost(postData);
 
   return {
-    title: `${postData.title} | Jack's Blog`,
+    title: postData.title,
     description: postData.excerpt || postData.title,
-    keywords: [postData.category, postData.title, "Jack's Blog", "개발 블로그"],
+    keywords: [postData.category, postData.title, "Jackihyun", "개발 블로그"],
+    robots: {
+      index: shouldIndex,
+      follow: true,
+    },
     alternates: {
       canonical: `${siteUrl}/posts/${params.id}`,
     },
@@ -89,7 +99,7 @@ export default async function PostPage({ params }: PostProps) {
     },
     publisher: {
       "@type": "Organization",
-      name: "Jack's Blog",
+      name: "Jackihyun 개발 블로그",
       logo: {
         "@type": "ImageObject",
         url: `${process.env.NEXT_PUBLIC_SITE_URL || "https://blog.jackihyun.com"}/icon.svg`,

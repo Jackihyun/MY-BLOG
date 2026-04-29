@@ -302,6 +302,14 @@ export default function PostEditor({ slug, mode }: PostEditorProps) {
       return;
     }
 
+    const generatedSlug = normalizeSlug(title);
+    const effectiveSlug = mode === "create" ? customSlug || generatedSlug : slug;
+
+    if (mode === "create" && !effectiveSlug) {
+      toast.error("검색에 사용할 URL slug를 입력해주세요. 예: event-loop, execution-context");
+      return;
+    }
+
     setIsSaving(true);
 
     try {
@@ -323,7 +331,7 @@ export default function PostEditor({ slug, mode }: PostEditorProps) {
             categories: selectedCategories,
             thumbnail: effectiveThumbnail,
             excerpt: excerpt || undefined,
-            slug: customSlug || undefined,
+            slug: effectiveSlug,
             publish: true,
             publishedAt: nextPublishedAt,
           },
@@ -466,8 +474,11 @@ export default function PostEditor({ slug, mode }: PostEditorProps) {
                              bg-white dark:bg-[#1e1e1e] text-gray-900 dark:text-gray-100
                              focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent
                              transition-all"
-                  placeholder="자동 생성"
+                  placeholder="예: event-loop, execution-context"
                 />
+                <p className="mt-1.5 text-xs text-gray-500 dark:text-gray-400">
+                  영어 제목은 자동 생성되고, 한글 제목은 검색용 영문 slug를 직접 입력하세요.
+                </p>
               </div>
             )}
             <div className="relative">

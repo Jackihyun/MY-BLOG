@@ -22,6 +22,8 @@ const API_BASE =
 const USE_API = true;
 const ENABLE_LEGACY_FILE_POSTS =
   process.env.NEXT_PUBLIC_ENABLE_LEGACY_FILE_POSTS === "true";
+const PERSONAL_CATEGORIES = new Set(["일상"]);
+const LOW_VALUE_SEARCH_SLUGS = new Set(["test"]);
 
 // ============ Utility functions ============
 
@@ -30,6 +32,8 @@ export function sanitizeExcerpt(htmlOrText?: string): string {
 
   // 1) Decode basic HTML entities first
   const decodedText = htmlOrText
+    .replace(/<\/(p|div|li|h[1-6]|blockquote|pre)>/gi, " ")
+    .replace(/<br\s*\/?>/gi, " ")
     .replace(/&lt;/g, "<")
     .replace(/&gt;/g, ">")
     .replace(/&amp;/g, "&")
@@ -248,6 +252,20 @@ export function isIndexablePost(post: PostData): boolean {
   );
 }
 
+export function isSearchIndexablePost(post: PostData): boolean {
+  if (!isIndexablePost(post)) {
+    return false;
+  }
+
+  if (LOW_VALUE_SEARCH_SLUGS.has(post.slug)) {
+    return false;
+  }
+
+  return !getPostCategories(post).some((category) =>
+    PERSONAL_CATEGORIES.has(category)
+  );
+}
+
 export async function getSortedPostsData(): Promise<PostData[]> {
   let allPosts: PostData[] = [];
 
@@ -281,6 +299,11 @@ export async function getSortedPostsData(): Promise<PostData[]> {
   return allPosts
     .filter(isIndexablePost)
     .sort((a, b) => (a.date < b.date ? 1 : -1));
+}
+
+export async function getSearchIndexablePostsData(): Promise<PostData[]> {
+  const allPosts = await getSortedPostsData();
+  return allPosts.filter(isSearchIndexablePost);
 }
 
 export async function getPopularPostsData(limit = 3): Promise<PostData[]> {

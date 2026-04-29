@@ -14,9 +14,9 @@ const inter = Inter({ subsets: ["latin"] });
 
 const siteUrl =
   process.env.NEXT_PUBLIC_SITE_URL || "https://blog.jackihyun.com";
-const siteName = process.env.NEXT_PUBLIC_SITE_NAME || "Jack's Blog";
+const siteName = process.env.NEXT_PUBLIC_SITE_NAME || "Jackihyun 개발 블로그";
 const siteDescription =
-  "개발 블로그 by Jackihyun - 프론트엔드, 백엔드, 그리고 더 많은 것들";
+  "프론트엔드, React, Next.js, JavaScript 학습과 구현 과정을 정리하는 Jackihyun의 개발 블로그";
 const defaultOgImageUrl = `${siteUrl}/api/og?title=${encodeURIComponent(siteName)}`;
 
 export const metadata: Metadata = {
@@ -37,7 +37,7 @@ export const metadata: Metadata = {
     "React",
     "Next.js",
   ],
-  authors: [{ name: "Jackihyun" }],
+  authors: [{ name: "Jackihyun", url: siteUrl }],
   creator: "Jackihyun",
   openGraph: {
     type: "website",
