@@ -170,17 +170,17 @@ sudo systemctl restart jackblog-api
 수동 배포 안정화 후 연결 권장.
 
 동작 방식:
-- 서버의 기존 `current`에서 원격 저장소 URL을 읽음
-- `/opt/jackblog/releases/<timestamp>`에 새 release clone
-- 새 release 안에서 frontend/backend build
-- `current` 심볼릭 링크를 새 release로 교체
-- systemd 재시작 후 `scripts/deploy-check.sh` 실행
-- 오래된 release는 최근 5개만 남기고 정리
+- `main` 브랜치에 push되면 GitHub Actions가 서버에 SSH 접속
+- 서버의 앱 디렉토리에서 `git pull --ff-only origin main`
+- `frontend`에서 `npm ci && npm run build`
+- `backend`에서 `./gradlew clean bootJar`
+- `jackblog-api`, `jackblog-frontend` systemd 서비스 재시작
+- `scripts/deploy-check.sh`로 배포 검증
 
 필요 secrets:
 - `CONTABO_HOST`
 - `CONTABO_USER`
 - `CONTABO_SSH_KEY`
-- `CONTABO_APP_DIR` (예: `/opt/jackblog/current`)
+- `CONTABO_APP_DIR` (선택, 기본값: `/root/servers/MY-BLOG`)
 
 워크플로우 파일: `.github/workflows/deploy-contabo.yml`
