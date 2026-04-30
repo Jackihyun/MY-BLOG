@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { usePathname } from "next/navigation";
 import LoginModal from "@/components/admin/LoginModal";
 import { useAuth } from "@/hooks/useAuth";
 import { useTrackVisitorMutation } from "@/hooks/queries/useVisitorStatsQuery";
@@ -8,10 +9,12 @@ import { getClientId } from "@/lib/api";
 import { buildVisitorTrackingPayload } from "@/lib/visitor";
 
 export default function Footer() {
+  const pathname = usePathname();
   const [clickCount, setClickCount] = useState(0);
   const [showLoginModal, setShowLoginModal] = useState(false);
   const { isAuthenticated, logout } = useAuth();
   const { mutate: trackVisitor } = useTrackVisitorMutation();
+  const shouldHideFooter = pathname === "/about";
 
   useEffect(() => {
     const clientId = getClientId();
@@ -36,6 +39,10 @@ export default function Footer() {
     logout();
     window.location.reload();
   };
+
+  if (shouldHideFooter) {
+    return null;
+  }
 
   return (
     <>

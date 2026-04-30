@@ -17,7 +17,7 @@ type QualityMode = "high" | "low" | "ultra";
 
 const SPEECH_MESSAGES: Record<ActiveZone, string> = {
   all: "안녕하세요, 제 방에 오신 걸 환영해요.",
-  laptop: "집중 모드로 작업하고 있어요.",
+  laptop: "열심히 코딩하는 사람이에요.",
   reading: "소파에서 잠깐 머리 식히는 중이에요.",
   exercising: "짧게 운동하고 다시 시작할게요.",
 };
