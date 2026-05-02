@@ -12,7 +12,10 @@ import {
   Sparkles,
   TerminalSquare,
 } from "lucide-react";
-import { motion, useReducedMotion } from "framer-motion";
+import {
+  motion,
+  useReducedMotion,
+} from "framer-motion";
 import Link from "next/link";
 import type { UIEvent } from "react";
 import { useRef, useState } from "react";
@@ -26,52 +29,52 @@ const sceneSteps: {
   {
     zone: "all",
     eyebrow: "Hello",
-    title: "화면을 설계하고, 배운 것을 기록하는 사람",
-    body: "이 페이지의 문장은 나중에 편하게 바꿀 수 있도록 분리해 두었습니다. 지금은 Jack이라는 사람이 어떤 결로 만들고 기록하는지, 스크롤의 리듬과 인터랙션으로 먼저 느껴지게 구성했습니다.",
+    title: "만드는 과정에서 가장 많이 배웁니다",
+    body: "안녕하세요, Jackihyun입니다. 저는 프론트엔드를 중심으로 공부하고 있지만, 화면 하나가 제대로 동작하기 위해 필요한 백엔드, 인증, 데이터 흐름, 배포와 운영까지 함께 경험해보는 것을 좋아합니다. 직접 만들어보고, 막히면 파고들고, 이해한 것은 다시 제 언어로 정리하는 방식으로 성장하고 있습니다.",
   },
   {
     zone: "laptop",
-    eyebrow: "Build",
-    title: "기능을 구현할 때는 흐름부터 봅니다",
-    body: "React, Next.js, TypeScript를 중심으로 사용자가 실제로 지나가는 길을 먼저 그립니다. 상태, 로딩, 오류, 빈 화면까지 한 화면의 일부로 보고 안정적인 경험을 만드는 쪽을 좋아합니다.",
+    eyebrow: "Code",
+    title: "아이디어를 실제 화면으로 옮기는 일을 좋아합니다",
+    body: "React, Next.js, TypeScript로 사용자가 보는 화면을 만들고, Spring Boot API와 연결하면서 전체 흐름을 맞춰갑니다. 포스트 목록, 검색, 댓글, 리액션, 관리자 에디터처럼 작은 기능도 실제로 쓰는 사람의 입장에서 자연스러운지 확인하며 다듬습니다.",
   },
   {
     zone: "reading",
-    eyebrow: "Reflect",
-    title: "배운 것은 다시 꺼낼 수 있게 남깁니다",
-    body: "블로그는 완성된 답을 전시하는 곳이라기보다, 선택의 이유와 실패한 경로를 같이 보관하는 작업실에 가깝습니다. 미래의 제가 다시 읽어도 쓸 수 있는 글을 목표로 씁니다.",
+    eyebrow: "Write",
+    title: "기록은 제가 생각을 정리하는 방식입니다",
+    body: "블로그에는 기술을 배운 흔적과 구현하면서 만난 시행착오를 남깁니다. 단순히 방법만 적기보다 왜 그렇게 했는지, 어디서 헷갈렸는지, 다음에는 무엇을 다르게 볼 수 있을지를 같이 적으려고 합니다.",
   },
   {
     zone: "exercising",
     eyebrow: "Rhythm",
-    title: "오래 갈 수 있는 루틴을 중요하게 봅니다",
-    body: "새로운 기술을 빠르게 따라가는 것도 좋지만, 결국 남는 것은 꾸준히 만들고 다듬는 힘이라고 생각합니다. 작게 실험하고, 검증하고, 다시 정리하는 리듬을 계속 키우고 있습니다.",
+    title: "꾸준히 반복할 수 있는 리듬을 믿습니다",
+    body: "개발은 한 번에 멋진 결과를 내는 일보다, 작게 만들고 계속 고치는 시간이 더 중요하다고 느낍니다. 코드, 글, 운동, 생활 루틴을 무리 없이 이어가며 오래 성장하는 개발자가 되고 싶습니다.",
   },
 ];
 
 const profileCards = [
   {
     icon: Layers3,
-    title: "구조",
-    body: "컴포넌트 경계와 데이터 흐름을 먼저 정리해서, 나중에 손대기 쉬운 화면을 만듭니다.",
+    title: "전체 흐름",
+    body: "화면, API, 데이터, 배포가 어떻게 이어지는지 같이 보며 기능을 이해하려고 합니다.",
   },
   {
     icon: Sparkles,
-    title: "감각",
-    body: "과한 장식보다 읽는 속도, 여백, 움직임의 타이밍이 맞는 인터페이스를 좋아합니다.",
+    title: "사용감",
+    body: "보기에만 좋은 화면보다 클릭, 이동, 로딩, 빈 상태까지 편한 화면을 좋아합니다.",
   },
   {
     icon: PenLine,
-    title: "기록",
-    body: "구현 과정의 판단과 시행착오를 글로 남겨 다시 꺼내 쓸 수 있는 지식으로 바꿉니다.",
+    title: "정리",
+    body: "배운 내용을 글로 남기며 제 생각을 확인하고, 다시 꺼내 쓸 수 있게 만듭니다.",
   },
 ];
 
 const focusItems = [
-  "Next.js App Router 기반 블로그 경험 고도화",
-  "React 상태 관리와 서버 데이터 흐름 단순화",
-  "Spring Boot API와 프론트엔드 연결 품질 개선",
-  "AI 도구를 활용한 반복 작업 자동화와 리뷰 루틴",
+  "Next.js와 TypeScript로 빠르고 읽기 좋은 프론트엔드 만들기",
+  "Spring Boot API, 인증, 데이터 저장 구조를 이해하며 연결하기",
+  "관리자 에디터, 댓글, 리액션, 검색처럼 실제 서비스에 필요한 기능 다듬기",
+  "AI 도구를 학습, 코드 리뷰, 반복 작업 자동화에 현실적으로 활용하기",
 ];
 
 const stackGroups = [
@@ -92,18 +95,18 @@ const stackGroups = [
 const timeline = [
   {
     year: "Now",
-    title: "블로그를 하나의 제품처럼 다듬는 중",
-    body: "글 목록, 검색, 반응, 댓글, SEO, 관리자 작성 흐름까지 실제 운영 경험을 기준으로 계속 개선하고 있습니다.",
+    title: "개인 프로젝트를 통해 풀스택 흐름을 익히는 중",
+    body: "프론트엔드 화면부터 백엔드 API, 인증, 관리자 기능, SEO까지 하나의 서비스가 돌아가는 과정을 직접 만들어보며 배우고 있습니다.",
   },
   {
     year: "Next",
-    title: "더 나은 기록 시스템 만들기",
-    body: "마크다운 콘텐츠와 에디터 경험을 연결해, 생각을 빠르게 남기고 보기 좋게 발행하는 구조를 만들고 싶습니다.",
+    title: "프로젝트를 더 분명한 포트폴리오로 정리하기",
+    body: "기능 목록보다 어떤 문제를 해결했고 무엇을 배웠는지가 보이는 방식으로 프로젝트와 글을 정리해가고 싶습니다.",
   },
   {
     year: "Always",
-    title: "사용자에게 설명하지 않아도 되는 화면",
-    body: "버튼, 상태, 피드백, 이동 흐름이 자연스러워서 별도 설명 없이도 사용할 수 있는 화면을 계속 연습합니다.",
+    title: "계속 만들고 계속 기록하기",
+    body: "작은 기능이라도 직접 완성해보고, 배운 것을 글로 남기며 꾸준히 앞으로 나아가는 사람이 되고 싶습니다.",
   },
 ];
 
@@ -159,29 +162,11 @@ export default function AboutShowcase() {
                   Jack&#39;s Room
                 </p>
                 <p className="mt-2 max-w-[280px] text-sm leading-6 text-zinc-600 dark:text-zinc-300">
-                  스크롤하면 방 안의 장면도 함께 바뀝니다.
+                  Jackihyun이 만들고 기록하는 공간입니다.
                 </p>
               </div>
               <div className="hidden rounded-full border border-zinc-200/80 bg-white/70 px-4 py-2 text-xs font-bold text-zinc-600 shadow-sm backdrop-blur dark:border-zinc-800/80 dark:bg-zinc-950/70 dark:text-zinc-300 sm:block">
                 {activeZone.toUpperCase()}
-              </div>
-            </div>
-
-            <div className="absolute bottom-6 left-5 right-5 z-10 md:left-10 md:right-10">
-              <div className="grid grid-cols-4 gap-2 rounded-2xl border border-white/70 bg-white/70 p-2 shadow-xl shadow-zinc-900/5 backdrop-blur-xl dark:border-zinc-800/70 dark:bg-zinc-950/70 dark:shadow-black/25">
-                {sceneSteps.map((step) => (
-                  <button
-                    key={step.zone}
-                    type="button"
-                    onClick={() => setActiveZone(step.zone)}
-                    className={`h-2 rounded-full transition-all ${
-                      activeZone === step.zone
-                        ? "bg-zinc-950 dark:bg-white"
-                        : "bg-zinc-300 hover:bg-zinc-500 dark:bg-zinc-700 dark:hover:bg-zinc-500"
-                    }`}
-                    aria-label={`${step.eyebrow} 장면 보기`}
-                  />
-                ))}
               </div>
             </div>
           </div>
@@ -213,10 +198,16 @@ export default function AboutShowcase() {
             </h1>
 
             <p className="mt-8 max-w-2xl text-lg leading-8 text-zinc-600 dark:text-zinc-300">
-              안녕하세요, Jack입니다. 프론트엔드를 중심으로 화면의 구조와 감각을
-              함께 고민합니다. 이 페이지는 제 소개를 담는 동시에, 제가 좋아하는
-              인터랙션과 정리 방식을 보여주는 작은 포트폴리오처럼 만들었습니다.
+              안녕하세요, Jackihyun입니다. 프론트엔드를 중심으로 공부하며,
+              직접 만든 프로젝트를 통해 백엔드, 인증, 데이터 흐름, 운영까지
+              하나씩 넓혀가고 있습니다. 이곳에는 제가 만든 것과 배운 것,
+              그리고 앞으로 더 잘하고 싶은 방향을 담았습니다.
             </p>
+
+            <div className="mt-8 max-w-2xl border-l border-zinc-300 pl-5 text-sm leading-7 text-zinc-500 dark:border-zinc-700 dark:text-zinc-400">
+              지금은 Next.js, TypeScript, Spring Boot를 중심으로 개인 블로그,
+              관리자 도구, 콘텐츠 기능, 포트폴리오 정리를 함께 다듬고 있습니다.
+            </div>
 
             <div className="mt-9 flex flex-wrap gap-3">
               <Link
@@ -248,9 +239,8 @@ export default function AboutShowcase() {
                 variants={fadeUp}
                 transition={{ duration: 0.65, ease: "easeOut" }}
                 onViewportEnter={() => setActiveZone(step.zone)}
-                className="relative min-h-[58vh] border-l border-zinc-200 pl-6 dark:border-zinc-800 md:pl-9"
+                className="relative min-h-[58vh]"
               >
-                <span className="absolute -left-[7px] top-1 h-3.5 w-3.5 rounded-full border-4 border-[#fbfaf7] bg-zinc-950 dark:border-[#050505] dark:bg-white" />
                 <p className="text-xs font-bold uppercase tracking-[0.18em] text-indigo-500 dark:text-indigo-300">
                   {String(index + 1).padStart(2, "0")} / {step.eyebrow}
                 </p>
@@ -278,7 +268,7 @@ export default function AboutShowcase() {
                   Working Style
                 </p>
                 <h2 className="mt-3 text-3xl font-extrabold text-zinc-950 dark:text-white md:text-4xl">
-                  제가 화면을 볼 때 챙기는 것들
+                  제가 개발할 때 자주 보는 것들
                 </h2>
               </div>
             </div>
@@ -323,8 +313,8 @@ export default function AboutShowcase() {
                 요즘 집중하는 것
               </h2>
               <p className="mt-5 text-base leading-8 text-zinc-600 dark:text-zinc-400">
-                실제로 운영하는 블로그를 바탕으로, 보기 좋은 화면과 계속 고칠 수
-                있는 구조 사이의 균형을 연습하고 있습니다.
+                하나의 프로젝트를 단순한 화면으로만 보지 않고, 사용자가 만나는
+                경험과 그 뒤에서 움직이는 구조까지 함께 이해하려고 합니다.
               </p>
             </div>
             <div className="space-y-3">
@@ -413,6 +403,11 @@ export default function AboutShowcase() {
             <h2 className="mt-3 text-3xl font-extrabold text-zinc-950 dark:text-white md:text-4xl">
               앞으로 더 선명하게 만들고 싶은 방향
             </h2>
+            <p className="mt-5 max-w-2xl text-base leading-8 text-zinc-600 dark:text-zinc-400">
+              잘 만든 프로젝트는 겉으로 보이는 화면뿐 아니라 구조, 기록, 운영
+              방식까지 함께 남는다고 생각합니다. 그래서 저는 계속 만들고, 써보고,
+              고치고, 글로 정리하는 개발자가 되고 싶습니다.
+            </p>
 
             <div className="mt-8 divide-y divide-zinc-200 overflow-hidden rounded-[8px] border border-zinc-200 bg-white/78 backdrop-blur dark:divide-zinc-800 dark:border-zinc-800 dark:bg-zinc-950/72">
               {timeline.map((item) => (
