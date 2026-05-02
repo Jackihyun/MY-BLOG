@@ -16,10 +16,10 @@ interface AboutSceneProps {
 type QualityMode = "high" | "low" | "ultra";
 
 const SPEECH_MESSAGES: Record<ActiveZone, string> = {
-  all: "안녕하세요, 제 방에 오신 걸 환영해요.",
-  laptop: "열심히 코딩하는 사람이에요.",
-  reading: "소파에서 잠깐 머리 식히는 중이에요.",
-  exercising: "짧게 운동하고 다시 시작할게요.",
+  all: "안녕하세요, Jackihyun입니다.",
+  laptop: "열심히 코딩 중이에요.",
+  reading: "잠깐 쉬는 중이에요.",
+  exercising: "리프레시하고 다시 올게요.",
 };
 
 function AvatarSpeechBubble({
