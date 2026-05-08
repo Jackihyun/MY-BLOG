@@ -1,4 +1,11 @@
 import AboutShowcase from "@/components/about/AboutShowcase";
+import { Metadata } from "next";
+
+export const metadata: Metadata = {
+  alternates: {
+    canonical: "/about",
+  },
+};
 
 export default function AboutPage() {
   return (

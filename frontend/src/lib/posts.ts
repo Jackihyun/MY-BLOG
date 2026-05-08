@@ -22,7 +22,6 @@ const API_BASE =
 const USE_API = true;
 const ENABLE_LEGACY_FILE_POSTS =
   process.env.NEXT_PUBLIC_ENABLE_LEGACY_FILE_POSTS === "true";
-const PERSONAL_CATEGORIES = new Set(["일상"]);
 const LOW_VALUE_SEARCH_SLUGS = new Set(["test"]);
 
 // ============ Utility functions ============
@@ -261,9 +260,7 @@ export function isSearchIndexablePost(post: PostData): boolean {
     return false;
   }
 
-  return !getPostCategories(post).some((category) =>
-    PERSONAL_CATEGORIES.has(category)
-  );
+  return true;
 }
 
 export async function getSortedPostsData(): Promise<PostData[]> {

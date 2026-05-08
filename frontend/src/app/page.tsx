@@ -3,9 +3,16 @@ import HeroSection from "@/components/home/HeroSection";
 import RecentPosts from "@/components/home/RecentPosts";
 import PopularPosts from "@/components/home/PopularPosts";
 import TechStack from "@/components/home/TechStack";
+import { Metadata } from "next";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
+
+export const metadata: Metadata = {
+  alternates: {
+    canonical: "/",
+  },
+};
 
 export default async function HomePage() {
   const allPosts: PostData[] = await getSortedPostsData();
