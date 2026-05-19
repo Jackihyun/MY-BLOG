@@ -45,6 +45,20 @@ function extractCodeLanguage(codeElement: HTMLElement | null): string {
   return "plaintext";
 }
 
+function ensureCodeBlockWrapper(pre: HTMLElement): HTMLDivElement | null {
+  const parent = pre.parentElement;
+  if (parent?.classList.contains("code-block-wrapper")) {
+    return parent as HTMLDivElement;
+  }
+
+  const wrapper = document.createElement("div");
+  wrapper.className = "code-block-wrapper";
+  pre.parentNode?.insertBefore(wrapper, pre);
+  wrapper.appendChild(pre);
+
+  return wrapper;
+}
+
 export function enhanceCodeBlocks(
   container: ParentNode,
   onCopySuccess?: (message: string) => void,
@@ -86,12 +100,20 @@ export function enhanceCodeBlocks(
       codeElement.dataset.highlighted = "true";
     }
 
-    let toolbar = pre.querySelector(".code-block-toolbar") as HTMLDivElement | null;
+    const wrapper = ensureCodeBlockWrapper(pre);
+    if (!wrapper) return;
+
+    let toolbar = wrapper.querySelector(
+      ":scope > .code-block-toolbar"
+    ) as HTMLDivElement | null;
+    if (!toolbar) {
+      toolbar = pre.querySelector(".code-block-toolbar") as HTMLDivElement | null;
+    }
     if (!toolbar) {
       toolbar = document.createElement("div");
       toolbar.className = "code-block-toolbar";
-      pre.prepend(toolbar);
     }
+    wrapper.prepend(toolbar);
 
     let badge = toolbar.querySelector(".code-block-language") as HTMLSpanElement | null;
     if (!badge) {

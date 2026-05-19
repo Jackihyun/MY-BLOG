@@ -138,6 +138,19 @@ input:checked + svg .line-top-bottom {
     }
   }
 
+  .code-block-wrapper {
+    @apply relative max-w-full;
+  }
+  .prose .code-block-wrapper {
+    @apply my-6;
+  }
+  .ProseMirror .code-block-wrapper {
+    @apply my-4;
+  }
+  .prose .code-block-wrapper pre,
+  .ProseMirror .code-block-wrapper pre {
+    @apply my-0;
+  }
   .prose pre {
     @apply relative overflow-x-auto max-w-full rounded-xl border p-4 shadow-sm;
     background-color: #f7f6f3;
@@ -466,6 +479,9 @@ input:checked + svg .line-top-bottom {
   .dark .prose pre .hljs-params,
   .dark .prose pre .hljs-punctuation {
     color: #d4d4d8;
+  }
+  .code-block-wrapper pre {
+    padding-top: 3rem;
   }
   .code-block-toolbar {
     @apply absolute right-2 top-2 z-10 flex items-center justify-end gap-1.5;
