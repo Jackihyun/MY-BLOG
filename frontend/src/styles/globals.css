@@ -151,9 +151,6 @@ input:checked + svg .line-top-bottom {
   .ProseMirror .code-block-wrapper pre {
     @apply my-0;
   }
-  .code-block-wrapper .code-block-toolbar + pre {
-    @apply rounded-t-none border-t-0;
-  }
   .prose pre {
     @apply relative overflow-x-auto max-w-full rounded-xl border p-4 shadow-sm;
     background-color: #f7f6f3;
@@ -484,15 +481,7 @@ input:checked + svg .line-top-bottom {
     color: #d4d4d8;
   }
   .code-block-toolbar {
-    @apply flex items-center justify-end gap-1.5 rounded-t-xl border px-2 py-2 shadow-sm;
-    background-color: #f7f6f3;
-    border-color: #e7e5e4;
-    border-bottom-color: transparent;
-  }
-  .dark .code-block-toolbar {
-    background-color: #191919;
-    border-color: #2f2f2f;
-    border-bottom-color: transparent;
+    @apply absolute right-2 top-2 z-10 flex items-center justify-end gap-1.5;
   }
   .code-block-language {
     @apply inline-flex h-7 items-center rounded-md border px-2 text-[11px] font-semibold;
