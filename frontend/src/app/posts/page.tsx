@@ -26,7 +26,13 @@ export default async function PostsPage() {
 
   return (
     <div className="py-8">
-      <Suspense fallback={<div className="py-8 text-sm text-zinc-500">게시글 목록을 불러오는 중...</div>}>
+      <Suspense
+        fallback={
+          <div className="py-8 text-sm text-zinc-500">
+            게시글 목록을 불러오는 중...
+          </div>
+        }
+      >
         <PostsList allPostsData={allPostsData} />
       </Suspense>
     </div>

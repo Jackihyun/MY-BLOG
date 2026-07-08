@@ -7,7 +7,6 @@ import { Badge } from "@/components/ui/badge";
 export default function HeroSection() {
   return (
     <section className="relative overflow-hidden">
-      {/* Background gradient */}
       <div className="absolute inset-0 -z-10">
         <div className="absolute inset-0 bg-gradient-to-br from-blue-50 via-white to-purple-50 dark:from-blue-950/20 dark:via-gray-900 dark:to-purple-950/20" />
         <motion.div
@@ -55,7 +54,6 @@ export default function HeroSection() {
           transition={{ duration: 0.5 }}
           className="text-center space-y-6"
         >
-          {/* Status Badge */}
           <motion.div
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
@@ -67,7 +65,6 @@ export default function HeroSection() {
             </Badge>
           </motion.div>
 
-          {/* Main Title */}
           <motion.h1
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -79,22 +76,20 @@ export default function HeroSection() {
               개발자
             </span>
             <br />
-            <span className="text-zinc-900 dark:text-zinc-50">Jack입니다</span>
+            <span className="text-zinc-900 dark:text-zinc-50">Jack입니다.</span>
           </motion.h1>
 
-          {/* Description */}
           <motion.p
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.4 }}
             className="text-lg md:text-xl text-zinc-600 dark:text-zinc-400 max-w-2xl mx-auto leading-relaxed font-medium"
           >
-            프론트엔드를 좋아하며 백엔드도 공부하며 AI 활용에 관심이 많은 개발자입니다.
+            프론트엔드를 좋아하고 백엔드와 AI 활용에도 관심이 많은 개발자입니다.
             <br className="hidden md:block" />
-            새로운 기술을 배우고 공유하는 것을 좋아합니다.
+            새로운 기술을 배우고 직접 구현한 과정을 글로 정리합니다.
           </motion.p>
 
-          {/* CTA Buttons */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -129,7 +124,6 @@ export default function HeroSection() {
             </Link>
           </motion.div>
 
-          {/* Social Links */}
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
@@ -148,7 +142,7 @@ export default function HeroSection() {
               </svg>
             </a>
             <a
-              href={`mailto:${process.env.NEXT_PUBLIC_CONTACT_EMAIL || 'your@email.com'}`}
+              href={`mailto:${process.env.NEXT_PUBLIC_CONTACT_EMAIL || "your@email.com"}`}
               aria-label="이메일 보내기"
               className="p-3.5 rounded-2xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 text-zinc-600 dark:text-zinc-400 hover:text-indigo-600 dark:hover:text-indigo-400 hover:border-indigo-200 dark:hover:border-indigo-800/50 transition-all shadow-sm"
             >

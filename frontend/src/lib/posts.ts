@@ -360,7 +360,7 @@ export async function getPostData(id: string): Promise<PostData> {
     date: new Date().toISOString().split("T")[0],
     category: "None",
     contentHtml:
-      "<p>요청하신 글이 존재하지 않거나 불러오는데 실패했습니다.</p>",
+      "<p>요청하신 글이 존재하지 않거나 불러오는 데 실패했습니다.</p>",
     isPublished: false,
   };
 }

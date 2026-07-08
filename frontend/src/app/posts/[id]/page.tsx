@@ -29,6 +29,7 @@ export async function generateMetadata({ params }: PostProps): Promise<Metadata>
       },
     };
   }
+
   const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://blog.jackihyun.com";
   const ogUrl = `${siteUrl}/api/og?title=${encodeURIComponent(postData.title)}&category=${encodeURIComponent(postData.category)}`;
   const shareImage = postData.thumbnail
@@ -78,6 +79,7 @@ export default async function PostPage({ params }: PostProps) {
   if (!isIndexablePost(postData)) {
     notFound();
   }
+
   const allPosts = await getSortedPostsData();
   const currentIndex = allPosts.findIndex((post) => post.slug === params.id);
 
@@ -86,6 +88,7 @@ export default async function PostPage({ params }: PostProps) {
       ? allPosts[currentIndex + 1]
       : null;
   const nextPost = currentIndex > 0 ? allPosts[currentIndex - 1] : null;
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://blog.jackihyun.com";
 
   const jsonLd = {
     "@context": "https://schema.org",
@@ -102,19 +105,16 @@ export default async function PostPage({ params }: PostProps) {
       name: "Jackihyun 개발 블로그",
       logo: {
         "@type": "ImageObject",
-        url: `${process.env.NEXT_PUBLIC_SITE_URL || "https://blog.jackihyun.com"}/icon.svg`,
+        url: `${siteUrl}/icon.svg`,
       },
     },
     description: postData.excerpt || postData.title,
     image: postData.thumbnail
-      ? toAbsoluteThumbnailUrl(
-          postData.thumbnail,
-          process.env.NEXT_PUBLIC_SITE_URL || "https://blog.jackihyun.com",
-        )
+      ? toAbsoluteThumbnailUrl(postData.thumbnail, siteUrl)
       : undefined,
     mainEntityOfPage: {
       "@type": "WebPage",
-      "@id": `${process.env.NEXT_PUBLIC_SITE_URL || "https://blog.jackihyun.com"}/posts/${params.id}`,
+      "@id": `${siteUrl}/posts/${params.id}`,
     },
   };
 

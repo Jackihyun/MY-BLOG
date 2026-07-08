@@ -25,8 +25,7 @@ export const metadata: Metadata = {
     default: siteName,
     template: `%s | ${siteName}`,
   },
-  description:
-    siteDescription,
+  description: siteDescription,
   keywords: [
     "개발",
     "프로그래밍",
@@ -43,7 +42,7 @@ export const metadata: Metadata = {
     type: "website",
     locale: "ko_KR",
     url: siteUrl,
-    siteName: siteName,
+    siteName,
     title: siteName,
     description: siteDescription,
     images: [
