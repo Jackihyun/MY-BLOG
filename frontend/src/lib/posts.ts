@@ -13,6 +13,21 @@ const postsDirectory = path.join(process.cwd(), "src/posts");
 const SERVER_API_BASE =
   process.env.NEXT_PUBLIC_API_URL?.replace(/\/$/, "") ||
   "http://localhost:8080/api";
+const SERVER_API_FALLBACK_BASES = Array.from(
+  new Set(
+    [
+      process.env.INTERNAL_API_URL?.replace(/\/$/, ""),
+      process.env.NEXT_PUBLIC_API_URL?.replace(/\/$/, ""),
+      process.env.API_PORT
+        ? `http://127.0.0.1:${process.env.API_PORT}/api`
+        : undefined,
+      "http://127.0.0.1:8081/api",
+      "http://127.0.0.1:8080/api",
+      "http://localhost:8081/api",
+      "http://localhost:8080/api",
+    ].filter((url): url is string => Boolean(url))
+  )
+);
 const CLIENT_API_BASE =
   (process.env.NEXT_PUBLIC_API_PROXY_PATH || "/api")
     .replace(/\/$/, "")
@@ -55,36 +70,43 @@ async function fetchFromApi<T>(
   endpoint: string,
   options?: RequestInit & { next?: { revalidate?: number } }
 ): Promise<T | null> {
-  let timeout: ReturnType<typeof setTimeout> | undefined;
-
   try {
-    const controller = new AbortController();
-    timeout = setTimeout(() => controller.abort(), 5000);
+    const apiBases =
+      typeof window === "undefined" ? SERVER_API_FALLBACK_BASES : [API_BASE];
 
-    const requestOptions: RequestInit & { next?: { revalidate?: number } } = {
-      next: { revalidate: 60 },
-      ...options,
-      signal: controller.signal,
-    };
+    for (const baseUrl of apiBases) {
+      const controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(), 5000);
 
-    if (options?.cache === "no-store") {
-      delete requestOptions.next;
-    } else if (!options?.next) {
-      requestOptions.next = { revalidate: 60 };
+      try {
+        const requestOptions: RequestInit & { next?: { revalidate?: number } } = {
+          next: { revalidate: 60 },
+          ...options,
+          signal: controller.signal,
+        };
+
+        if (options?.cache === "no-store") {
+          delete requestOptions.next;
+        } else if (!options?.next) {
+          requestOptions.next = { revalidate: 60 };
+        }
+
+        const response = await fetch(`${baseUrl}${endpoint}`, {
+          ...requestOptions,
+        });
+        if (!response.ok) continue;
+        const data = await response.json();
+        return data.data;
+      } catch {
+        continue;
+      } finally {
+        clearTimeout(timeout);
+      }
     }
 
-    const response = await fetch(`${API_BASE}${endpoint}`, {
-      ...requestOptions,
-    });
-    if (!response.ok) return null;
-    const data = await response.json();
-    return data.data;
+    return null;
   } catch {
     return null;
-  } finally {
-    if (timeout) {
-      clearTimeout(timeout);
-    }
   }
 }
 
