@@ -4,7 +4,7 @@ set -euo pipefail
 
 DOMAIN="${1:-blog.jackihyun.com}"
 API_ORIGIN="https://${DOMAIN}"
-LOCAL_API="http://127.0.0.1:8080"
+LOCAL_API="${LOCAL_API:-http://127.0.0.1:${API_PORT:-8081}}"
 LOCAL_WEB="http://127.0.0.1:3000"
 
 check_required_url() {
