@@ -3,7 +3,7 @@ import { NextRequest } from "next/server";
 async function proxyHandler(request: NextRequest, { params }: { params: { path: string[] } }) {
   const targetBaseUrl =
     process.env.NEXT_PUBLIC_API_URL?.replace(/\/$/, "") ||
-    "http://localhost:8080/api";
+    "http://localhost:8081/api";
   const path = params.path.join("/");
   const searchParams = request.nextUrl.search;
   const url = `${targetBaseUrl}/${path}${searchParams}`;

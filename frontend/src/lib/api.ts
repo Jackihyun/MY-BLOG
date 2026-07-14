@@ -20,7 +20,7 @@ import {
 
 const SERVER_API_BASE =
   process.env.NEXT_PUBLIC_API_URL?.replace(/\/$/, "") ||
-  "http://localhost:8080/api";
+  "http://localhost:8081/api";
 const CLIENT_API_BASE =
   (process.env.NEXT_PUBLIC_API_PROXY_PATH || "/api")
     .replace(/\/$/, "")
