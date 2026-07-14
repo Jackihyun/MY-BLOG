@@ -1,6 +1,6 @@
 "use client";
 
-import AboutScene, { ActiveZone } from "@/components/about/AboutScene";
+import type { ActiveZone } from "@/components/about/AboutScene";
 import {
   ArrowUpRight,
   BookOpenText,
@@ -17,8 +17,16 @@ import {
   useReducedMotion,
 } from "framer-motion";
 import Link from "next/link";
+import dynamic from "next/dynamic";
 import type { UIEvent } from "react";
 import { useRef, useState } from "react";
+
+const AboutScene = dynamic(() => import("@/components/about/AboutScene"), {
+  ssr: false,
+  loading: () => (
+    <div className="absolute inset-0 bg-[radial-gradient(circle_at_40%_24%,rgba(14,165,233,0.16),transparent_32%),linear-gradient(145deg,#f8fafc,#e7edf5)]" />
+  ),
+});
 
 const sceneSteps: {
   zone: ActiveZone;
@@ -141,13 +149,13 @@ export default function AboutShowcase() {
   };
 
   return (
-    <div className="relative min-h-screen overflow-hidden bg-[#fbfaf7] text-zinc-950 dark:bg-[#050505] dark:text-zinc-50">
+    <div className="relative min-h-screen overflow-hidden bg-[#f8fafc] text-zinc-950 dark:bg-[#050505] dark:text-zinc-50">
       <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(rgba(24,24,27,0.045)_1px,transparent_1px),linear-gradient(90deg,rgba(24,24,27,0.035)_1px,transparent_1px)] bg-[size:44px_44px] dark:bg-[linear-gradient(rgba(244,244,245,0.045)_1px,transparent_1px),linear-gradient(90deg,rgba(244,244,245,0.035)_1px,transparent_1px)]" />
       <div className="pointer-events-none absolute inset-x-0 top-0 h-[720px] bg-[radial-gradient(circle_at_18%_20%,rgba(99,102,241,0.18),transparent_34%),radial-gradient(circle_at_82%_12%,rgba(16,185,129,0.13),transparent_30%),radial-gradient(circle_at_58%_42%,rgba(245,158,11,0.12),transparent_36%)] dark:bg-[radial-gradient(circle_at_18%_20%,rgba(99,102,241,0.22),transparent_34%),radial-gradient(circle_at_82%_12%,rgba(20,184,166,0.16),transparent_30%),radial-gradient(circle_at_58%_42%,rgba(245,158,11,0.12),transparent_36%)]" />
 
       <div className="about-grid relative grid min-h-screen lg:grid-cols-[minmax(420px,48vw)_1fr]">
         <aside className="lg:sticky lg:top-0 lg:h-screen">
-          <div className="about-scene-panel relative h-[68vh] min-h-[520px] overflow-hidden border-b border-zinc-200/70 bg-white/35 dark:border-zinc-800/70 dark:bg-zinc-950/25 lg:h-screen lg:border-b-0 lg:border-r">
+          <div className="about-scene-panel relative h-[68vh] min-h-[520px] overflow-hidden border-b border-zinc-200/70 bg-slate-50/70 dark:border-zinc-800/70 dark:bg-zinc-950/25 lg:h-screen lg:border-b-0 lg:border-r">
             <div className="absolute inset-0">
               <AboutScene
                 reducedMotion={reducedMotion}
@@ -156,18 +164,8 @@ export default function AboutShowcase() {
               />
             </div>
 
-            <div className="pointer-events-none absolute left-5 right-5 top-24 z-10 flex items-center justify-between gap-4 md:left-10 md:right-10 lg:top-28">
-              <div>
-                <p className="text-[11px] font-bold uppercase tracking-[0.28em] text-zinc-500 dark:text-zinc-400">
-                  Jack&#39;s Room
-                </p>
-                <p className="mt-2 max-w-[280px] text-sm leading-6 text-zinc-600 dark:text-zinc-300">
-                  Jackihyun이 만들고 기록하는 공간입니다.
-                </p>
-              </div>
-              <div className="hidden rounded-full border border-zinc-200/80 bg-white/70 px-4 py-2 text-xs font-bold text-zinc-600 shadow-sm backdrop-blur dark:border-zinc-800/80 dark:bg-zinc-950/70 dark:text-zinc-300 sm:block">
-                {activeZone.toUpperCase()}
-              </div>
+            <div className="pointer-events-none absolute right-5 top-24 z-10 hidden rounded-full border border-zinc-200/80 bg-white/70 px-4 py-2 text-xs font-bold text-zinc-600 shadow-sm backdrop-blur dark:border-zinc-800/80 dark:bg-zinc-950/70 dark:text-zinc-300 sm:block md:right-10 lg:top-28">
+              {activeZone.toUpperCase()}
             </div>
           </div>
         </aside>
@@ -182,7 +180,7 @@ export default function AboutShowcase() {
             animate="show"
             variants={fadeUp}
             transition={{ duration: 0.7, ease: "easeOut" }}
-            className="min-h-[76vh] max-w-3xl"
+            className="min-h-[92vh] max-w-3xl pb-16"
           >
             <div className="inline-flex items-center gap-2 rounded-full border border-zinc-200 bg-white/70 px-4 py-2 text-xs font-bold uppercase tracking-[0.18em] text-zinc-600 shadow-sm backdrop-blur dark:border-zinc-800 dark:bg-zinc-950/70 dark:text-zinc-300">
               <TerminalSquare className="h-4 w-4 text-indigo-500" />
@@ -229,7 +227,7 @@ export default function AboutShowcase() {
             </div>
           </motion.section>
 
-          <section className="max-w-3xl space-y-28">
+          <section className="max-w-3xl space-y-36 pt-10">
             {sceneSteps.map((step, index) => (
               <motion.article
                 key={step.zone}
@@ -239,7 +237,7 @@ export default function AboutShowcase() {
                 variants={fadeUp}
                 transition={{ duration: 0.65, ease: "easeOut" }}
                 onViewportEnter={() => setActiveZone(step.zone)}
-                className="relative min-h-[58vh]"
+                className="relative min-h-[64vh] pt-10"
               >
                 <p className="text-xs font-bold uppercase tracking-[0.18em] text-indigo-500 dark:text-indigo-300">
                   {String(index + 1).padStart(2, "0")} / {step.eyebrow}
